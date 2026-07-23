@@ -206,6 +206,13 @@
   .topTabBtn.active:hover{
     background:#666;
   }
+  #level2TypeHeader{
+    font-size:16px;
+    color:var(--header-text);
+    font-weight:bold;
+    letter-spacing:0.3px;
+    font-family:var(--font);
+  }
   #selectHeader, #selectHeader2, #selectHeader3{
     font-size:16px;
     color:var(--header-text);
@@ -236,9 +243,13 @@
   }
   #level2TypeButtons{
     display:grid;
-    grid-template-columns:1fr;
-    gap:10px;
+    grid-template-columns:repeat(4, 1fr);
+    gap:8px;
     width:100%;
+  }
+  #level2TypeButtons .ringBtn{
+    padding:8px 4px;
+    font-size:14px;
   }
   #selectButtons2, #selectButtons3{
     display:grid;
@@ -260,6 +271,56 @@
     font-size:14px;
     font-weight:bold;
     font-family:var(--font);
+  }
+  .trainChordLetters{
+    pointer-events:none;
+    user-select:none;
+    text-anchor:middle;
+    dominant-baseline:middle;
+    font-size:9px;
+    font-weight:normal;
+    font-family:var(--font);
+    fill:var(--app-text-color);
+  }
+  #trainCircleInner{
+    position:relative;
+    width:480px;
+    height:480px;
+  }
+  #trainDegreePanel{
+    position:absolute;
+    top:6px;
+    right:6px;
+    text-align:right;
+    font-family:var(--font);
+    font-size:13px;
+    line-height:1.5;
+    color:var(--app-text-color);
+    pointer-events:none;
+    user-select:none;
+    display:none;
+    z-index:4;
+  }
+  #trainDegreePanel .trainDegreeRow{
+    white-space:nowrap;
+  }
+  #trainExtraSettings{
+    margin:10px 0 4px;
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+  }
+  #trainExtraSettings label{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    font-family:var(--font);
+    font-size:13px;
+    color:var(--app-text-color);
+    cursor:pointer;
+  }
+  #trainExtraSettings input[type="checkbox"]{
+    cursor:pointer;
   }
   .noteBtn{
     background:var(--btn-bg);
@@ -449,13 +510,16 @@
     color:var(--text);
     font-family:var(--font);
   }
-  .infoIcon .infoTooltip{
+  /* Подсказки теперь рисуются одним общим блоком #globalInfoTooltip,
+     который при наведении переносится в <body> и позиционируется через
+     JS (position:fixed). Это нужно, чтобы подсказка не обрезалась
+     панелью настроек (#sidePanel имеет overflow:auto) и не пряталась
+     под соседними подписями — теперь она всегда поверх всего окна. */
+  #globalInfoTooltip{
     display:none;
-    position:absolute;
-    left:50%;
-    bottom:calc(100% + 8px);
-    transform:translateX(-50%);
-    width:200px;
+    position:fixed;
+    max-width:min(320px, 90vw);
+    width:max-content;
     background:#222;
     color:#fff;
     font-style:normal;
@@ -464,16 +528,16 @@
     line-height:1.4;
     padding:8px 10px;
     border-radius:8px;
-    box-shadow:0 4px 12px rgba(0,0,0,0.35);
-    z-index:20;
-  }
-  .infoIcon:hover .infoTooltip{
-    display:block;
+    box-shadow:0 4px 12px rgba(0,0,0,0.45);
+    z-index:9999;
+    pointer-events:none;
   }
 
 </style>
 </head>
 <body>
+
+<div id="globalInfoTooltip"></div>
 
 <div id="app">
   <div id="circleWrap">
@@ -481,7 +545,10 @@
     <div id="level2NoteLabel" style="display:none"></div>
   </div>
   <div id="trainCircleWrap" style="display:none">
-    <svg id="trainCircle" width="480" height="480" viewBox="0 0 480 480"></svg>
+    <div id="trainCircleInner">
+      <svg id="trainCircle" width="480" height="480" viewBox="0 0 480 480"></svg>
+      <div id="trainDegreePanel"></div>
+    </div>
   </div>
 </div>
 
@@ -542,10 +609,20 @@
     </div>
 
     <div id="level3Panel" style="display:none">
+      <div id="level2TypeHeader">Тип аккорда</div>
       <div id="level2TypeButtons">
-        <button class="ringBtn active" id="level2MajorMinorBtn" type="button">Мажор / Минор</button>
+        <button class="ringBtn active" id="level2MajorMinorBtn" type="button" data-chordtype="triad">Мажор / Минор</button>
+        <button class="ringBtn" id="level3Dom7Btn" type="button" data-chordtype="dom7">7</button>
+        <button class="ringBtn" id="level3Maj7Btn" type="button" data-chordtype="maj7">maj7</button>
+        <button class="ringBtn" id="level3Min7Btn" type="button" data-chordtype="min7">m7</button>
+        <button class="ringBtn" id="level3MMaj7Btn" type="button" data-chordtype="mmaj7">mMaj7</button>
+        <button class="ringBtn" id="level3Add9Btn" type="button" data-chordtype="add9">add9</button>
+        <button class="ringBtn" id="level3MAdd9Btn" type="button" data-chordtype="madd9">m(add9)</button>
+        <button class="ringBtn" id="level3Dom9Btn" type="button" data-chordtype="dom9">9</button>
+        <button class="ringBtn" id="level3Maj9Btn" type="button" data-chordtype="maj9">maj9</button>
+        <button class="ringBtn" id="level3MMaj9Btn" type="button" data-chordtype="mmaj9">m(maj9)</button>
       </div>
-      <div id="selectHeader3">Выберите аккорды</div>
+      <div id="selectHeader3">Выберите ноты</div>
       <div id="selectButtons3">
         <button class="ringBtn" data-ring="major">Мажор</button>
         <button class="ringBtn" data-ring="minor">Минор</button>
@@ -559,11 +636,15 @@
   </div>
 
   <div id="trainingPanel" style="display:none">
+      <div id="trainExtraSettings">
+        <label><input type="checkbox" id="trainShowChordLettersCheckbox">Показывать буквы аккорда под нотами</label>
+        <label><input type="checkbox" id="trainShowDegreesCheckbox">Показывать ступени аккорда</label>
+      </div>
       <div id="trainDisplayModeButtons" style="display:none">
         <div class="variantCardsRow">
           <div class="variantGroup">
             <div class="variantGroupLabel">Вариант 1
-              <span class="infoIcon">i<span class="infoTooltip">Числовой способ: нота ищется прямым смещением от тоники по кругу квинт, на том же кольце.</span></span>
+              <span class="infoIcon" data-tip="Числовой способ: нота ищется прямым смещением от тоники по кругу квинт, на том же кольце.">i</span>
             </div>
             <div class="variantGroupRow">
               <button class="ringBtn active" id="trainV1ArrowsBtn" data-variant="1" data-style="arrows">Стрелками</button>
@@ -572,7 +653,7 @@
           </div>
           <div class="variantGroup">
             <div class="variantGroupLabel">Вариант 2
-              <span class="infoIcon">i<span class="infoTooltip">Буквенный способ: нота ищется через соседей по кругу и переход на родственный мажор/минор. Доступен не для всех аккордов.</span></span>
+              <span class="infoIcon" data-tip="Буквенный способ: нота ищется через соседей по кругу и переход на родственный мажор/минор. Доступен не для всех аккордов.">i</span>
             </div>
             <div class="variantGroupRow">
               <button class="ringBtn" id="trainV2ArrowsBtn" data-variant="2" data-style="arrows">Стрелками</button>
@@ -583,91 +664,91 @@
         <div class="chordListCard">
           <div class="ringBtnRow">
             <button class="ringBtn active" id="trainMajorMinorBtn" data-chord="triad">Мажор/Минор</button>
-            <span class="infoIcon">i<span class="infoTooltip">Обычные трезвучия: мажор или минор — в зависимости от того, по какому кольцу круга кликнули.</span></span>
+            <span class="infoIcon" data-tip="Обычные трезвучия: мажор или минор — в зависимости от того, по какому кольцу круга кликнули.">i</span>
           </div>
           <div class="ringBtnRow">
             <button class="ringBtn" id="trainSus2Btn" data-chord="sus2">Sus2</button>
-            <span class="infoIcon">i<span class="infoTooltip">Режим Sus2: при клике по ноте показывается sus2-аккорд (тоника, секунда, квинта) вместо трезвучия. Повторный клик по кнопке возвращает обычные трезвучия.</span></span>
+            <span class="infoIcon" data-tip="Режим Sus2: при клике по ноте показывается sus2-аккорд (тоника, секунда, квинта) вместо трезвучия.">i</span>
           </div>
           <div class="ringBtnRow">
             <button class="ringBtn" id="trainSus4Btn" data-chord="sus4">Sus4</button>
-            <span class="infoIcon">i<span class="infoTooltip">Режим Sus4: при клике по ноте показывается sus4-аккорд (тоника, кварта, квинта) вместо трезвучия. Повторный клик по кнопке возвращает обычные трезвучия.</span></span>
+            <span class="infoIcon" data-tip="Режим Sus4: при клике по ноте показывается sus4-аккорд (тоника, кварта, квинта) вместо трезвучия.">i</span>
           </div>
           <div class="ringBtnRow">
             <button class="ringBtn" id="trainDom7Btn" data-chord="dom7">7</button>
-            <span class="infoIcon">i<span class="infoTooltip">Режим Доминантсептаккорд (7): тоника, терция, квинта, малая септима. Повторный клик по кнопке возвращает обычные трезвучия.</span></span>
+            <span class="infoIcon" data-tip="7 (Dominant 7) = Мажор + малая 7-я ступень - 1 3 5 b7.">i</span>
           </div>
           <div class="ringBtnRow">
             <button class="ringBtn" id="trainMaj7Btn" data-chord="maj7">maj7</button>
-            <span class="infoIcon">i<span class="infoTooltip">Режим Мажорный септаккорд (maj7): тоника, терция, квинта, большая септима. Повторный клик по кнопке возвращает обычные трезвучия.</span></span>
+            <span class="infoIcon" data-tip="maj7 (Major 7) = Мажор + большая 7-я ступень - 1 3 5 7.">i</span>
           </div>
           <div class="ringBtnRow">
             <button class="ringBtn" id="trainMin7Btn" data-chord="min7">m7</button>
-            <span class="infoIcon">i<span class="infoTooltip">Режим Минорный септаккорд (m7): тоника, терция, квинта, малая септима. Повторный клик по кнопке возвращает обычные трезвучия.</span></span>
+            <span class="infoIcon" data-tip="m7 (Minor 7) = Минор + малая 7-я ступень - 1 b3 5 b7.">i</span>
           </div>
           <div class="ringBtnRow">
             <button class="ringBtn" id="trainMMaj7Btn" data-chord="mmaj7">mMaj7</button>
-            <span class="infoIcon">i<span class="infoTooltip">Режим mMaj7: тоника, терция, квинта, большая септима. Повторный клик по кнопке возвращает обычные трезвучия.</span></span>
+            <span class="infoIcon" data-tip="mMaj7 = Минор + большая 7-я ступень - 1 b3 5 7.">i</span>
           </div>
           <div class="ringBtnRow">
             <button class="ringBtn" id="trainAdd9Btn" data-chord="add9">add9</button>
-            <span class="infoIcon">i<span class="infoTooltip">Режим add9 (мажорное трезвучие + нона): тоника, терция, квинта, нона. Повторный клик по кнопке возвращает обычные трезвучия.</span></span>
+            <span class="infoIcon" data-tip="add9 = Мажор + большая 9-я ступень - 1 3 5 9(2).">i</span>
           </div>
           <div class="ringBtnRow">
             <button class="ringBtn" id="trainMAdd9Btn" data-chord="madd9">m(add9)</button>
-            <span class="infoIcon">i<span class="infoTooltip">Режим m(add9) (минорное трезвучие + нона): тоника, терция, квинта, нона. Повторный клик по кнопке возвращает обычные трезвучия.</span></span>
+            <span class="infoIcon" data-tip="m(add9) = Минор + большая 9-я ступень - 1 b3 5 9(2).">i</span>
           </div>
           <div class="ringBtnRow">
             <button class="ringBtn" id="trainDom9Btn" data-chord="dom9">9</button>
-            <span class="infoIcon">i<span class="infoTooltip">Режим Dominant9 (9): тоника, терция, квинта, малая септима, нона. Доступны оба варианта (Вариант 1 числовой и Вариант 2 буквенный). Повторный клик по кнопке возвращает обычные трезвучия.</span></span>
+            <span class="infoIcon" data-tip="9 (Dominant 9) = Мажор + малая 7-я ступень + большая 9-я ступень - 1 3 5 b7 9(2). Доступны оба варианта (Вариант 1 числовой и Вариант 2 буквенный).">i</span>
           </div>
           <div class="ringBtnRow">
             <button class="ringBtn" id="trainMaj9Btn" data-chord="maj9">maj9</button>
-            <span class="infoIcon">i<span class="infoTooltip">Режим Major9 (maj9): тоника, терция, квинта, большая септима, нона. Доступны оба варианта (Вариант 1 числовой и Вариант 2 буквенный). Повторный клик по кнопке возвращает обычные трезвучия.</span></span>
+            <span class="infoIcon" data-tip="maj9 (Major 9) = Мажор + большая 7-я ступень + большая 9-я ступень - 1 3 5 7 9(2). Доступны оба варианта (Вариант 1 числовой и Вариант 2 буквенный).">i</span>
           </div>
           <div class="ringBtnRow">
             <button class="ringBtn" id="trainM9Btn" data-chord="m9">m9</button>
-            <span class="infoIcon">i<span class="infoTooltip">Режим Minor9 (m9): тоника, терция, квинта, малая септима, нона. Доступны оба варианта (Вариант 1 числовой и Вариант 2 буквенный). Повторный клик по кнопке возвращает обычные трезвучия.</span></span>
+            <span class="infoIcon" data-tip="m9 (Minor 9) = Минор + малая 7-я ступень + большая 9-я ступень - 1 b3 5 b7 9(2). Доступны оба варианта (Вариант 1 числовой и Вариант 2 буквенный).">i</span>
           </div>
           <div class="ringBtnRow">
             <button class="ringBtn" id="trainMMaj9Btn" data-chord="mmaj9">m(maj9)</button>
-            <span class="infoIcon">i<span class="infoTooltip">Режим MinorMajor9 (m(maj9)): тоника, терция, квинта, большая септима, нона. Доступны оба варианта (Вариант 1 числовой и Вариант 2 буквенный). Повторный клик по кнопке возвращает обычные трезвучия.</span></span>
+            <span class="infoIcon" data-tip="m(maj9) = Минор + большая 7-я ступень + большая 9-я ступень - 1 b3 5 7 9(2). Доступны оба варианта (Вариант 1 числовой и Вариант 2 буквенный).">i</span>
           </div>
           <div class="ringBtnRow">
             <button class="ringBtn" id="trainAdd11Btn" data-chord="add11">add11</button>
-            <span class="infoIcon">i<span class="infoTooltip">Режим add11 (мажорное трезвучие + ундецима): тоника, терция, квинта, ундецима. Доступны оба варианта (Вариант 1 числовой и Вариант 2 буквенный). Повторный клик по кнопке возвращает обычные трезвучия.</span></span>
+            <span class="infoIcon" data-tip="add11 = Мажор + чистая 11-я ступень - 1 3 5 11(4). Доступны оба варианта (Вариант 1 числовой и Вариант 2 буквенный).">i</span>
           </div>
           <div class="ringBtnRow">
             <button class="ringBtn" id="trainMAdd11Btn" data-chord="madd11">m(add11)</button>
-            <span class="infoIcon">i<span class="infoTooltip">Режим m(add11) (минорное трезвучие + ундецима): тоника, терция, квинта, ундецима. Доступны оба варианта (Вариант 1 числовой и Вариант 2 буквенный). Повторный клик по кнопке возвращает обычные трезвучия.</span></span>
+            <span class="infoIcon" data-tip="m(add11) = Минор + чистая 11-я ступень - 1 b3 5 11(4). Доступны оба варианта (Вариант 1 числовой и Вариант 2 буквенный).">i</span>
           </div>
           <div class="ringBtnRow">
             <button class="ringBtn" id="trainDom11Btn" data-chord="dom11">11</button>
-            <span class="infoIcon">i<span class="infoTooltip">Режим Dominant11 (11): тоника, терция, квинта, малая септима, нона, ундецима. Доступны оба варианта (Вариант 1 числовой и Вариант 2 буквенный). Повторный клик по кнопке возвращает обычные трезвучия.</span></span>
+            <span class="infoIcon" data-tip="11 (Dominant 11) = Мажор + малая 7-я ступень + большая 9-я ступень + чистая 11-я ступень - 1 3 5 b7 9(2) 11(4). Доступны оба варианта (Вариант 1 числовой и Вариант 2 буквенный).">i</span>
           </div>
           <div class="ringBtnRow">
             <button class="ringBtn" id="trainMaj11Btn" data-chord="maj11">maj11</button>
-            <span class="infoIcon">i<span class="infoTooltip">Режим Major11 (maj11): тоника, терция, квинта, большая септима, нона, ундецима. Доступны оба варианта (Вариант 1 числовой и Вариант 2 буквенный). Повторный клик по кнопке возвращает обычные трезвучия.</span></span>
+            <span class="infoIcon" data-tip="maj11 (Major 11) = Мажор + большая 7-я ступень + большая 9-я ступень + чистая 11-я ступень - 1 3 5 7 9(2) 11(4). Доступны оба варианта (Вариант 1 числовой и Вариант 2 буквенный).">i</span>
           </div>
           <div class="ringBtnRow">
             <button class="ringBtn" id="trainM11Btn" data-chord="m11">m11</button>
-            <span class="infoIcon">i<span class="infoTooltip">Режим Minor11 (m11): тоника, терция, квинта, малая септима, нона, ундецима. Доступны оба варианта (Вариант 1 числовой и Вариант 2 буквенный). Повторный клик по кнопке возвращает обычные трезвучия.</span></span>
+            <span class="infoIcon" data-tip="m11 (Minor 11) = Минор + малая 7-я ступень + большая 9-я ступень + чистая 11-я ступень - 1 b3 5 b7 9(2) 11(4). Доступны оба варианта (Вариант 1 числовой и Вариант 2 буквенный).">i</span>
           </div>
           <div class="ringBtnRow">
             <button class="ringBtn" id="trainDom13Btn" data-chord="dom13">13</button>
-            <span class="infoIcon">i<span class="infoTooltip">Режим Dominant13 (13): тоника, терция, квинта, малая септима, нона, ундецима, тердецима. Доступны оба варианта (Вариант 1 числовой и Вариант 2 буквенный). Повторный клик по кнопке возвращает обычные трезвучия.</span></span>
+            <span class="infoIcon" data-tip="13 (Dominant 13) = Мажор + малая 7-я ступень + большая 9-я ступень + чистая 11-я ступень + большая 13-я ступень - 1 3 5 b7 9(2) 11(4) 13(6). Доступны оба варианта (Вариант 1 числовой и Вариант 2 буквенный).">i</span>
           </div>
           <div class="ringBtnRow">
             <button class="ringBtn" id="trainMaj13Btn" data-chord="maj13">maj13</button>
-            <span class="infoIcon">i<span class="infoTooltip">Режим Major13 (maj13): тоника, терция, квинта, большая септима, нона, ундецима, тердецима. Доступны оба варианта (Вариант 1 числовой и Вариант 2 буквенный). Повторный клик по кнопке возвращает обычные трезвучия.</span></span>
+            <span class="infoIcon" data-tip="maj13 (Major 13) = Мажор + большая 7-я ступень + большая 9-я ступень + чистая 11-я ступень + большая 13-я ступень - 1 3 5 7 9(2) 11(4) 13(6). Доступны оба варианта (Вариант 1 числовой и Вариант 2 буквенный).">i</span>
           </div>
           <div class="ringBtnRow">
             <button class="ringBtn" id="trainM13Btn" data-chord="m13">m13</button>
-            <span class="infoIcon">i<span class="infoTooltip">Режим Minor13 (m13): тоника, терция, квинта, малая септима, нона, ундецима, тердецима. Доступны оба варианта (Вариант 1 числовой и Вариант 2 буквенный). Тердецима в Варианте 2 — особый маршрут из таблицы (как у аккорда m6), однозначной буквенной цепочки нет, поэтому рисуется так же, как в Варианте 1. Повторный клик по кнопке возвращает обычные трезвучия.</span></span>
+            <span class="infoIcon" data-tip="m13 (Minor 13) = Минор + малая 7-я ступень + большая 9-я ступень + чистая 11-я ступень + большая 13-я ступень - 1 b3 5 b7 9(2) 11(4) 13(6). Доступны оба варианта (Вариант 1 числовой и Вариант 2 буквенный). Тердецима в Варианте 2 — особый маршрут из таблицы (как у аккорда m6), однозначной буквенной цепочки нет, поэтому рисуется так же, как в Варианте 1.">i</span>
           </div>
           <div class="ringBtnRow">
             <button class="ringBtn" id="trainMMaj13Btn" data-chord="mmaj13">m(maj13)</button>
-            <span class="infoIcon">i<span class="infoTooltip">Режим MinorMajor13 (m(maj13)): тоника, терция, квинта, большая септима, нона, ундецима, тердецима. Доступны оба варианта (Вариант 1 числовой и Вариант 2 буквенный). Тердецима в Варианте 2 — особый маршрут из таблицы (как у аккорда m6), однозначной буквенной цепочки нет, поэтому рисуется так же, как в Варианте 1. Повторный клик по кнопке возвращает обычные трезвучия.</span></span>
+            <span class="infoIcon" data-tip="m(maj13) = Минор + большая 7-я ступень + большая 9-я ступень + чистая 11-я ступень + большая 13-я ступень - 1 b3 5 7 9(2) 11(4) 13(6). Доступны оба варианта (Вариант 1 числовой и Вариант 2 буквенный). Тердецима в Варианте 2 — особый маршрут из таблицы (как у аккорда m6), однозначной буквенной цепочки нет, поэтому рисуется так же, как в Варианте 1.">i</span>
           </div>
         </div>
       </div>
@@ -695,6 +776,12 @@ const R2 = 160;
 const R3 = 235;
 
 const WEDGE_GAP_RADIAL = 1;
+
+// НАСТРОЙКА РАССТОЯНИЯ: доля (0..1) от половины ширины кольца, на которую
+// строка "буквы аккорда" (напр. "C E G") смещается от названия ноты К ЦЕНТРУ
+// круга (к внутреннему краю своей ячейки/кольца, т.е. "ниже", как на образце).
+// Увеличивайте, чтобы строка была ближе к внутренней границе ячейки.
+const CHORD_LETTERS_RADIUS_OFFSET_RATIO = 0.96;
 const WEDGE_GAP_ANGLE  = 0.5;
 
 const majors = ['C','G','D','A','E','B','F#','Db','Ab','Eb','Bb','F'];
@@ -1250,12 +1337,154 @@ function buildTrainRing(ringName, names, rInner, rOuter, baseColor){
     label.style.pointerEvents = 'none';
     trainSvg.appendChild(label);
 
-    trainWedgeMap[ringName+'-'+i] = { el: path, baseColor, name: names[i], label };
+    // Буквы аккорда (напр. "C E G") — показываются чуть ниже названия
+    // ноты, ближе к внешнему краю ячейки; включаются/выключаются чекбоксом
+    // "Показывать буквы аккорда под нотами".
+    const chordLettersOffset = (rOuter - rInner) / 2 * CHORD_LETTERS_RADIUS_OFFSET_RATIO;
+    const chordLettersPos = polar(CX, CY, (rInner+rOuter)/2 - chordLettersOffset, i*30);
+    const chordLettersEl = el('text', {
+      x: chordLettersPos.x, y: chordLettersPos.y,
+      class: 'trainChordLetters'
+    });
+    chordLettersEl.style.pointerEvents = 'none';
+    chordLettersEl.style.display = 'none';
+    trainSvg.appendChild(chordLettersEl);
+
+    trainWedgeMap[ringName+'-'+i] = { el: path, baseColor, name: names[i], label, chordLettersEl };
   }
 }
 
 buildTrainRing('minor', minors, R0, R2, getComputedStyle(document.documentElement).getPropertyValue('--ring-minor').trim());
 buildTrainRing('major', majors, R2, R3, getComputedStyle(document.documentElement).getPropertyValue('--ring-major').trim());
+
+/* =========================================================
+   Буквы нот аккорда под каждой тоникой + ступени аккорда в углу
+   =========================================================
+   Не зависит от существующей "стрелочной" логики выше — считает состав
+   аккорда напрямую в полутонах от тоники и записывает буквами (с учётом
+   диезов/бемолей), как в обычной теории музыки. */
+const LETTERS7 = ['C','D','E','F','G','A','B'];
+const NATURAL_PC = {C:0,D:2,E:4,F:5,G:7,A:9,B:11};
+// для интервала (в полутонах, 0..11) — на сколько буквенных шагов (0..6)
+// отстоит нота от тоники; для 14/17/21 (девятая/ундецима/тердецима)
+// берётся тот же шаг, что и у соответствующей ступени внутри октавы.
+const LETTER_STEP_BY_SEMITONE = {0:0,1:1,2:1,3:2,4:2,5:3,6:4,7:4,8:5,9:5,10:6,11:6};
+
+function parseTrainNoteName(raw){
+  const name = raw.endsWith('m') ? raw.slice(0,-1) : raw;
+  const letter = name[0];
+  let offset = 0;
+  for(const c of name.slice(1)){ if(c==='#') offset++; else if(c==='b') offset--; }
+  const pc = ((NATURAL_PC[letter] + offset) % 12 + 12) % 12;
+  return {letter, pc};
+}
+
+// Возвращает букву+знак альтерации ноты, отстоящей от rootRaw на interval
+// полутонов (interval может быть >11, напр. 14 = нона).
+function spellTrainInterval(rootRaw, interval){
+  const root = parseTrainNoteName(rootRaw);
+  const mod = ((interval % 12) + 12) % 12;
+  const steps = LETTER_STEP_BY_SEMITONE[mod];
+  const rootLetterIdx = LETTERS7.indexOf(root.letter);
+  const letter = LETTERS7[(rootLetterIdx + steps) % 7];
+  const targetPc = ((root.pc + interval) % 12 + 12) % 12;
+  let diff = ((targetPc - NATURAL_PC[letter]) % 12 + 12) % 12;
+  if(diff > 6) diff -= 12;
+  let acc = '';
+  if(diff > 0) acc = '#'.repeat(diff);
+  else if(diff < 0) acc = 'b'.repeat(-diff);
+  return letter + acc;
+}
+
+// Формулы аккордов в полутонах от тоники (0 = тоника).
+const TRAIN_CHORD_FORMULAS = {
+  triadMajor:[0,4,7], triadMinor:[0,3,7],
+  sus2:[0,2,7], sus4:[0,5,7],
+  dom7:[0,4,7,10], maj7:[0,4,7,11], min7:[0,3,7,10], mmaj7:[0,3,7,11],
+  add9:[0,4,7,14], madd9:[0,3,7,14],
+  dom9:[0,4,7,10,14], maj9:[0,4,7,11,14], m9:[0,3,7,10,14], mmaj9:[0,3,7,11,14],
+  add11:[0,4,7,17], madd11:[0,3,7,17],
+  dom11:[0,4,7,10,14,17], maj11:[0,4,7,11,14,17], m11:[0,3,7,10,14,17],
+  dom13:[0,4,7,10,14,17,21], maj13:[0,4,7,11,14,17,21], m13:[0,3,7,10,14,17,21], mmaj13:[0,3,7,11,14,17,21]
+};
+
+function trainChordFormula(chordType, ring){
+  if(chordType === 'triad') return ring === 'major' ? TRAIN_CHORD_FORMULAS.triadMajor : TRAIN_CHORD_FORMULAS.triadMinor;
+  return TRAIN_CHORD_FORMULAS[chordType] || TRAIN_CHORD_FORMULAS.triadMajor;
+}
+
+function trainChordLettersFor(noteRaw, ring, chordType){
+  return trainChordFormula(chordType, ring).map(iv => spellTrainInterval(noteRaw, iv));
+}
+
+// --- Настройка "Показывать буквы аккорда под нотами" ---
+const TRAIN_SHOW_CHORD_LETTERS_KEY = 'circleTrainShowChordLetters';
+let trainShowChordLetters = localStorage.getItem(TRAIN_SHOW_CHORD_LETTERS_KEY) === '1';
+
+function refreshTrainChordLetters(){
+  Object.keys(trainWedgeMap).forEach(key=>{
+    const item = trainWedgeMap[key];
+    const ring = key.split('-')[0];
+    if(!item.chordLettersEl) return;
+    if(trainShowChordLetters){
+      item.chordLettersEl.textContent = trainChordLettersFor(item.name, ring, trainChordType).join(' ');
+      item.chordLettersEl.style.display = '';
+    } else {
+      item.chordLettersEl.style.display = 'none';
+    }
+  });
+}
+
+const trainShowChordLettersCheckbox = document.getElementById('trainShowChordLettersCheckbox');
+trainShowChordLettersCheckbox.checked = trainShowChordLetters;
+trainShowChordLettersCheckbox.addEventListener('change', ()=>{
+  trainShowChordLetters = trainShowChordLettersCheckbox.checked;
+  localStorage.setItem(TRAIN_SHOW_CHORD_LETTERS_KEY, trainShowChordLetters ? '1' : '0');
+  refreshTrainChordLetters();
+});
+
+/* --- Ступени аккорда (для выбранной тоники) в правом верхнем углу --- */
+const TRAIN_SHOW_DEGREES_KEY = 'circleTrainShowDegrees';
+let trainShowDegrees = localStorage.getItem(TRAIN_SHOW_DEGREES_KEY) === '1';
+
+// Подпись ступени по интервалу (в полутонах от тоники) — используется для
+// ЛЮБОГО выбранного типа аккорда (трезвучие/sus/септаккорды/расширенные).
+const TRAIN_INTERVAL_DEGREE_LABEL = {
+  0:'1', 2:'2', 3:'b3', 4:'3', 5:'4', 7:'5', 8:'b6', 9:'6',
+  10:'b7', 11:'7', 14:'9', 17:'11', 21:'13'
+};
+
+const trainDegreePanel = document.getElementById('trainDegreePanel');
+
+function updateTrainDegreePanel(ring, tonicIndex){
+  if(!trainShowDegrees || ring === null || tonicIndex === null){
+    trainDegreePanel.style.display = 'none';
+    trainDegreePanel.innerHTML = '';
+    return;
+  }
+  const item = trainWedgeMap[ring+'-'+tonicIndex];
+  if(!item){ trainDegreePanel.style.display = 'none'; return; }
+  // Ступени только выбранного аккорда (trainChordType), а не всей гаммы.
+  const formula = trainChordFormula(trainChordType, ring);
+  trainDegreePanel.innerHTML = formula.map(iv=>{
+    const deg = TRAIN_INTERVAL_DEGREE_LABEL[iv] || String(iv);
+    const noteName = spellTrainInterval(item.name, iv % 12);
+    return '<div class="trainDegreeRow">' + noteName + ' — ' + deg + '</div>';
+  }).join('');
+  trainDegreePanel.style.display = 'block';
+}
+
+const trainShowDegreesCheckbox = document.getElementById('trainShowDegreesCheckbox');
+trainShowDegreesCheckbox.checked = trainShowDegrees;
+trainShowDegreesCheckbox.addEventListener('change', ()=>{
+  trainShowDegrees = trainShowDegreesCheckbox.checked;
+  localStorage.setItem(TRAIN_SHOW_DEGREES_KEY, trainShowDegrees ? '1' : '0');
+  if(trainShowDegrees && pressedTrainTonicRing !== null){
+    updateTrainDegreePanel(pressedTrainTonicRing, pressedTrainTonicIndex);
+  } else {
+    updateTrainDegreePanel(null, null);
+  }
+});
 
 trainSvg.appendChild(el('circle', {cx:CX, cy:CY, r:R0-2, id:'trainCenterCircle'}));
 const trainCenterText = el('text', {
@@ -1491,12 +1720,12 @@ Object.keys(EXT_CHORD_DEGREES).forEach(chordKey=>{
 // выборе такого аккорда интерфейс принудительно переключается на
 // Вариант 1 и блокирует кнопку "Вариант 2"
 const CHORD_TYPES_WITHOUT_VARIANT2 = new Set([
-  'sus2', 'sus4', 'madd9'
+  'sus2', 'sus4'
 ]);
 // эти аккорды имеют буквенную схему (Вариант 2) только когда тоника
 // выбрана на МАЖОРНОМ кольце — на минорном кольце буквенная схема
 // совпадает с числовой (Вариант 1), поэтому там Вариант 2 блокируется
-const CHORD_TYPES_VARIANT2_MAJOR_ONLY = new Set(['maj7', 'add9']);
+const CHORD_TYPES_VARIANT2_MAJOR_ONLY = new Set(['maj7', 'add9', 'madd9']);
 // min7 — наоборот: буквенная схема (напр. Am -> C, Am -> G) осмысленна
 // только когда тоника выбрана на МИНОРНОМ кольце; на мажорном кольце для
 // min7 буквенной схемы нет, поэтому там Вариант 2 блокируется
@@ -2093,6 +2322,40 @@ function buildAdd9LetterArrows(ring, tonicIndex){
   );
 }
 
+// ===== Вариант 2 (буквенный) для m(add9) на МАЖОРНОМ кольце =====
+// По просьбе пользователя: квинта и нона строятся буквенной цепочкой
+// по своему же (мажорному) кольцу — C -> G -> D (та же логика, что и у
+// квинты/ноны в buildAdd9LetterArrows, но БЕЗ перехода на другое кольцо
+// для терции). Терция (Eb) остаётся такой же, как в Варианте 1 —
+// стрелка-стойка от тоники (числовая схема), без изменений.
+function buildMAdd9LetterArrows(ring, tonicIndex){
+  const arrowsCfg = SUS_CONFIGS.madd9.arrows;
+
+  const fifthIndex = (tonicIndex + 1) % 12;
+  drawTrainDirectLabelArrow(
+    trainLabelAt(ring, tonicIndex), trainLabelAt(ring, fifthIndex),
+    arrowsCfg.fifth.color, 'trainArrowHead_fifth'
+  );
+  const ninthIndex = (fifthIndex + 1) % 12;
+  drawTrainDirectLabelArrow(
+    trainLabelAt(ring, fifthIndex), trainLabelAt(ring, ninthIndex),
+    arrowsCfg.ninth.color, 'trainArrowHead_ninth'
+  );
+
+  // терция (Eb) — как в Варианте 1: стрелка-стойка от тоники, без буквенной цепочки
+  const fifthsIndex = tonicFifthsIndex(ring, tonicIndex);
+  const tonicNoteName = majors[fifthsIndex];
+  const angleIndex = majors.indexOf(tonicNoteName);
+  if(angleIndex === -1) return;
+  const startA = angleIndex*30 - 15 + WEDGE_GAP_ANGLE;
+  const endA = angleIndex*30 + 15 - WEDGE_GAP_ANGLE;
+  const thirdCfg = arrowsCfg.third;
+  const fromAngle = startA + (endA - startA) * TRIAD_START_POINTS[thirdCfg.startPoint];
+  const targetIndex = ((angleIndex + thirdCfg.degreeSteps) % 12 + 12) % 12;
+  const targetAngle = targetIndex * 30;
+  drawTrainArrow(fromAngle, targetAngle, thirdCfg.stubLength, thirdCfg.color, 'trainArrowHead_third');
+}
+
 // ===== Вариант 2 (буквенный) для расширенных аккордов (9/11/13 и их
 // разновидности) =====
 // Базовая часть (квинта/терция/[септима]) для каждого "качества" аккорда
@@ -2299,6 +2562,17 @@ function buildTriadArrowsForTonic(ring, tonicIndex){
       buildAdd9LetterArrows(ring, tonicIndex);
       return;
     }
+    // m(add9) на мажорном кольце: добавлена буквенная схема
+    // (C -> G -> D, терция/Eb как раньше) — по просьбе пользователя она
+    // поставлена Вариантом 1, а прежняя числовая схема стала Вариантом 2.
+    if(trainChordType === 'madd9' && ring !== 'minor'){
+      if(trainVariant === '1'){
+        buildMAdd9LetterArrows(ring, tonicIndex);
+      } else {
+        buildSusArrowsForTonic(trainChordType, ring, tonicIndex);
+      }
+      return;
+    }
     if(trainVariant === '2' && EXT_CHORD_DEGREES[trainChordType]){
       buildExtendedLetterArrows(trainChordType, ring, tonicIndex);
       return;
@@ -2417,6 +2691,58 @@ function getTriadNoteLetters(ring, tonicIndex){
 
 let currentL3 = null;
 
+/* ===== Практика 3: тип аккорда (Мажор/Минор трезвучие, 7, maj7, m7, mMaj7) =====
+   По умолчанию — обычные трезвучия ('triad'). Остальные типы используют
+   те же числовые смещения (Вариант 1), что и в режиме "Обучение"
+   (см. SUS_CONFIGS выше), просто применённые к практике поиска нот. */
+let level3ChordType = 'triad';
+
+function getStepsForChordTypeL3(type, ring){
+  if(type === 'triad'){
+    const cfg = TRIAD_V1[ring];
+    return [0, cfg.fifth.degreeSteps, cfg.third.degreeSteps];
+  }
+  const susCfg = SUS_CONFIGS[type];
+  if(susCfg && susCfg.arrows){
+    const steps = [0];
+    Object.values(susCfg.arrows).forEach(d=>steps.push(d.degreeSteps));
+    return steps;
+  }
+  const extCfg = EXT_CHORD_DEGREES[type];
+  if(extCfg){
+    const steps = [0];
+    Object.values(extCfg).forEach(v=>steps.push(v));
+    return steps;
+  }
+  return [0];
+}
+
+function getChordNoteLettersL3(ring, tonicIndex, type){
+  const names = ring === 'minor' ? minors : majors;
+  const steps = getStepsForChordTypeL3(type, ring);
+  const letters = new Set();
+  steps.forEach(s=>{
+    const idx = ((tonicIndex + s) % 12 + 12) % 12;
+    letters.add(rootOf(names[idx]));
+  });
+  return letters;
+}
+
+function chordTypeSuffixL3(type, ring){
+  switch(type){
+    case 'dom7': return '7';
+    case 'maj7': return 'maj7';
+    case 'min7': return ring === 'minor' ? '7' : 'm7';
+    case 'mmaj7': return ring === 'minor' ? 'Maj7' : 'mMaj7';
+    case 'add9': return 'add9';
+    case 'madd9': return ring === 'minor' ? 'add9' : 'm(add9)';
+    case 'dom9': return '9';
+    case 'maj9': return 'maj9';
+    case 'mmaj9': return ring === 'minor' ? 'Maj9' : 'mMaj9';
+    default: return '';
+  }
+}
+
 function pickNewChordL3(){
   let pool = activeChordsL3();
   if(pool.length === 0) return;
@@ -2431,12 +2757,26 @@ function pickNewChordL3(){
   currentL3 = {
     ring: chosen.ring,
     index: chosen.index,
-    name: chosen.name,
-    letters: getTriadNoteLetters(chosen.ring, chosen.index),
+    name: chosen.name + chordTypeSuffixL3(level3ChordType, chosen.ring),
+    letters: getChordNoteLettersL3(chosen.ring, chosen.index, level3ChordType),
     found: new Set()
   };
   if(practiceLevel === 3) centerText.textContent = currentL3.name;
 }
+
+/* Кнопки выбора типа аккорда для Практики 3 (Мажор/Минор, 7, maj7, m7, mMaj7) */
+document.querySelectorAll('#level2TypeButtons .ringBtn[data-chordtype]').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    const type = btn.getAttribute('data-chordtype');
+    if(type === level3ChordType) return;
+    level3ChordType = type;
+    document.querySelectorAll('#level2TypeButtons .ringBtn[data-chordtype]').forEach(b=>{
+      b.classList.toggle('active', b.getAttribute('data-chordtype') === level3ChordType);
+    });
+    currentL3 = null;
+    if(practiceLevel === 3) pickNewChordL3();
+  });
+});
 
 function onWedgeClickLevel3(e){
   if(!currentL3) return;
@@ -2628,6 +2968,15 @@ SUS_CONFIGS.madd9.highlights = {
   fifth: { degreeSteps: 1,  color: resolveColor(4) /* blue */ },
   third: { degreeSteps: -3, color: resolveColor(3) /* yellow */ },
   ninth: { degreeSteps: 2,  color: resolveColor(5) /* cyan */ }
+};
+// Вариант 2 (буквенный, только для тоники на мажорном кольце) — квинта
+// и нона остаются на мажорном кольце (C -> G -> D), терция (Eb) не
+// меняется — та же ячейка и цвет, что и в Варианте 1, см.
+// buildMAdd9LetterArrows
+SUS_CONFIGS.madd9.highlights2 = {
+  fifth: { degreeSteps: 1,  ring:'major', color: resolveColor(4) /* blue */ },
+  third: { degreeSteps: -3, ring:'major', color: resolveColor(3) /* yellow */ },
+  ninth: { degreeSteps: 2,  ring:'major', color: resolveColor(5) /* cyan */ }
 };
 
 // highlights для расширенных аккордов (9/11/13 и разновидности) — те же
@@ -2829,7 +3178,7 @@ function highlightSusForTonic(chordType, ring, tonicIndex){
   // со стрелками (см. buildTriadArrowsForTonic) — буквенная в Варианте 1,
   // числовая в Варианте 2.
   let highlightsCfg;
-  if((chordType === 'dom7' || chordType === 'maj7' || chordType === 'add9') && ring !== 'minor'){
+  if((chordType === 'dom7' || chordType === 'maj7' || chordType === 'add9' || chordType === 'madd9') && ring !== 'minor'){
     highlightsCfg = trainVariant === '1' ? highlights2Cfg : susCfg.highlights;
   } else if(chordType === 'mmaj7'){
     // mMaj7: буквенная и числовая раскладки ячеек поменяны местами вместе
@@ -3006,6 +3355,7 @@ function clearTrainTonicPress(){
   pressedTrainTonicIndex = null;
   clearTriadHighlights();
   clearTrainArrows();
+  updateTrainDegreePanel(null, null);
 }
 
 // ring: 'major' | 'minor', tonicIndex: 0..11
@@ -3025,6 +3375,7 @@ function selectTrainTonic(ring, tonicIndex){
   pressedTrainTonicName = item.name;
   pressedTrainTonicRing = ring;
   pressedTrainTonicIndex = tonicIndex;
+  updateTrainDegreePanel(ring, tonicIndex);
   // Вариант 2 доступен не для всех аккордов на минорном кольце — при
   // смене тоники (и, возможно, кольца) нужно обновить блокировку кнопок
   // "Вариант 2" и при необходимости принудительно переключиться на Вариант 1
@@ -3211,6 +3562,7 @@ function applyTrainChordType(){
   }
   applyTrainDisplayMode();
   renderTrainLegend();
+  refreshTrainChordLetters();
 }
 applyTrainChordType();
 
@@ -3228,6 +3580,7 @@ function applyTrainChordTypeChange(){
     } else {
       highlightTriadForTonic(pressedTrainTonicRing, pressedTrainTonicIndex);
     }
+    updateTrainDegreePanel(pressedTrainTonicRing, pressedTrainTonicIndex);
   }
 }
 
@@ -3478,6 +3831,21 @@ const HOTKEY_LETTER = {
   KeyA:'A', KeyB:'B', KeyC:'C', KeyD:'D', KeyE:'E', KeyF:'F', KeyG:'G'
 };
 
+/* Shift+буква -> диез (A#, C#, D#, F#, G#), задаются pitch class'ом (0..11,
+   индекс в noteNames), т.к. буквенного названия недостаточно.
+   E# и B# энгармонически равны F и C (pitch class 5 и 0) — на круге
+   отдельных ячеек для них нет, поэтому Shift+E/Shift+B выбирают
+   соответствующую ячейку F/C. */
+const HOTKEY_SHARP_PC = {
+  KeyA: 10, // A#
+  KeyC: 1,  // C#
+  KeyD: 3,  // D#
+  KeyF: 6,  // F#
+  KeyG: 8,  // G#
+  KeyE: 5,  // E# (= F)
+  KeyB: 0   // B# (= C)
+};
+
 function clickWedgeByRing(ring, index){
   if(appMode === 'training'){
     const item = trainWedgeMap[ring+'-'+index];
@@ -3492,10 +3860,80 @@ function clickWedgeByRing(ring, index){
 let hotkeyCycleLetter = null;
 let hotkeyCycleStage = 0; // 0 = ничего/только что снято, 1 = мажор, 2 = минор
 
+/* Практика 2: подсказка (загаданная ячейка) уже стоит на строго
+   определённом кольце (мажор или минор) — поэтому обычный 3-этапный
+   цикл (мажор -> минор -> снятие) здесь не нужен и даже вреден: он
+   может "перепрыгнуть" на другое кольцо, хотя правильный ответ может
+   быть только на том кольце, где стоит загаданная ячейка. Вместо
+   цикла клавиша сразу проверяется на кольце currentL2.ring: если буква/
+   диез совпадают — засчитывается попытка именно там (клик по ведж-
+   элементу currentL2.ring, дальше всё как обычно решает
+   onWedgeClickLevel2New — зелёная/красная вспышка). */
+function handleNoteHotkeyLevel2(e){
+  if(!currentL2) return false;
+  const ring = currentL2.ring;
+
+  if(e.shiftKey){
+    const pc = HOTKEY_SHARP_PC[e.code];
+    if(pc === undefined) return false;
+    const idx = (ring === 'major' ? majorsSemitone : minorsSemitone).indexOf(pc);
+    if(idx === -1) return false;
+    clickWedgeByRing(ring, idx);
+    return true;
+  }
+
+  const letter = HOTKEY_LETTER[e.code];
+  if(!letter) return false;
+  const idx = ring === 'major'
+    ? majors.indexOf(letter)
+    : minors.findIndex(n => rootOf(n) === letter);
+  if(idx === -1) return false;
+  clickWedgeByRing(ring, idx);
+  return true;
+}
+
 function handleNoteHotkey(e){
   // не мешаем сочетаниям типа Ctrl+C / Cmd+C / Alt+... — обрабатываем
-  // только "чистую" букву (Shift больше не используется для этого)
+  // только "чистую" букву или Shift+букву (для диезов)
   if(e.ctrlKey || e.metaKey || e.altKey) return false;
+
+  // Практика 1 — горячие клавиши нот полностью отключены
+  if(appMode === 'practice' && practiceLevel === 1) return false;
+
+  // Практика 2 — свой, не циклический, обработчик (см. выше)
+  if(appMode === 'practice' && practiceLevel === 2){
+    return handleNoteHotkeyLevel2(e);
+  }
+
+  if(e.shiftKey){
+    const pc = HOTKEY_SHARP_PC[e.code];
+    if(pc === undefined) return false;
+
+    const cycleKey = 'sharp:' + pc;
+    if(hotkeyCycleLetter !== cycleKey){
+      hotkeyCycleStage = 0;
+      hotkeyCycleLetter = cycleKey;
+    }
+    hotkeyCycleStage = (hotkeyCycleStage + 1) % 3;
+
+    if(hotkeyCycleStage === 1){
+      const idx = majorsSemitone.indexOf(pc);
+      if(idx === -1) return false;
+      clickWedgeByRing('major', idx);
+      return true;
+    }
+    if(hotkeyCycleStage === 2){
+      const idx = minorsSemitone.indexOf(pc);
+      if(idx === -1) return false;
+      clickWedgeByRing('minor', idx);
+      return true;
+    }
+    // stage 0 — снять выбор
+    const idx = minorsSemitone.indexOf(pc);
+    if(idx === -1) return false;
+    clickWedgeByRing('minor', idx);
+    return true;
+  }
 
   const letter = HOTKEY_LETTER[e.code];
   if(!letter) return false;
@@ -3666,6 +4104,71 @@ document.addEventListener('keydown', (e)=>{
 });
 
 applyZoom();
+</script>
+<script>
+(function(){
+  // Общая подсказка для всех .infoIcon: показывается через position:fixed
+  // и лежит прямо в <body>, поэтому не обрезается прокручиваемой панелью
+  // настроек (#sidePanel: overflow:auto) и всегда оказывается поверх
+  // соседних подписей (тоника, терция и т.д.) — перекрывать другие
+  // элементы окна ей можно, это ожидаемо.
+  var tip = document.getElementById('globalInfoTooltip');
+  if(!tip) return;
+
+  function showTip(icon){
+    var text = icon.getAttribute('data-tip');
+    if(!text) return;
+    tip.textContent = text;
+    tip.style.display = 'block';
+    positionTip(icon);
+  }
+
+  function hideTip(){
+    tip.style.display = 'none';
+  }
+
+  function positionTip(icon){
+    var r = icon.getBoundingClientRect();
+    var margin = 8;
+    // Сначала пробуем разместить над иконкой, по центру.
+    tip.style.left = '0px';
+    tip.style.top = '0px';
+    var tw = tip.offsetWidth;
+    var th = tip.offsetHeight;
+
+    var left = r.left + r.width / 2 - tw / 2;
+    var top = r.top - th - margin;
+
+    // Если подсказка не помещается сверху — рисуем её под иконкой.
+    if(top < margin){
+      top = r.bottom + margin;
+    }
+    // Не даём вылезти за левый/правый край окна.
+    var maxLeft = window.innerWidth - tw - margin;
+    if(left > maxLeft) left = maxLeft;
+    if(left < margin) left = margin;
+    // Не даём вылезти за нижний край окна.
+    var maxTop = window.innerHeight - th - margin;
+    if(top > maxTop) top = maxTop;
+    if(top < margin) top = margin;
+
+    tip.style.left = left + 'px';
+    tip.style.top = top + 'px';
+  }
+
+  document.addEventListener('mouseover', function(e){
+    var icon = e.target.closest ? e.target.closest('.infoIcon') : null;
+    if(icon) showTip(icon);
+  });
+  document.addEventListener('mouseout', function(e){
+    var icon = e.target.closest ? e.target.closest('.infoIcon') : null;
+    if(icon) hideTip();
+  });
+  // На случай прокрутки/ресайза, пока подсказка открыта — просто скрываем,
+  // чтобы не зависала в неверном месте.
+  window.addEventListener('scroll', hideTip, true);
+  window.addEventListener('resize', hideTip);
+})();
 </script>
 </body>
 </html>

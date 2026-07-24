@@ -287,22 +287,16 @@
     width:480px;
     height:480px;
   }
-  #trainDegreePanel{
-    position:absolute;
-    top:6px;
-    right:6px;
-    text-align:right;
-    font-family:var(--font);
-    font-size:13px;
-    line-height:1.5;
-    color:var(--app-text-color);
+  .trainRomanLabel{
     pointer-events:none;
     user-select:none;
+    text-anchor:end;
+    dominant-baseline:hanging;
+    font-size:11px;
+    font-weight:bold;
+    font-family:var(--font);
+    fill:var(--red);
     display:none;
-    z-index:4;
-  }
-  #trainDegreePanel .trainDegreeRow{
-    white-space:nowrap;
   }
   #trainExtraSettings{
     margin:10px 0 4px;
@@ -547,7 +541,6 @@
   <div id="trainCircleWrap" style="display:none">
     <div id="trainCircleInner">
       <svg id="trainCircle" width="480" height="480" viewBox="0 0 480 480"></svg>
-      <div id="trainDegreePanel"></div>
     </div>
   </div>
 </div>
@@ -644,20 +637,20 @@
         <div class="variantCardsRow">
           <div class="variantGroup">
             <div class="variantGroupLabel">Вариант 1
-              <span class="infoIcon" data-tip="Числовой способ: нота ищется прямым смещением от тоники по кругу квинт, на том же кольце.">i</span>
+              <span class="infoIcon" data-tip="Буквенный способ: нота ищется через соседей по кругу и переход на родственный мажор/минор. Доступен не для всех аккордов.">i</span>
             </div>
             <div class="variantGroupRow">
-              <button class="ringBtn active" id="trainV1ArrowsBtn" data-variant="1" data-style="arrows">Стрелками</button>
-              <button class="ringBtn" id="trainV1ColorBtn" data-variant="1" data-style="cells">Цветом</button>
+              <button class="ringBtn" id="trainV1ArrowsBtn" data-variant="2" data-style="arrows">Стрелками</button>
+              <button class="ringBtn" id="trainV1ColorBtn" data-variant="2" data-style="cells">Цветом</button>
             </div>
           </div>
           <div class="variantGroup">
             <div class="variantGroupLabel">Вариант 2
-              <span class="infoIcon" data-tip="Буквенный способ: нота ищется через соседей по кругу и переход на родственный мажор/минор. Доступен не для всех аккордов.">i</span>
+              <span class="infoIcon" data-tip="Числовой способ: нота ищется прямым смещением от тоники по кругу квинт, на том же кольце.">i</span>
             </div>
             <div class="variantGroupRow">
-              <button class="ringBtn" id="trainV2ArrowsBtn" data-variant="2" data-style="arrows">Стрелками</button>
-              <button class="ringBtn" id="trainV2ColorBtn" data-variant="2" data-style="cells">Цветом</button>
+              <button class="ringBtn active" id="trainV2ArrowsBtn" data-variant="1" data-style="arrows">Стрелками</button>
+              <button class="ringBtn" id="trainV2ColorBtn" data-variant="1" data-style="cells">Цветом</button>
             </div>
           </div>
         </div>
@@ -781,7 +774,7 @@ const WEDGE_GAP_RADIAL = 1;
 // строка "буквы аккорда" (напр. "C E G") смещается от названия ноты К ЦЕНТРУ
 // круга (к внутреннему краю своей ячейки/кольца, т.е. "ниже", как на образце).
 // Увеличивайте, чтобы строка была ближе к внутренней границе ячейки.
-const CHORD_LETTERS_RADIUS_OFFSET_RATIO = 0.96;
+const CHORD_LETTERS_RADIUS_OFFSET_RATIO = 0.72;
 const WEDGE_GAP_ANGLE  = 0.5;
 
 const majors = ['C','G','D','A','E','B','F#','Db','Ab','Eb','Bb','F'];
@@ -802,6 +795,28 @@ minors.forEach((n,i)=>allChords.push({name:n, ring:'minor', index:i}));
 function polar(cx, cy, r, angleDeg){
   const a = (angleDeg - 90) * Math.PI / 180;
   return { x: cx + r * Math.cos(a), y: cy + r * Math.sin(a) };
+}
+
+// Угловая полуширина дуги для буквенной подписи аккорда (в градусах от
+// центра ячейки в обе стороны). Меньше половины ширины ячейки (15°),
+// чтобы буквы не пересекали её боковые границы.
+const CHORD_LETTERS_ARC_HALF_ANGLE = 13;
+
+// Строит "d" для невидимой дуги, вдоль которой рисуются буквы аккорда
+// (через <textPath>). На нижней половине круга (90°..270°) дуга рисуется
+// в обратном направлении — иначе текст оказался бы перевёрнутым вверх
+// ногами (стандартная особенность текста на SVG-путях).
+function chordLettersArcD(radius, centerAngle){
+  const a1 = centerAngle - CHORD_LETTERS_ARC_HALF_ANGLE;
+  const a2 = centerAngle + CHORD_LETTERS_ARC_HALF_ANGLE;
+  const norm = ((centerAngle % 360) + 360) % 360;
+  const flip = norm > 90 && norm < 270;
+  const startAngle = flip ? a2 : a1;
+  const endAngle = flip ? a1 : a2;
+  const p1 = polar(CX, CY, radius, startAngle);
+  const p2 = polar(CX, CY, radius, endAngle);
+  const sweep = endAngle > startAngle ? 1 : 0;
+  return `M ${p1.x} ${p1.y} A ${radius} ${radius} 0 0 ${sweep} ${p2.x} ${p2.y}`;
 }
 
 function segmentPath(rInner, rOuter, startAngle, endAngle){
@@ -986,12 +1001,10 @@ function onWedgeClick(e){
 
   if(ring === current.ring && index === current.index){
     flashWedge(ring, index, FLASH_GREEN, 300);
+    setTimeout(pickNewChord, 320);
   } else {
     flashWedge(ring, index, FLASH_RED, 300);
-    flashWedge(current.ring, current.index, FLASH_GREEN, 300);
   }
-
-  setTimeout(pickNewChord, 320);
 }
 
 pickNewChord();
@@ -1312,6 +1325,9 @@ function saveTrainSelectedNotes(){
 }
 
 
+const ROMAN_LABEL_RADIAL_INSET = 10;
+const ROMAN_LABEL_ANGLE_INSET = 10;
+
 function buildTrainRing(ringName, names, rInner, rOuter, baseColor){
   for(let i=0;i<12;i++){
     const startA = i*30 - 15 + WEDGE_GAP_ANGLE;
@@ -1339,18 +1355,43 @@ function buildTrainRing(ringName, names, rInner, rOuter, baseColor){
 
     // Буквы аккорда (напр. "C E G") — показываются чуть ниже названия
     // ноты, ближе к внешнему краю ячейки; включаются/выключаются чекбоксом
-    // "Показывать буквы аккорда под нотами".
+    // "Показывать буквы аккорда под нотами". Текст рисуется вдоль
+    // невидимой дуги (textPath), повторяющей кривизну нижней части
+    // ячейки, и не пересекает её боковые границы (см. CHORD_LETTERS_ARC_*).
     const chordLettersOffset = (rOuter - rInner) / 2 * CHORD_LETTERS_RADIUS_OFFSET_RATIO;
-    const chordLettersPos = polar(CX, CY, (rInner+rOuter)/2 - chordLettersOffset, i*30);
+    const chordLettersRadius = (rInner+rOuter)/2 - chordLettersOffset;
+    const chordArcId = 'chordArc-' + ringName + '-' + i;
+    const chordArcPath = el('path', {
+      id: chordArcId,
+      d: chordLettersArcD(chordLettersRadius, i*30),
+      fill: 'none',
+      stroke: 'none'
+    });
+    trainSvg.appendChild(chordArcPath);
     const chordLettersEl = el('text', {
-      x: chordLettersPos.x, y: chordLettersPos.y,
       class: 'trainChordLetters'
     });
+    const chordLettersTextPath = el('textPath', {
+      'href': '#' + chordArcId,
+      startOffset: '50%'
+    });
+    chordLettersEl.appendChild(chordLettersTextPath);
     chordLettersEl.style.pointerEvents = 'none';
     chordLettersEl.style.display = 'none';
     trainSvg.appendChild(chordLettersEl);
+    const chordArcLength = chordArcPath.getTotalLength();
 
-    trainWedgeMap[ringName+'-'+i] = { el: path, baseColor, name: names[i], label, chordLettersEl };
+    // Ступень аккорда в тональности (римская цифра, напр. "IV") — показывается
+    // в правом верхнем углу ячейки, только для диатонических аккордов
+    // нажатой тоники; включается/выключается тем же чекбоксом.
+    const romanPos = polar(CX, CY, rOuter - ROMAN_LABEL_RADIAL_INSET, i*30 + ROMAN_LABEL_ANGLE_INSET);
+    const romanEl = el('text', {
+      x: romanPos.x, y: romanPos.y,
+      class: 'trainRomanLabel'
+    });
+    trainSvg.appendChild(romanEl);
+
+    trainWedgeMap[ringName+'-'+i] = { el: path, baseColor, name: names[i], label, chordLettersEl, chordLettersTextPath, chordArcLength, romanEl };
   }
 }
 
@@ -1417,6 +1458,13 @@ function trainChordLettersFor(noteRaw, ring, chordType){
   return trainChordFormula(chordType, ring).map(iv => spellTrainInterval(noteRaw, iv));
 }
 
+// Размер шрифта букв аккорда в зависимости от количества нот в нём —
+// чем длиннее аккорд (9/11/13-е), тем мельче буквы, чтобы больше
+// поместилось на дуге ячейки, не вылезая за её пределы.
+const CHORD_LETTERS_FONT_SIZE_BY_COUNT = {
+  3: 9, 4: 8.5, 5: 7.5, 6: 6.8, 7: 6.2, default: 9
+};
+
 // --- Настройка "Показывать буквы аккорда под нотами" ---
 const TRAIN_SHOW_CHORD_LETTERS_KEY = 'circleTrainShowChordLetters';
 let trainShowChordLetters = localStorage.getItem(TRAIN_SHOW_CHORD_LETTERS_KEY) === '1';
@@ -1425,10 +1473,24 @@ function refreshTrainChordLetters(){
   Object.keys(trainWedgeMap).forEach(key=>{
     const item = trainWedgeMap[key];
     const ring = key.split('-')[0];
-    if(!item.chordLettersEl) return;
+    if(!item.chordLettersEl || !item.chordLettersTextPath) return;
     if(trainShowChordLetters){
-      item.chordLettersEl.textContent = trainChordLettersFor(item.name, ring, trainChordType).join(' ');
+      const letters = trainChordLettersFor(item.name, ring, trainChordType);
+      item.chordLettersTextPath.textContent = letters.join(' ');
+      item.chordLettersEl.style.fontSize = (CHORD_LETTERS_FONT_SIZE_BY_COUNT[letters.length] || CHORD_LETTERS_FONT_SIZE_BY_COUNT.default) + 'px';
       item.chordLettersEl.style.display = '';
+      // Если естественная длина текста больше доступной дуги (напр. для
+      // 9/11/13-аккордов с двойными диезами/бемолями) — сжимаем текст по
+      // ширине дуги, чтобы буквы не заезжали в соседнюю ячейку.
+      const naturalLength = item.chordLettersEl.getComputedTextLength();
+      const maxLength = item.chordArcLength * 0.96;
+      if(naturalLength > maxLength){
+        item.chordLettersTextPath.setAttribute('textLength', maxLength);
+        item.chordLettersTextPath.setAttribute('lengthAdjust', 'spacingAndGlyphs');
+      } else {
+        item.chordLettersTextPath.removeAttribute('textLength');
+        item.chordLettersTextPath.removeAttribute('lengthAdjust');
+      }
     } else {
       item.chordLettersEl.style.display = 'none';
     }
@@ -1443,35 +1505,62 @@ trainShowChordLettersCheckbox.addEventListener('change', ()=>{
   refreshTrainChordLetters();
 });
 
-/* --- Ступени аккорда (для выбранной тоники) в правом верхнем углу --- */
+/* --- Ступени диатонических аккордов тональности (римские цифры) в правом
+   верхнем углу каждой ячейки --- */
 const TRAIN_SHOW_DEGREES_KEY = 'circleTrainShowDegrees';
 let trainShowDegrees = localStorage.getItem(TRAIN_SHOW_DEGREES_KEY) === '1';
 
-// Подпись ступени по интервалу (в полутонах от тоники) — используется для
-// ЛЮБОГО выбранного типа аккорда (трезвучие/sus/септаккорды/расширенные).
-const TRAIN_INTERVAL_DEGREE_LABEL = {
-  0:'1', 2:'2', 3:'b3', 4:'3', 5:'4', 7:'5', 8:'b6', 9:'6',
-  10:'b7', 11:'7', 14:'9', 17:'11', 21:'13'
-};
+// Соответствие "полутоновый класс высоты" -> индекс ячейки в кольце.
+const semitoneToTrainRingIndex = { major: {}, minor: {} };
+majors.forEach((n,i)=>{ semitoneToTrainRingIndex.major[parseTrainNoteName(n).pc] = i; });
+minors.forEach((n,i)=>{ semitoneToTrainRingIndex.minor[parseTrainNoteName(n).pc] = i; });
 
-const trainDegreePanel = document.getElementById('trainDegreePanel');
+// Диатонические ступени мажорной тональности: смещение в полутонах от
+// тоники, римская цифра, качество аккорда (кольцо-мишень). vii° (дим.)
+// намеренно не учитывается.
+const MAJOR_KEY_ROMAN_DEGREES = [
+  { semitone:0,  roman:'I',   quality:'major' },
+  { semitone:2,  roman:'ii',  quality:'minor' },
+  { semitone:4,  roman:'iii', quality:'minor' },
+  { semitone:5,  roman:'IV',  quality:'major' },
+  { semitone:7,  roman:'V',   quality:'major' },
+  { semitone:9,  roman:'vi',  quality:'minor' }
+];
 
-function updateTrainDegreePanel(ring, tonicIndex){
-  if(!trainShowDegrees || ring === null || tonicIndex === null){
-    trainDegreePanel.style.display = 'none';
-    trainDegreePanel.innerHTML = '';
-    return;
-  }
+// Диатонические ступени натуральной минорной тональности. ii° (дим.)
+// намеренно не учитывается.
+const MINOR_KEY_ROMAN_DEGREES = [
+  { semitone:0,  roman:'i',   quality:'minor' },
+  { semitone:3,  roman:'III', quality:'major' },
+  { semitone:5,  roman:'iv',  quality:'minor' },
+  { semitone:7,  roman:'v',   quality:'minor' },
+  { semitone:8,  roman:'VI',  quality:'major' },
+  { semitone:10, roman:'VII', quality:'major' }
+];
+
+function clearTrainRomanLabels(){
+  Object.values(trainWedgeMap).forEach(item=>{
+    item.romanEl.textContent = '';
+    item.romanEl.style.display = 'none';
+  });
+}
+
+function updateTrainDegreeLabels(ring, tonicIndex){
+  clearTrainRomanLabels();
+  if(!trainShowDegrees || ring === null || tonicIndex === null) return;
   const item = trainWedgeMap[ring+'-'+tonicIndex];
-  if(!item){ trainDegreePanel.style.display = 'none'; return; }
-  // Ступени только выбранного аккорда (trainChordType), а не всей гаммы.
-  const formula = trainChordFormula(trainChordType, ring);
-  trainDegreePanel.innerHTML = formula.map(iv=>{
-    const deg = TRAIN_INTERVAL_DEGREE_LABEL[iv] || String(iv);
-    const noteName = spellTrainInterval(item.name, iv % 12);
-    return '<div class="trainDegreeRow">' + noteName + ' — ' + deg + '</div>';
-  }).join('');
-  trainDegreePanel.style.display = 'block';
+  if(!item) return;
+  const tonicPc = parseTrainNoteName(item.name).pc;
+  const degrees = ring === 'major' ? MAJOR_KEY_ROMAN_DEGREES : MINOR_KEY_ROMAN_DEGREES;
+  degrees.forEach(deg=>{
+    const targetPc = (tonicPc + deg.semitone) % 12;
+    const targetRing = deg.quality === 'major' ? 'major' : 'minor';
+    const targetIndex = semitoneToTrainRingIndex[targetRing][targetPc];
+    const targetItem = trainWedgeMap[targetRing+'-'+targetIndex];
+    if(!targetItem) return;
+    targetItem.romanEl.textContent = deg.roman;
+    targetItem.romanEl.style.display = 'inline';
+  });
 }
 
 const trainShowDegreesCheckbox = document.getElementById('trainShowDegreesCheckbox');
@@ -1480,9 +1569,9 @@ trainShowDegreesCheckbox.addEventListener('change', ()=>{
   trainShowDegrees = trainShowDegreesCheckbox.checked;
   localStorage.setItem(TRAIN_SHOW_DEGREES_KEY, trainShowDegrees ? '1' : '0');
   if(trainShowDegrees && pressedTrainTonicRing !== null){
-    updateTrainDegreePanel(pressedTrainTonicRing, pressedTrainTonicIndex);
+    updateTrainDegreeLabels(pressedTrainTonicRing, pressedTrainTonicIndex);
   } else {
-    updateTrainDegreePanel(null, null);
+    updateTrainDegreeLabels(null, null);
   }
 });
 
@@ -2430,11 +2519,29 @@ function buildExtendedLetterArrows(chordType, ring, tonicIndex){
   } else if(chordType === 'add11' || chordType === 'dom9' || chordType === 'dom11' || chordType === 'dom13'){
     // третья: переход от квинты на противоположное кольцо (как в dom7)
     drawCrossAt(fifthIndex, 'third');
-    if(degrees.seventh !== undefined){
-      // септима: тоника -> −1 (=ундецима, если есть) -> −2, одной цепочкой
+    if(degrees.seventh !== undefined && degrees.eleventh === undefined){
+      if(ring === 'minor'){
+        // dom9 на минорном кольце (напр. тоника Am для аккорда "A9"):
+        // септима — прямой шаг по своему же кольцу на +4 (Am -> C#m),
+        // как в буквенной схеме для A7 на минорном кольце (см.
+        // buildSeventhLetterArrows), а не цепочка через Dm
+        const targetIndex = ((tonicIndex + 4) % 12 + 12) % 12;
+        drawMinorV1Arrow(tonicIndex, targetIndex, arrowsCfg.seventh.color, 'trainArrowHead_seventh');
+      } else {
+        // dom9 на мажорном кольце (напр. C9): септима — не соседняя нота
+        // с тоникой (C -> Bb), поэтому рисуем одной дугой по внешнему
+        // радиусу напрямую от тоники до септимы, а не цепочкой через F
+        const targetIndex = ((tonicIndex - 2) % 12 + 12) % 12;
+        drawTrainArrow(
+          tonicIndex * 30, targetIndex * 30,
+          arrowsCfg.seventh.stubLength, arrowsCfg.seventh.color, 'trainArrowHead_seventh'
+        );
+      }
+    } else if(degrees.seventh !== undefined){
+      // септима: тоника -> −1 (=ундецима) -> −2, одной цепочкой
       const midIndex = ((tonicIndex - 1) % 12 + 12) % 12;
       const targetIndex = ((tonicIndex - 2) % 12 + 12) % 12;
-      drawSame(tonicIndex, midIndex, degrees.eleventh !== undefined ? 'eleventh' : 'seventh');
+      drawSame(tonicIndex, midIndex, 'eleventh');
       drawTrainDirectLabelArrow(
         trainLabelAt(ring, midIndex), trainLabelAt(ring, targetIndex),
         arrowsCfg.seventh.color, 'trainArrowHead_seventh'
@@ -2449,15 +2556,27 @@ function buildExtendedLetterArrows(chordType, ring, tonicIndex){
       drawCrossAt(tonicIndex, 'thirteenth');
     }
   } else if(chordType === 'maj9' || chordType === 'maj11' || chordType === 'maj13') {
-    // третья: переход от квинты на противоположное кольцо (как в maj7)
-    drawCrossAt(fifthIndex, 'third');
-    if(degrees.seventh !== undefined){
-      // септима: от терции (на противоположном кольце) ещё шаг +1 по нему же
-      const seventhIndex = (fifthIndex + 1) % 12;
-      drawTrainDirectLabelArrow(
-        trainLabelAt(otherRing, fifthIndex), trainLabelAt(otherRing, seventhIndex),
-        arrowsCfg.seventh.color, 'trainArrowHead_seventh'
-      );
+    if(ring === 'minor' && chordType === 'maj9'){
+      // maj9 на минорном кольце (напр. тоника Am для аккорда "A maj9"):
+      // терция и септима — прямые шаги по СВОЕМУ ЖЕ (минорному) кольцу
+      // (Am -> C#m, Am -> G#m), а не переход на мажорное кольцо
+      const thirdIndex = ((tonicIndex + degrees.third) % 12 + 12) % 12;
+      drawMinorV1Arrow(tonicIndex, thirdIndex, arrowsCfg.third.color, 'trainArrowHead_third');
+      if(degrees.seventh !== undefined){
+        const seventhIndex = ((tonicIndex + degrees.seventh) % 12 + 12) % 12;
+        drawMinorV1Arrow(tonicIndex, seventhIndex, arrowsCfg.seventh.color, 'trainArrowHead_seventh');
+      }
+    } else {
+      // третья: переход от квинты на противоположное кольцо (как в maj7)
+      drawCrossAt(fifthIndex, 'third');
+      if(degrees.seventh !== undefined){
+        // септима: от терции (на противоположном кольце) ещё шаг +1 по нему же
+        const seventhIndex = (fifthIndex + 1) % 12;
+        drawTrainDirectLabelArrow(
+          trainLabelAt(otherRing, fifthIndex), trainLabelAt(otherRing, seventhIndex),
+          arrowsCfg.seventh.color, 'trainArrowHead_seventh'
+        );
+      }
     }
     if(degrees.eleventh !== undefined){
       // ундецима: отдельная цепочка тоника -> −1
@@ -2469,15 +2588,29 @@ function buildExtendedLetterArrows(chordType, ring, tonicIndex){
       drawCrossAt(tonicIndex, 'thirteenth');
     }
   } else if(chordType === 'madd11' || chordType === 'm9' || chordType === 'm11' || chordType === 'm13') {
-    // третья: переход от тоники на противоположное кольцо (как в min7)
-    drawCrossAt(tonicIndex, 'third');
-    if(degrees.seventh !== undefined){
-      // септима: от терции (на противоположном кольце) ещё шаг +1 по нему же
-      const seventhIndex = (tonicIndex + 1) % 12;
-      drawTrainDirectLabelArrow(
-        trainLabelAt(otherRing, tonicIndex), trainLabelAt(otherRing, seventhIndex),
-        arrowsCfg.seventh.color, 'trainArrowHead_seventh'
-      );
+    if(chordType === 'm9'){
+      // m9: третья и септима строятся так же, как в maj9 — крест на
+      // позиции квинты (а не тоники), септима цепочкой ещё на шаг дальше
+      // на другом кольце (напр. Cm9: C -> [крест на G] -> Em -> Bm)
+      drawCrossAt(fifthIndex, 'third');
+      if(degrees.seventh !== undefined){
+        const seventhIndex = (fifthIndex + 1) % 12;
+        drawTrainDirectLabelArrow(
+          trainLabelAt(otherRing, fifthIndex), trainLabelAt(otherRing, seventhIndex),
+          arrowsCfg.seventh.color, 'trainArrowHead_seventh'
+        );
+      }
+    } else {
+      // третья: переход от тоники на противоположное кольцо (как в min7)
+      drawCrossAt(tonicIndex, 'third');
+      if(degrees.seventh !== undefined){
+        // септима: от терции (на противоположном кольце) ещё шаг +1 по нему же
+        const seventhIndex = (tonicIndex + 1) % 12;
+        drawTrainDirectLabelArrow(
+          trainLabelAt(otherRing, tonicIndex), trainLabelAt(otherRing, seventhIndex),
+          arrowsCfg.seventh.color, 'trainArrowHead_seventh'
+        );
+      }
     }
     if(degrees.eleventh !== undefined){
       // ундецима: отдельная цепочка тоника -> −1
@@ -3261,10 +3394,19 @@ function highlightExtendedLetterCells(chordType, ring, tonicIndex){
       paint(otherRing, tonicIndex, 'thirteenth');
     }
   } else if(chordType === 'maj9' || chordType === 'maj11' || chordType === 'maj13'){
-    paint(otherRing, fifthIndex, 'third');
-    if(degrees.seventh !== undefined){
-      const seventhIndex = (fifthIndex + 1) % 12;
-      paint(otherRing, seventhIndex, 'seventh');
+    if(ring === 'minor' && chordType === 'maj9'){
+      const thirdIndex = ((tonicIndex + degrees.third) % 12 + 12) % 12;
+      paint(ring, thirdIndex, 'third');
+      if(degrees.seventh !== undefined){
+        const seventhIndex = ((tonicIndex + degrees.seventh) % 12 + 12) % 12;
+        paint(ring, seventhIndex, 'seventh');
+      }
+    } else {
+      paint(otherRing, fifthIndex, 'third');
+      if(degrees.seventh !== undefined){
+        const seventhIndex = (fifthIndex + 1) % 12;
+        paint(otherRing, seventhIndex, 'seventh');
+      }
     }
     if(degrees.eleventh !== undefined){
       const eleventhIndex = ((tonicIndex - 1) % 12 + 12) % 12;
@@ -3274,10 +3416,18 @@ function highlightExtendedLetterCells(chordType, ring, tonicIndex){
       paint(otherRing, tonicIndex, 'thirteenth');
     }
   } else if(chordType === 'madd11' || chordType === 'm9' || chordType === 'm11' || chordType === 'm13'){
-    paint(otherRing, tonicIndex, 'third');
-    if(degrees.seventh !== undefined){
-      const seventhIndex = (tonicIndex + 1) % 12;
-      paint(otherRing, seventhIndex, 'seventh');
+    if(chordType === 'm9'){
+      paint(otherRing, fifthIndex, 'third');
+      if(degrees.seventh !== undefined){
+        const seventhIndex = (fifthIndex + 1) % 12;
+        paint(otherRing, seventhIndex, 'seventh');
+      }
+    } else {
+      paint(otherRing, tonicIndex, 'third');
+      if(degrees.seventh !== undefined){
+        const seventhIndex = (tonicIndex + 1) % 12;
+        paint(otherRing, seventhIndex, 'seventh');
+      }
     }
     if(degrees.eleventh !== undefined){
       const eleventhIndex = ((tonicIndex - 1) % 12 + 12) % 12;
@@ -3355,7 +3505,7 @@ function clearTrainTonicPress(){
   pressedTrainTonicIndex = null;
   clearTriadHighlights();
   clearTrainArrows();
-  updateTrainDegreePanel(null, null);
+  updateTrainDegreeLabels(null, null);
 }
 
 // ring: 'major' | 'minor', tonicIndex: 0..11
@@ -3375,7 +3525,7 @@ function selectTrainTonic(ring, tonicIndex){
   pressedTrainTonicName = item.name;
   pressedTrainTonicRing = ring;
   pressedTrainTonicIndex = tonicIndex;
-  updateTrainDegreePanel(ring, tonicIndex);
+  updateTrainDegreeLabels(ring, tonicIndex);
   // Вариант 2 доступен не для всех аккордов на минорном кольце — при
   // смене тоники (и, возможно, кольца) нужно обновить блокировку кнопок
   // "Вариант 2" и при необходимости принудительно переключиться на Вариант 1
@@ -3468,10 +3618,14 @@ const trainV2ArrowsBtn = document.getElementById('trainV2ArrowsBtn');
 const trainV2ColorBtn  = document.getElementById('trainV2ColorBtn');
 
 function applyTrainDisplayMode(){
-  trainV1ArrowsBtn.classList.toggle('active', trainVariant === '1' && trainDisplayMode === 'arrows');
-  trainV1ColorBtn.classList.toggle('active',  trainVariant === '1' && trainDisplayMode === 'cells');
-  trainV2ArrowsBtn.classList.toggle('active', trainVariant === '2' && trainDisplayMode === 'arrows');
-  trainV2ColorBtn.classList.toggle('active',  trainVariant === '2' && trainDisplayMode === 'cells');
+  // по просьбе пользователя кнопки "Вариант 1" и "Вариант 2" поменяны
+  // местами (вместе со своим содержимым и цветом) — теперь кнопка
+  // "Вариант 1" привязана к внутреннему значению trainVariant === '2',
+  // а "Вариант 2" — к trainVariant === '1'
+  trainV1ArrowsBtn.classList.toggle('active', trainVariant === '2' && trainDisplayMode === 'arrows');
+  trainV1ColorBtn.classList.toggle('active',  trainVariant === '2' && trainDisplayMode === 'cells');
+  trainV2ArrowsBtn.classList.toggle('active', trainVariant === '1' && trainDisplayMode === 'arrows');
+  trainV2ColorBtn.classList.toggle('active',  trainVariant === '1' && trainDisplayMode === 'cells');
 }
 applyTrainDisplayMode();
 
@@ -3495,10 +3649,13 @@ function setTrainVariantStyle(variant, style){
   }
 }
 
-trainV1ArrowsBtn.addEventListener('click', ()=> setTrainVariantStyle('1', 'arrows'));
-trainV1ColorBtn.addEventListener('click',  ()=> setTrainVariantStyle('1', 'cells'));
-trainV2ArrowsBtn.addEventListener('click', ()=> setTrainVariantStyle('2', 'arrows'));
-trainV2ColorBtn.addEventListener('click',  ()=> setTrainVariantStyle('2', 'cells'));
+// по просьбе пользователя кнопки "Вариант 1"/"Вариант 2" поменяны местами:
+// кнопка "Вариант 1" теперь включает то, что раньше было "Вариант 2"
+// (внутреннее значение trainVariant='2'), и наоборот
+trainV1ArrowsBtn.addEventListener('click', ()=> setTrainVariantStyle('2', 'arrows'));
+trainV1ColorBtn.addEventListener('click',  ()=> setTrainVariantStyle('2', 'cells'));
+trainV2ArrowsBtn.addEventListener('click', ()=> setTrainVariantStyle('1', 'arrows'));
+trainV2ColorBtn.addEventListener('click',  ()=> setTrainVariantStyle('1', 'cells'));
 
 
 /* --- переключение типа аккорда: обычные трезвучия / sus2 / sus4 ---
@@ -3551,11 +3708,14 @@ function applyTrainChordType(){
   trainM13Btn.classList.toggle('active', trainChordType === 'm13');
   trainMMaj13Btn.classList.toggle('active', trainChordType === 'mmaj13');
 
-  // Вариант 2 недоступен для некоторых аккордов (напр. mMaj7) — блокируем
-  // обе кнопки "Вариант 2" (Стрелками/Цветом) и принудительно переключаем на Вариант 1
+  // Вариант 2 (внутреннее значение trainVariant='2') недоступен для
+  // некоторых аккордов (напр. mMaj7) — после того как кнопки "Вариант 1"/
+  // "Вариант 2" поменяны местами, это внутреннее значение '2' привязано
+  // к кнопке "Вариант 1" (см. applyTrainDisplayMode/setTrainVariantStyle
+  // выше), поэтому блокируем именно её
   const hasVariant2 = chordTypeHasVariant2(trainChordType, pressedTrainTonicRing || 'major');
-  trainV2ArrowsBtn.classList.toggle('disabled', !hasVariant2);
-  trainV2ColorBtn.classList.toggle('disabled', !hasVariant2);
+  trainV1ArrowsBtn.classList.toggle('disabled', !hasVariant2);
+  trainV1ColorBtn.classList.toggle('disabled', !hasVariant2);
   if(!hasVariant2 && trainVariant === '2'){
     trainVariant = '1';
     saveTrainVariant();
@@ -3580,7 +3740,7 @@ function applyTrainChordTypeChange(){
     } else {
       highlightTriadForTonic(pressedTrainTonicRing, pressedTrainTonicIndex);
     }
-    updateTrainDegreePanel(pressedTrainTonicRing, pressedTrainTonicIndex);
+    updateTrainDegreeLabels(pressedTrainTonicRing, pressedTrainTonicIndex);
   }
 }
 
@@ -3846,6 +4006,33 @@ const HOTKEY_SHARP_PC = {
   KeyB: 0   // B# (= C)
 };
 
+/* "Режим бемоля": нажатие клавиши Space переводит систему в ожидание
+   следующей буквы-ноты; эта следующая нота трактуется как бемольная
+   (задаётся pitch class'ом, как и с диезами через Shift), после чего
+   режим сбрасывается обратно на натуральные ноты. */
+const HOTKEY_FLAT_PC = {
+  KeyA: 8,  // Ab
+  KeyB: 10, // Bb
+  KeyC: 11, // Cb (= B)
+  KeyD: 1,  // Db
+  KeyE: 3,  // Eb
+  KeyF: 4,  // Fb (= E)
+  KeyG: 6   // Gb
+};
+
+let flatModePending = false;
+
+const flatModeBtn2 = document.getElementById('flatModeBtn2');
+function setFlatModePending(v){
+  flatModePending = v;
+  if(flatModeBtn2) flatModeBtn2.classList.toggle('active', v);
+}
+if(flatModeBtn2){
+  flatModeBtn2.addEventListener('click', ()=>{
+    setFlatModePending(true);
+  });
+}
+
 function clickWedgeByRing(ring, index){
   if(appMode === 'training'){
     const item = trainWedgeMap[ring+'-'+index];
@@ -3856,9 +4043,9 @@ function clickWedgeByRing(ring, index){
   }
 }
 
-// состояние цикла мажор -> минор -> снять выбор, отдельно на букву
+// состояние цикла мажор <-> минор (без снятия выбора), отдельно на букву
 let hotkeyCycleLetter = null;
-let hotkeyCycleStage = 0; // 0 = ничего/только что снято, 1 = мажор, 2 = минор
+let hotkeyCycleStage = 0; // 0 = ничего ещё не нажато, 1 = мажор, 2 = минор
 
 /* Практика 2: подсказка (загаданная ячейка) уже стоит на строго
    определённом кольце (мажор или минор) — поэтому обычный 3-этапный
@@ -3872,6 +4059,20 @@ let hotkeyCycleStage = 0; // 0 = ничего/только что снято, 1 
 function handleNoteHotkeyLevel2(e){
   if(!currentL2) return false;
   const ring = currentL2.ring;
+
+  if(flatModePending){
+    const letter = HOTKEY_LETTER[e.code];
+    // Клавиша не является буквой ноты — просто ждём дальше, режим не сбрасываем
+    if(!letter) return false;
+
+    setFlatModePending(false);
+    const pc = HOTKEY_FLAT_PC[e.code];
+    if(pc === undefined) return false;
+    const idx = (ring === 'major' ? majorsSemitone : minorsSemitone).indexOf(pc);
+    if(idx === -1) return false;
+    clickWedgeByRing(ring, idx);
+    return true;
+  }
 
   if(e.shiftKey){
     const pc = HOTKEY_SHARP_PC[e.code];
@@ -3905,6 +4106,34 @@ function handleNoteHotkey(e){
     return handleNoteHotkeyLevel2(e);
   }
 
+  if(flatModePending){
+    const letter = HOTKEY_LETTER[e.code];
+    // Клавиша не является буквой ноты — просто ждём дальше, режим не сбрасываем
+    if(!letter) return false;
+
+    setFlatModePending(false);
+    const pc = HOTKEY_FLAT_PC[e.code];
+    if(pc === undefined) return false;
+
+    const cycleKey = 'flat:' + pc;
+    if(hotkeyCycleLetter !== cycleKey){
+      hotkeyCycleStage = 0;
+      hotkeyCycleLetter = cycleKey;
+    }
+    hotkeyCycleStage = (hotkeyCycleStage === 1) ? 2 : 1;
+
+    if(hotkeyCycleStage === 1){
+      const idx = majorsSemitone.indexOf(pc);
+      if(idx === -1) return false;
+      clickWedgeByRing('major', idx);
+      return true;
+    }
+    const idx = minorsSemitone.indexOf(pc);
+    if(idx === -1) return false;
+    clickWedgeByRing('minor', idx);
+    return true;
+  }
+
   if(e.shiftKey){
     const pc = HOTKEY_SHARP_PC[e.code];
     if(pc === undefined) return false;
@@ -3914,7 +4143,7 @@ function handleNoteHotkey(e){
       hotkeyCycleStage = 0;
       hotkeyCycleLetter = cycleKey;
     }
-    hotkeyCycleStage = (hotkeyCycleStage + 1) % 3;
+    hotkeyCycleStage = (hotkeyCycleStage === 1) ? 2 : 1;
 
     if(hotkeyCycleStage === 1){
       const idx = majorsSemitone.indexOf(pc);
@@ -3922,13 +4151,6 @@ function handleNoteHotkey(e){
       clickWedgeByRing('major', idx);
       return true;
     }
-    if(hotkeyCycleStage === 2){
-      const idx = minorsSemitone.indexOf(pc);
-      if(idx === -1) return false;
-      clickWedgeByRing('minor', idx);
-      return true;
-    }
-    // stage 0 — снять выбор
     const idx = minorsSemitone.indexOf(pc);
     if(idx === -1) return false;
     clickWedgeByRing('minor', idx);
@@ -3942,7 +4164,7 @@ function handleNoteHotkey(e){
     hotkeyCycleStage = 0;
     hotkeyCycleLetter = letter;
   }
-  hotkeyCycleStage = (hotkeyCycleStage + 1) % 3;
+  hotkeyCycleStage = (hotkeyCycleStage === 1) ? 2 : 1;
 
   if(hotkeyCycleStage === 1){
     const idx = majors.indexOf(letter);
@@ -3950,14 +4172,6 @@ function handleNoteHotkey(e){
     clickWedgeByRing('major', idx);
     return true;
   }
-  if(hotkeyCycleStage === 2){
-    const idx = minors.findIndex(n => rootOf(n) === letter);
-    if(idx === -1) return false;
-    clickWedgeByRing('minor', idx);
-    return true;
-  }
-  // stage 0 — снять выбор: повторно кликаем по той же (минорной) ноте,
-  // на которой цикл сейчас стоит, чтобы сработал стандартный toggle-off
   const idx = minors.findIndex(n => rootOf(n) === letter);
   if(idx === -1) return false;
   clickWedgeByRing('minor', idx);
@@ -3966,6 +4180,12 @@ function handleNoteHotkey(e){
 
 document.addEventListener('keydown', (e)=>{
   const key = e.key.toLowerCase();
+  if(e.code === 'Space' && !e.ctrlKey && !e.metaKey && !e.altKey &&
+     !(appMode === 'practice' && practiceLevel === 1)){
+    setFlatModePending(true);
+    e.preventDefault();
+    return;
+  }
   if(handleNoteHotkey(e)){
     e.preventDefault();
     return;
@@ -3998,7 +4218,7 @@ document.addEventListener('keydown', (e)=>{
    Цикл нажатий на ОДНУ И ТУ ЖЕ pitch class:
      1-е нажатие -> мажорная клетка
      2-е нажатие -> минорная клетка (та же тоника)
-     3-е нажатие -> снятие выбора
+     3-е нажатие -> снова мажорная клетка (и т.д., без снятия выбора)
    Нажатие ноты с ДРУГИМ pitch class сбрасывает цикл и начинает заново
    с мажорной клетки для новой ноты — как и с буквенными горячими клавишами.
    ========================================================= */
@@ -4006,14 +4226,14 @@ const minorsSemitone = minors.map(n => noteNames.indexOf(rootOf(n)));
 
 let midiAccess = null;
 let midiHotkeyPc = null;
-let midiHotkeyStage = 0; // 0 = ничего/только что снято, 1 = мажор, 2 = минор
+let midiHotkeyStage = 0; // 0 = ничего ещё не нажато, 1 = мажор, 2 = минор
 
 function handleMidiNote(pc){
   if(midiHotkeyPc !== pc){
     midiHotkeyStage = 0;
     midiHotkeyPc = pc;
   }
-  midiHotkeyStage = (midiHotkeyStage + 1) % 3;
+  midiHotkeyStage = (midiHotkeyStage === 1) ? 2 : 1;
 
   if(midiHotkeyStage === 1){
     const idx = majorsSemitone.indexOf(pc);
@@ -4021,13 +4241,6 @@ function handleMidiNote(pc){
     clickWedgeByRing('major', idx);
     return;
   }
-  if(midiHotkeyStage === 2){
-    const idx = minorsSemitone.indexOf(pc);
-    if(idx === -1) return;
-    clickWedgeByRing('minor', idx);
-    return;
-  }
-  // stage 0 — снять выбор: повторный клик по той же минорной клетке
   const idx = minorsSemitone.indexOf(pc);
   if(idx === -1) return;
   clickWedgeByRing('minor', idx);

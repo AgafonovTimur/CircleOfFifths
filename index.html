@@ -58,6 +58,21 @@
     font-family:var(--font);
     color:var(--text);
   }
+  /* Убираем стандартную синюю/серую подсветку тапа на мобильных
+     браузерах (WebKit/Blink) — именно она давала синий многоугольник
+     поверх сегментов круга при нажатии. Плюс отключаем контекстное
+     меню/выделение при долгом тапе на интерактивных элементах круга. */
+  *{
+    -webkit-tap-highlight-color:transparent;
+    -webkit-touch-callout:none;
+  }
+  svg, .wedge, .selWedge{
+    -webkit-tap-highlight-color:transparent;
+    touch-action:manipulation;
+  }
+  .wedge:focus, .selWedge:focus, svg:focus, svg *:focus{
+    outline:none;
+  }
   #app{
     display:flex;flex-direction:column;align-items:safe center;justify-content:safe center;gap:18px;
     padding:20px;
@@ -176,6 +191,37 @@
   }
   #sidePanel::-webkit-scrollbar{
     display:none;              /* Chrome/Safari: скрыть скроллбар, скролл работает */
+  }
+  /* ===== Мобильная версия панели настроек: выезжающая снизу шторка
+     (bottom-sheet), открывается свайпом вверх, закрывается свайпом
+     вниз или тапом вне панели. Настройки внутри — те же самые, но
+     позиционирование и способ открытия/закрытия — отдельные от
+     десктопной версии и не пересекаются с ней (десктоп управляется
+     колесом мыши и клавишей W, мобильная — свайпами и хендлом). ===== */
+  body.is-mobile #sidePanel{
+    left:0;
+    right:0;
+    top:auto;
+    bottom:0;
+    transform:translateY(100%);
+    max-width:100vw;
+    width:100%;
+    max-height:80vh;
+    border-radius:16px 16px 0 0;
+    transition:transform 0.25s ease;
+    touch-action:pan-y;
+  }
+  body.is-mobile #sidePanel.open{
+    transform:translateY(0);
+  }
+  body.is-mobile #sidePanelBackdrop{
+    transition:opacity 0.25s ease;
+    opacity:0;
+    pointer-events:none;
+  }
+  body.is-mobile #sidePanelBackdrop.open{
+    opacity:1;
+    pointer-events:auto;
   }
   /* Верхние вкладки "Практика 1 / Практика 2 / Обучение" — как на макете.
      Переключают, какой уровень/режим отображается ниже; настройки
@@ -4553,34 +4599,97 @@ const SIDE_PANEL_OPEN_KEY = 'sidePanelOpen';
 const sidePanel = document.getElementById('sidePanel');
 const sidePanelBackdrop = document.getElementById('sidePanelBackdrop');
 
+// Мобильная версия определяется отдельно от десктопной: узкий экран
+// ИЛИ отсутствие мыши (только тач). Проверяется один раз при загрузке
+// и при изменении размера окна/поворота экрана, чтобы поведение
+// (свайпы vs колесо мыши) не смешивалось между собой.
+function isMobileLayout(){
+  return window.matchMedia('(max-width: 768px), (pointer: coarse)').matches;
+}
+let isMobile = isMobileLayout();
+document.body.classList.toggle('is-mobile', isMobile);
+
 function setSidePanelOpen(open){
-  sidePanel.style.display = open ? 'flex' : 'none';
-  sidePanelBackdrop.style.display = open ? 'block' : 'none';
+  if(isMobile){
+    sidePanel.style.display = 'flex';
+    // на мобильной раскладке видимость управляется классом .open
+    // (transform: translateY), а не display, чтобы работала анимация
+    // выезжания снизу по свайпу.
+    requestAnimationFrame(()=>{
+      sidePanel.classList.toggle('open', open);
+    });
+    sidePanelBackdrop.style.display = 'block';
+    sidePanelBackdrop.classList.toggle('open', open);
+  } else {
+    sidePanel.classList.remove('open');
+    sidePanel.style.display = open ? 'flex' : 'none';
+    sidePanelBackdrop.style.display = open ? 'block' : 'none';
+    sidePanelBackdrop.classList.remove('open');
+  }
   localStorage.setItem(SIDE_PANEL_OPEN_KEY, open ? '1' : '0');
 }
 
+function isSidePanelOpen(){
+  return isMobile ? sidePanel.classList.contains('open') : sidePanel.style.display !== 'none';
+}
+
 function toggleSidePanel(){
-  setSidePanelOpen(sidePanel.style.display === 'none');
+  setSidePanelOpen(!isSidePanelOpen());
 }
 
 // Восстановление состояния при загрузке страницы (по умолчанию открыта,
 // как и раньше, если в localStorage ещё ничего не сохранено).
 setSidePanelOpen(localStorage.getItem(SIDE_PANEL_OPEN_KEY) !== '0');
 
-// Клик по затемнению фона — закрыть настройки.
+window.addEventListener('resize', ()=>{
+  const nowMobile = isMobileLayout();
+  if(nowMobile !== isMobile){
+    isMobile = nowMobile;
+    document.body.classList.toggle('is-mobile', isMobile);
+    setSidePanelOpen(isSidePanelOpen());
+  }
+});
+
+// Клик/тап по затемнению фона — закрыть настройки (общее для десктопа
+// и мобильной версии — "тап вне настроек").
 sidePanelBackdrop.addEventListener('click', () => setSidePanelOpen(false));
 
-// Колесо мыши: прокрутка вверх — открыть настройки, вниз — закрыть.
-// Слушаем на всём документе, чтобы работало независимо от того, где
-// сейчас курсор (кроме случаев скролла внутри самой панели настроек —
-// там колесо должно скроллить список настроек, а не закрывать панель).
+/* ===== ДЕСКТОП: колесо мыши — прокрутка вверх открывает настройки,
+   вниз закрывает. Не действует в мобильной раскладке (там своя логика
+   свайпов ниже), чтобы поведения не пересекались. ===== */
 document.addEventListener('wheel', (e) => {
+  if (isMobile) return;
   if (sidePanel.contains(e.target)) return; // скролл внутри панели — не трогаем
   if (e.deltaY < 0) {
     setSidePanelOpen(true);
   } else if (e.deltaY > 0) {
     setSidePanelOpen(false);
   }
+}, { passive: true });
+
+/* ===== МОБИЛЬНАЯ ВЕРСИЯ: свайп вверх В ЛЮБОМ МЕСТЕ ЭКРАНА открывает
+   панель, свайп вниз в любом месте закрывает её (плюс тап вне панели
+   по затемнению — тоже закрывает, через click выше). Никакого
+   отдельного "хендла" — весь экран является зоной свайпа. Работает
+   только когда активна мобильная раскладка. ===== */
+const SWIPE_THRESHOLD = 40; // px, минимальное перемещение для срабатывания свайпа
+let sidePanelTouchStartY = null;
+
+document.addEventListener('touchstart', (e) => {
+  if(!isMobile) return;
+  sidePanelTouchStartY = e.touches[0].clientY;
+}, { passive: true });
+
+document.addEventListener('touchend', (e) => {
+  if(!isMobile || sidePanelTouchStartY === null) return;
+  const endY = (e.changedTouches && e.changedTouches[0]) ? e.changedTouches[0].clientY : sidePanelTouchStartY;
+  const dy = sidePanelTouchStartY - endY; // положительное — свайп вверх, отрицательное — вниз
+  if (dy > SWIPE_THRESHOLD) {
+    setSidePanelOpen(true);
+  } else if (dy < -SWIPE_THRESHOLD) {
+    setSidePanelOpen(false);
+  }
+  sidePanelTouchStartY = null;
 }, { passive: true });
 
 /* =========================================================

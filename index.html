@@ -145,14 +145,23 @@
     pointer-events:none;
     z-index:5;
   }
-  /* ===== Панель настроек — теперь ПОСТОЯННО закреплена сбоку от круга,
-     а не всплывающее модальное окно. Никакого затемнения фона и
-     открытия/закрытия по кнопке — панель всегда на своём месте. ===== */
+  /* ===== Панель настроек — модальное окно поверх круга, по центру
+     экрана, с затемнением фона (#sidePanelBackdrop). Открывается и
+     закрывается по клавише W, колесу мыши (вверх/вниз) и клику по
+     затемнению. Состояние (открыта/закрыта) сохраняется в localStorage,
+     чтобы не сбрасываться при перезагрузке страницы. ===== */
+  #sidePanelBackdrop{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.55);
+    z-index:9;
+  }
   #sidePanel{
     position:fixed;
-    left:var(--train-display-left, calc(50% + 477px));
-    top:var(--train-display-top, 50%);
-    transform:translateY(-50%);
+    left:50%;
+    top:50%;
+    transform:translate(-50%,-50%);
     background:var(--menu-bg);
     border:1px solid var(--menu-border);
     border-radius:12px;
@@ -222,7 +231,7 @@
   }
   #selectButtons{
     display:grid;
-    grid-template-columns:1fr 1fr;
+    grid-template-columns:repeat(3, 1fr);
     gap:10px;
     width:100%;
   }
@@ -264,7 +273,7 @@
   }
   #selectButtons2, #selectButtons3{
     display:grid;
-    grid-template-columns:1fr 1fr;
+    grid-template-columns:repeat(3, 1fr);
     gap:10px;
     width:100%;
   }
@@ -282,6 +291,19 @@
     font-size:14px;
     font-weight:bold;
     font-family:var(--font);
+  }
+  .level3HintLabel{
+    pointer-events:none;
+    user-select:none;
+    text-anchor:middle;
+    dominant-baseline:middle;
+    font-size:16px;
+    font-weight:bold;
+    font-family:var(--font);
+    fill:#fff;
+    stroke:#000;
+    stroke-width:0.6px;
+    paint-order:stroke;
   }
   .trainChordLetters{
     pointer-events:none;
@@ -594,7 +616,11 @@
      practiceLevel (см. applyMode()/applyPracticeLevel() в JS) и
      показывает соответствующую панель настроек ниже. Настройки каждого
      уровня (level1Panel / level2Panel / трен-панель) не сбрасываются
-     при переключении вкладок — переключение только меняет видимость. -->
+     при переключении вкладок — переключение только меняет видимость.
+
+     #sidePanelBackdrop — затемнение фона позади модального окна
+     настроек; клик по нему закрывает панель. -->
+<div id="sidePanelBackdrop"></div>
 <div id="sidePanel">
 
   <div id="topTabBar">
@@ -984,6 +1010,9 @@ function buildRing(ringName, rInner, rOuter, baseColor){
 
 buildRing('minor', R0, R2, getComputedStyle(document.documentElement).getPropertyValue('--ring-minor').trim());
 buildRing('major', R2, R3, getComputedStyle(document.documentElement).getPropertyValue('--ring-major').trim());
+
+const level3HintLayer = el('g', {id:'level3HintLayer', style:'pointer-events:none;'});
+svg.appendChild(level3HintLayer);
 
 svg.appendChild(el('circle', {cx:CX, cy:CY, r:R0-2, id:'centerCircle'}));
 const centerText = el('text', {
@@ -1447,6 +1476,41 @@ function saveTrainSelectedNotes(){
 const ROMAN_LABEL_RADIAL_INSET = 10;
 const ROMAN_LABEL_ANGLE_INSET = 10;
 
+// Точечная ручная коррекция позиции римской цифры (ступени аккорда) для
+// отдельных ячеек — на случай, если общее смещение (ROMAN_LABEL_*_INSET)
+// подходит не всем ячейкам одинаково из-за разной ширины/формы глифов.
+// Ключ — название ноты как в массивах majors/minors ('F#', 'C#m', ...),
+// значение — { dx, dy } в пикселях (dx: + вправо, dy: + ВВЕРХ, - ВНИЗ).
+// Если для ячейки записи нет — используется базовая позиция без изменений.
+// ВАЖНО: каждый ключ должен встречаться в этом объекте только один раз —
+// при дублировании ключа JS молча использует последнее по порядку значение.
+const ROMAN_LABEL_MANUAL_OFFSETS = {
+  'C':   { dx: 12,  dy: 2 },
+  'G':   { dx: 10,  dy: -2 },
+  'D':   { dx: 7,  dy: -4 },
+  'A':   { dx: 3,  dy: -5 },
+  'E':   { dx: 0,  dy: -3 },
+  'B':   { dx: -5, dy: 0 },
+  'F#':  { dx: -5, dy: 4 },
+  'Db':  { dx: -2, dy: 9 },
+  'Ab':  { dx: 1, dy: 12 },
+  'Eb':  { dx: 7,  dy: 12 },
+  'Bb':  { dx: 10,  dy: 7 },
+  'F':   { dx: 12,  dy: 5 },
+  'Am':  { dx: 7,  dy: 3 },
+  'Em':  { dx: 5,  dy: 1 },
+  'Bm':  { dx: 5,  dy: 1 },
+  'F#m': { dx: 5,  dy: 2 },
+  'C#m': { dx: 4,  dy: 0 },
+  'G#m': { dx: 1,  dy: 2 },
+  'D#m': { dx: -1,  dy: 3 },
+  'Bbm': { dx: 0,  dy: 7 },
+  'Fm':  { dx: 2,  dy: 7 },
+  'Cm':  { dx: 3,  dy: 8 },
+  'Gm':  { dx: 5,  dy: 7 },
+  'Dm':  { dx: 8,  dy: 7 }
+};
+
 function buildTrainRing(ringName, names, rInner, rOuter, baseColor){
   for(let i=0;i<12;i++){
     const startA = i*30 - 15 + WEDGE_GAP_ANGLE;
@@ -1504,8 +1568,9 @@ function buildTrainRing(ringName, names, rInner, rOuter, baseColor){
     // в правом верхнем углу ячейки, только для диатонических аккордов
     // нажатой тоники; включается/выключается тем же чекбоксом.
     const romanPos = polar(CX, CY, rOuter - ROMAN_LABEL_RADIAL_INSET, i*30 + ROMAN_LABEL_ANGLE_INSET);
+    const romanManualOffset = ROMAN_LABEL_MANUAL_OFFSETS[names[i]] || { dx: 0, dy: 0 };
     const romanEl = el('text', {
-      x: romanPos.x, y: romanPos.y,
+      x: romanPos.x + romanManualOffset.dx, y: romanPos.y - romanManualOffset.dy,
       class: 'trainRomanLabel'
     });
     trainSvg.appendChild(romanEl);
@@ -3154,11 +3219,17 @@ function getTriadNoteLetters(ring, tonicIndex){
 
 let currentL3 = null;
 
-/* ===== Практика 3: тип аккорда (Мажор/Минор трезвучие, 7, maj7, m7, mMaj7) =====
+/* ===== Практика 3: тип аккорда (Мажор/Минор трезвучие, 7, maj7, m7, mMaj7, ...) =====
    По умолчанию — обычные трезвучия ('triad'). Остальные типы используют
    те же числовые смещения (Вариант 1), что и в режиме "Обучение"
-   (см. SUS_CONFIGS выше), просто применённые к практике поиска нот. */
-let level3ChordType = 'triad';
+   (см. SUS_CONFIGS выше), просто применённые к практике поиска нот.
+
+   МУЛЬТИВЫБОР: в отличие от режима "Обучение" (там всегда ровно один
+   активный тип аккорда), в Практике 3 можно включить сразу несколько
+   типов — все они попадают в общую выборку для новых вопросов.
+   level3ChordTypes — Set выбранных типов; хотя бы один тип должен
+   оставаться выбранным всегда (последний нельзя снять кликом/хоткеем). */
+let level3ChordTypes = new Set(['triad']);
 
 function getStepsForChordTypeL3(type, ring){
   if(type === 'triad'){
@@ -3229,25 +3300,36 @@ function pickNewChordL3(){
   let idx = Math.floor(r / weight);
   if(idx >= pool.length) idx = pool.length - 1;
   const chosen = pool[idx];
+
+  // случайный тип аккорда из всех выбранных (мультивыбор)
+  const typesArr = level3ChordTypes.size > 0 ? Array.from(level3ChordTypes) : ['triad'];
+  const chordType = typesArr[Math.floor(Math.random() * typesArr.length)];
+
   currentL3 = {
     ring: chosen.ring,
     index: chosen.index,
-    name: chosen.name + chordTypeSuffixL3(level3ChordType, chosen.ring),
-    letters: getChordNoteLettersL3(chosen.ring, chosen.index, level3ChordType),
+    chordType: chordType,
+    name: chosen.name + chordTypeSuffixL3(chordType, chosen.ring),
+    letters: getChordNoteLettersL3(chosen.ring, chosen.index, chordType),
     found: new Set()
   };
   if(practiceLevel === 3) centerText.textContent = currentL3.name;
+  renderLevel3Hint();
 }
 
-/* Кнопки выбора типа аккорда для Практики 3 (Мажор/Минор, 7, maj7, m7, mMaj7) */
+/* Кнопки выбора типа(-ов) аккорда для Практики 3 — мультивыбор: клик
+   переключает тип в списке выбранных. Хотя бы один тип должен оставаться
+   выбранным всегда — клик по последнему активному типу его не снимает. */
 document.querySelectorAll('#level2TypeButtons .ringBtn[data-chordtype]').forEach(btn=>{
   btn.addEventListener('click', ()=>{
     const type = btn.getAttribute('data-chordtype');
-    if(type === level3ChordType) return;
-    level3ChordType = type;
-    document.querySelectorAll('#level2TypeButtons .ringBtn[data-chordtype]').forEach(b=>{
-      b.classList.toggle('active', b.getAttribute('data-chordtype') === level3ChordType);
-    });
+    if(level3ChordTypes.has(type)){
+      if(level3ChordTypes.size === 1) return; // хотя бы один тип должен остаться выбранным
+      level3ChordTypes.delete(type);
+    } else {
+      level3ChordTypes.add(type);
+    }
+    btn.classList.toggle('active', level3ChordTypes.has(type));
     currentL3 = null;
     if(practiceLevel === 3) pickNewChordL3();
   });
@@ -3263,6 +3345,7 @@ function onWedgeClickLevel3(e){
     flashWedge(ring, index, FLASH_GREEN, 300);
     if(!currentL3.found.has(letter)){
       currentL3.found.add(letter);
+      renderLevel3Hint();
       if(currentL3.found.size === currentL3.letters.size){
         setTimeout(pickNewChordL3, 450);
       }
@@ -3270,6 +3353,53 @@ function onWedgeClickLevel3(e){
   } else {
     flashWedge(ring, index, FLASH_RED, 300);
   }
+}
+
+/* ===== Практика 3: подсказка (буквы нот аккорда прямо на местах, куда
+   нужно нажать на круге). Включается кнопкой "Подсказка" или клавишей
+   Я/Z. Для каждой ещё не найденной буквы аккорда подпись рисуется на
+   обеих подходящих ячейках круга (мажорное и минорное кольцо), т.к.
+   засчитывается клик по любой из них. ===== */
+const LEVEL3_HINT_RADIUS_MINOR = (R0 + R2) / 2;
+const LEVEL3_HINT_RADIUS_MAJOR = (R2 + R3) / 2;
+let level3HintVisible = false;
+
+function renderLevel3Hint(){
+  while(level3HintLayer.firstChild) level3HintLayer.removeChild(level3HintLayer.firstChild);
+  if(!level3HintVisible || !currentL3 || practiceLevel !== 3) return;
+
+  currentL3.letters.forEach(letter=>{
+    if(currentL3.found.has(letter)) return;
+    const majorIdx = majors.findIndex(n => rootOf(n) === letter);
+    const minorIdx = minors.findIndex(n => rootOf(n) === letter);
+    if(majorIdx !== -1){
+      const p = polar(CX, CY, LEVEL3_HINT_RADIUS_MAJOR, majorIdx * 30);
+      const t = el('text', {x:p.x, y:p.y, class:'level3HintLabel'});
+      t.textContent = letter;
+      level3HintLayer.appendChild(t);
+    }
+    if(minorIdx !== -1){
+      const p = polar(CX, CY, LEVEL3_HINT_RADIUS_MINOR, minorIdx * 30);
+      const t = el('text', {x:p.x, y:p.y, class:'level3HintLabel'});
+      t.textContent = letter;
+      level3HintLayer.appendChild(t);
+    }
+  });
+}
+
+function setLevel3HintVisible(v){
+  level3HintVisible = v;
+  if(level3HintBtn) level3HintBtn.classList.toggle('active', v);
+  renderLevel3Hint();
+}
+
+function toggleLevel3Hint(){
+  setLevel3HintVisible(!level3HintVisible);
+}
+
+const level3HintBtn = document.getElementById('level3HintBtn');
+if(level3HintBtn){
+  level3HintBtn.addEventListener('click', toggleLevel3Hint);
 }
 
 /* =========================================================
@@ -4193,6 +4323,8 @@ function applyTrainChordTypeChange(){
 function setTrainChordType(type){
   if(trainChordType === type) return;
   trainChordType = type;
+  trainVariant = trainVariantUISwapped() ? '2' : '1';
+  saveTrainVariant();
   applyTrainChordTypeChange();
 }
 
@@ -4203,6 +4335,8 @@ function setTrainChordType(type){
 trainMajorMinorBtn.addEventListener('click', ()=>{
   if(trainChordType === 'triad') return;
   trainChordType = 'triad';
+  trainVariant = trainVariantUISwapped() ? '2' : '1';
+  saveTrainVariant();
   applyTrainChordTypeChange();
 });
 
@@ -4280,6 +4414,7 @@ function applyPracticeLevel(){
   if(practiceLevel === 1 && !current) pickNewChord();
   if(practiceLevel === 2 && !currentL2) pickNewChordL2();
   if(practiceLevel === 3 && !currentL3) pickNewChordL3();
+  if(typeof renderLevel3Hint === 'function') renderLevel3Hint();
 
   if(level2NoteLabelEl) level2NoteLabelEl.style.display = 'none';
 
@@ -4413,15 +4548,46 @@ window.addEventListener('resize', ()=>{
 applyTopTabs();
 
 /* =========================================================
-   Клавиша W (или Ц) — показать/скрыть закреплённую боковую панель
-   #sidePanel. Это НЕ модальное окно с затемнением — панель просто
-   всегда стоит рядом с кругом, а эта клавиша лишь временно
-   освобождает место на экране, если панель мешает.
+   Клавиша W (или Ц) — показать/скрыть модальную панель настроек
+   #sidePanel поверх круга, с затемнением фона (#sidePanelBackdrop).
+   Также открывается/закрывается прокруткой колеса мыши (вверх —
+   открыть, вниз — закрыть) и кликом по затемнению (закрыть).
+   Состояние открыта/закрыта сохраняется в localStorage, чтобы не
+   сбрасываться при перезагрузке страницы.
    ========================================================= */
+const SIDE_PANEL_OPEN_KEY = 'sidePanelOpen';
 const sidePanel = document.getElementById('sidePanel');
-function toggleSidePanel(){
-  sidePanel.style.display = (sidePanel.style.display === 'none') ? 'flex' : 'none';
+const sidePanelBackdrop = document.getElementById('sidePanelBackdrop');
+
+function setSidePanelOpen(open){
+  sidePanel.style.display = open ? 'flex' : 'none';
+  sidePanelBackdrop.style.display = open ? 'block' : 'none';
+  localStorage.setItem(SIDE_PANEL_OPEN_KEY, open ? '1' : '0');
 }
+
+function toggleSidePanel(){
+  setSidePanelOpen(sidePanel.style.display === 'none');
+}
+
+// Восстановление состояния при загрузке страницы (по умолчанию открыта,
+// как и раньше, если в localStorage ещё ничего не сохранено).
+setSidePanelOpen(localStorage.getItem(SIDE_PANEL_OPEN_KEY) !== '0');
+
+// Клик по затемнению фона — закрыть настройки.
+sidePanelBackdrop.addEventListener('click', () => setSidePanelOpen(false));
+
+// Колесо мыши: прокрутка вверх — открыть настройки, вниз — закрыть.
+// Слушаем на всём документе, чтобы работало независимо от того, где
+// сейчас курсор (кроме случаев скролла внутри самой панели настроек —
+// там колесо должно скроллить список настроек, а не закрывать панель).
+document.addEventListener('wheel', (e) => {
+  if (sidePanel.contains(e.target)) return; // скролл внутри панели — не трогаем
+  if (e.deltaY < 0) {
+    setSidePanelOpen(true);
+  } else if (e.deltaY > 0) {
+    setSidePanelOpen(false);
+  }
+}, { passive: true });
 
 /* =========================================================
    Масштабирование круга: клавиши +/-, Shift+"-" сброс до 100%
@@ -4700,10 +4866,16 @@ document.addEventListener('keydown', (e)=>{
     }
   } else if(key === 'q' || key === 'й'){
     trainV1ArrowsBtn.click();
-  } else if(key === 'u' || key === 'г'){
-    trainV2ColorBtn.click();
   } else if(key === 'w' || key === 'ц'){
+    trainV1ColorBtn.click();
+  } else if(key === 'r' || key === 'к'){
+    trainV2ArrowsBtn.click();
+  } else if(key === 't' || key === 'е'){
+    trainV2ColorBtn.click();
+  } else if(key === 'y' || key === 'н'){
     toggleSidePanel();
+  } else if((key === 'z' || key === 'я') && appMode === 'practice' && practiceLevel === 3){
+    toggleLevel3Hint();
   }
 });
 
@@ -4813,6 +4985,91 @@ document.addEventListener('keydown', (e)=>{
   if(key === 'y' || key === 'н'){
     const panel = document.getElementById('midiPanel');
     panel.style.display = (panel.style.display === 'none' || !panel.style.display) ? 'block' : 'none';
+  }
+});
+
+/* =========================================================
+   Хоткеи выбора типа аккорда для режимов "Обучение" и "Практика 3".
+
+   Список типов аккордов (тот же порядок, что и на панелях настроек):
+     1..9,0  -> аккорды №1-10  (triad, sus2, sus4, 7, maj7, m7, mMaj7, add9, m(add9), 9)
+   Пробел, затем 1..9,0 -> аккорды №11-20 (maj9, m9, m(maj9), add11, m(add11),
+                                            11, maj11, m11, 13, maj13)
+
+   В "Обучении" — обычный одиночный выбор (эмулируем клик по кнопке,
+   вся логика переключения остаётся прежней). В "Практике 3" — те же
+   кнопки теперь работают как мультивыбор (см. обработчик выше),
+   поэтому хоткей просто переключает (добавляет/убирает) тип аккорда
+   в списке активных для выборки вопросов.
+   ========================================================= */
+const CHORD_HOTKEY_ORDER = [
+  'triad','sus2','sus4','dom7','maj7','min7','mmaj7','add9','madd9','dom9',
+  'maj9','m9','mmaj9','add11','madd11','dom11','maj11','m11','dom13','maj13'
+];
+const CHORD_HOTKEY_TRAIN_BTN_ID = {
+  triad:'trainMajorMinorBtn', sus2:'trainSus2Btn', sus4:'trainSus4Btn',
+  dom7:'trainDom7Btn', maj7:'trainMaj7Btn', min7:'trainMin7Btn', mmaj7:'trainMMaj7Btn',
+  add9:'trainAdd9Btn', madd9:'trainMAdd9Btn', dom9:'trainDom9Btn',
+  maj9:'trainMaj9Btn', m9:'trainM9Btn', mmaj9:'trainMMaj9Btn',
+  add11:'trainAdd11Btn', madd11:'trainMAdd11Btn', dom11:'trainDom11Btn',
+  maj11:'trainMaj11Btn', m11:'trainM11Btn', dom13:'trainDom13Btn', maj13:'trainMaj13Btn'
+};
+const CHORD_HOTKEY_LEVEL3_BTN_ID = {
+  triad:'level2MajorMinorBtn', sus2:'level3Sus2Btn', sus4:'level3Sus4Btn',
+  dom7:'level3Dom7Btn', maj7:'level3Maj7Btn', min7:'level3Min7Btn', mmaj7:'level3MMaj7Btn',
+  add9:'level3Add9Btn', madd9:'level3MAdd9Btn', dom9:'level3Dom9Btn',
+  maj9:'level3Maj9Btn', m9:'level3M9Btn', mmaj9:'level3MMaj9Btn',
+  add11:'level3Add11Btn', madd11:'level3MAdd11Btn', dom11:'level3Dom11Btn',
+  maj11:'level3Maj11Btn', m11:'level3M11Btn', dom13:'level3Dom13Btn', maj13:'level3Maj13Btn'
+};
+
+// цифровая клавиша '1'..'9','0' -> позиция 0..9 внутри "страницы" (первой
+// десятки типов аккордов или второй — после пробела)
+const CHORD_HOTKEY_DIGIT_TO_PAGE_INDEX = {'1':0,'2':1,'3':2,'4':3,'5':4,'6':5,'7':6,'8':7,'9':8,'0':9};
+
+function pressChordHotkeyByOrderIndex(orderIdx){
+  const type = CHORD_HOTKEY_ORDER[orderIdx];
+  if(!type) return false;
+  if(appMode === 'training'){
+    const id = CHORD_HOTKEY_TRAIN_BTN_ID[type];
+    const btn = id && document.getElementById(id);
+    if(btn){ btn.click(); return true; }
+  } else if(appMode === 'practice' && practiceLevel === 3){
+    const id = CHORD_HOTKEY_LEVEL3_BTN_ID[type];
+    const btn = id && document.getElementById(id);
+    if(btn){ btn.click(); return true; }
+  }
+  return false;
+}
+
+// отдельный от flatModePending флаг: пробел был нажат, чтобы следующая
+// цифра выбрала аккорд №11-20 ("вторая страница" списка типов).
+let chordHotkeySpacePending = false;
+
+document.addEventListener('keydown', (e)=>{
+  if(e.ctrlKey || e.metaKey || e.altKey) return;
+  const inChordHotkeyMode = appMode === 'training' ||
+    (appMode === 'practice' && practiceLevel === 3);
+  if(!inChordHotkeyMode) return;
+
+  if(e.code === 'Space'){
+    // сам пробел не трогаем/не preventDefault здесь — общий обработчик
+    // пробела (режим бемоля для буквенных хоткеев нот) отрабатывает
+    // как раньше; просто дополнительно взводим свой флаг.
+    chordHotkeySpacePending = true;
+    return;
+  }
+
+  const digitIdx = CHORD_HOTKEY_DIGIT_TO_PAGE_INDEX[e.key];
+  if(digitIdx === undefined){
+    chordHotkeySpacePending = false;
+    return;
+  }
+
+  const pageOffset = chordHotkeySpacePending ? 10 : 0;
+  chordHotkeySpacePending = false;
+  if(pressChordHotkeyByOrderIndex(pageOffset + digitIdx)){
+    e.preventDefault();
   }
 });
 

@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<title>Circle of Fifths Trainer</title>
+<title>Circle of Fifths</title>
 <style>
 
   :root{
@@ -412,6 +412,42 @@
   #trainExtraSettings input[type="checkbox"]{
     cursor:pointer;
   }
+  #midiPanel{
+    margin:10px 0 4px;
+    display:flex;
+    flex-direction:column;
+    align-self:stretch;
+    gap:8px;
+    padding-top:10px;
+    border-top:1px solid var(--panel-border, rgba(255,255,255,0.15));
+  }
+  .midiPanelRow{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-family:var(--font);
+    font-size:20px;
+    color:var(--app-text-color);
+  }
+  .midiPanelRow select{
+    flex:1;
+    background:var(--btn-bg);
+    color:var(--btn-text);
+    border:none;
+    border-radius:8px;
+    padding:6px 8px;
+    font-family:var(--font);
+    font-size:15px;
+    cursor:pointer;
+  }
+  #midiStatusLine{
+    font-family:var(--font);
+    font-size:14px;
+    color:#8f8;
+  }
+  #midiStatusLine.midiStatusError{
+    color:#f88;
+  }
   .noteBtn{
     background:var(--btn-bg);
     color:var(--btn-text);
@@ -667,14 +703,6 @@
   </div>
 </div>
 
-
-<div id="midiPanel" style="position:fixed;top:20px;left:50%;transform:translateX(-50%);padding:10px 14px;background:rgba(0,0,0,0.75);color:#eee;font-family:Arial,sans-serif;font-size:13px;z-index:9999;border-radius:10px;display:none;">
-  <div style="margin-bottom:6px;">
-    <label>MIDI вход: </label>
-    <select id="midiInputSelect"><option>—</option></select>
-  </div>
-  <div id="midiStatusLine" style="color:#8f8;">Ожидание доступа к MIDI...</div>
-</div>
 
 <!-- ===== Панель настроек, ПОСТОЯННО закреплена сбоку от круга =====
      Раньше это было модальное окно (menuOverlay/menuPanel), которое
@@ -958,6 +986,15 @@
       <div id="trainExtraSettings">
         <label><input type="checkbox" id="trainShowChordLettersCheckbox">Показывать буквы аккорда под нотами</label>
         <label><input type="checkbox" id="trainShowDegreesCheckbox">Показывать ступени аккорда</label>
+      </div>
+
+      <div id="midiPanel">
+        <div class="midiPanelRow">
+          <label for="midiInputSelect">MIDI вход:</label>
+          <select id="midiInputSelect"><option>—</option></select>
+        </div>
+        <div id="midiStatusLine">Ожидание доступа к MIDI...</div>
+        <button type="button" class="noteBtn" id="midiReconnectBtn">Подключить MIDI</button>
       </div>
   </div>
 
@@ -5092,7 +5129,72 @@ let midiAccess = null;
 let midiHotkeyPc = null;
 let midiHotkeyStage = 0; // 0 = ничего ещё не нажато, 1 = мажор, 2 = минор
 
+/* ===== Практика 3 + MIDI: для КАЖДОЙ ступени загаданного аккорда
+   вычисляет, на каком именно кольце (мажор/минор) и в какой ячейке она
+   должна подсвечиваться — по той же схеме ("Вариант 1"), что и в режиме
+   "Обучение":
+     - трезвучие (triad): квинта — на том же кольце, что тоника; терция —
+       на ПРОТИВОПОЛОЖНОМ кольце (та же позиция круга, что у квинты для
+       мажорной тоники, или та же позиция, что у тоники, для минорной) —
+       см. TRIAD_V2_HIGHLIGHTS выше (напр. C -> G(мажор) + Em(минор));
+     - остальные типы (sus/7/9/11/13) — все ступени на ТОМ ЖЕ кольце, что
+       тоника (см. getStepsForChordTypeL3), как и раньше.
+   ========================================================= */
+function getL3DegreePositions(ring, tonicIndex, type){
+  const positions = [{ring, index: tonicIndex}];
+  if(type === 'triad'){
+    positions.push({ring, index: (tonicIndex + 1) % 12});
+    const thirdRing = ring === 'major' ? 'minor' : 'major';
+    const thirdStep = ring === 'major' ? 1 : 0;
+    positions.push({ring: thirdRing, index: ((tonicIndex + thirdStep) % 12 + 12) % 12});
+  } else {
+    getStepsForChordTypeL3(type, ring).forEach(s=>{
+      positions.push({ring, index: ((tonicIndex + s) % 12 + 12) % 12});
+    });
+  }
+  return positions;
+}
+
+// по нажатой MIDI pitch class находит нужную (правильную) ячейку среди
+// ступеней ТЕКУЩЕГО загаданного аккорда Практики 3 — или null, если такой
+// pitch class в аккорде нет (нота неправильная)
+function findL3PositionForPc(pc){
+  if(!currentL3) return null;
+  const positions = getL3DegreePositions(currentL3.ring, currentL3.index, currentL3.chordType);
+  for(const pos of positions){
+    const semi = (pos.ring === 'major' ? majorsSemitone : minorsSemitone)[pos.index];
+    if(semi === pc) return pos;
+  }
+  return null;
+}
+
 function handleMidiNote(pc){
+  // Практика 2: загаданная ячейка стоит на строго определённом кольце
+  // (мажор или минор) — как и в клавиатурном handleNoteHotkeyLevel2,
+  // цикл мажор<->минор здесь не нужен: сразу проверяем на кольце currentL2.ring.
+  if(appMode === 'practice' && practiceLevel === 2){
+    if(!currentL2) return;
+    const ring = currentL2.ring;
+    const idx = (ring === 'major' ? majorsSemitone : minorsSemitone).indexOf(pc);
+    if(idx === -1) return;
+    clickWedgeByRing(ring, idx);
+    return;
+  }
+
+  // Практика 3: если нажатая нота входит в загаданный аккорд — сразу
+  // подсвечиваем именно ту ячейку (то кольцо), где эта ступень должна
+  // быть по схеме "Вариант 1" из "Обучение" (см. getL3DegreePositions),
+  // без обычного цикла мажор<->минор. Если нота НЕ входит в аккорд —
+  // ничего не делаем здесь, и ниже срабатывает прежнее (мажор<->минор
+  // циклом) поведение, как и раньше.
+  if(appMode === 'practice' && practiceLevel === 3){
+    const pos = findL3PositionForPc(pc);
+    if(pos){
+      clickWedgeByRing(pos.ring, pos.index);
+      return;
+    }
+  }
+
   if(midiHotkeyPc !== pc){
     midiHotkeyStage = 0;
     midiHotkeyPc = pc;
@@ -5135,7 +5237,7 @@ function populateMidiSelect(){
   if(inputs.length === 0){
     sel.innerHTML = '<option>Нет входов</option>';
     statusLine.textContent = 'MIDI входы не найдены';
-    statusLine.style.color = '#f88';
+    statusLine.classList.add('midiStatusError');
   } else {
     inputs.forEach(inp => {
       const opt = document.createElement('option');
@@ -5144,7 +5246,7 @@ function populateMidiSelect(){
       sel.appendChild(opt);
     });
     statusLine.textContent = `Входы: ${inputs.map(i => i.name).join(', ')}`;
-    statusLine.style.color = '#8f8';
+    statusLine.classList.remove('midiStatusError');
   }
   // слушаем ВСЕ входы сразу, выбор в списке — только информационный
   bindAllMidiInputs();
@@ -5154,7 +5256,7 @@ function requestMidiAccess(){
   const statusLine = document.getElementById('midiStatusLine');
   if(!navigator.requestMIDIAccess){
     statusLine.textContent = 'Браузер не поддерживает Web MIDI (нужен Chrome/Edge)';
-    statusLine.style.color = '#f88';
+    statusLine.classList.add('midiStatusError');
     return;
   }
   navigator.requestMIDIAccess({ sysex: false })
@@ -5166,19 +5268,28 @@ function requestMidiAccess(){
     .catch(err => {
       statusLine.textContent = 'Ошибка доступа к MIDI: ' + err +
         '. Если файл открыт напрямую (file://), запустите его через локальный сервер (http://localhost).';
-      statusLine.style.color = '#f88';
+      statusLine.classList.add('midiStatusError');
     });
+}
+
+/* Кнопка "Подключить MIDI" — НЕ вызывает requestMIDIAccess() повторно
+   (это не нужно и не требует повторного разрешения браузера), а просто
+   пересобирает список входов из уже полученного midiAccess и заново
+   навешивает onmidimessage на все порты (переоткрывает их). Если же
+   доступ ещё ни разу не был получен (midiAccess === null, например
+   requestMIDIAccess() ранее не поддерживался/провалился), тогда уже
+   пробуем запросить доступ заново. */
+function refreshMidiInputs(){
+  if(midiAccess){
+    populateMidiSelect();
+  } else {
+    requestMidiAccess();
+  }
 }
 
 requestMidiAccess();
 
-document.addEventListener('keydown', (e)=>{
-  const key = e.key.toLowerCase();
-  if(key === 'y' || key === 'н'){
-    const panel = document.getElementById('midiPanel');
-    panel.style.display = (panel.style.display === 'none' || !panel.style.display) ? 'block' : 'none';
-  }
-});
+document.getElementById('midiReconnectBtn').addEventListener('click', refreshMidiInputs);
 
 /* =========================================================
    Хоткеи выбора типа аккорда для режимов "Обучение" и "Практика 3".

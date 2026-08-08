@@ -5,6 +5,23 @@
 <title>Circle of Fifths</title>
 <style>
 
+  /* глобально запрещаем выделение текста мышью по всему приложению
+     (это не текстовый документ, а интерактивный инструмент — выделение
+     при перетаскивании мыши по кругу/аккордам только мешает), но не
+     трогаем поля ввода/textarea, где выделение текста нужно. */
+  body{
+    -webkit-user-select:none;
+    -moz-user-select:none;
+    -ms-user-select:none;
+    user-select:none;
+  }
+  input, textarea{
+    -webkit-user-select:text;
+    -moz-user-select:text;
+    -ms-user-select:text;
+    user-select:text;
+  }
+
   :root{
     --font: 'PT Sans Bold Embedded', Arial, sans-serif;
 
@@ -81,6 +98,13 @@
     touch-action:manipulation;
   }
   .wedge:focus, .selWedge:focus, svg:focus, svg *:focus{
+    outline:none;
+  }
+  /* Убираем рамку фокуса у кнопок (появлялась при клике мышкой, а затем
+     нажатии любой клавиши на клавиатуре — браузер считает это
+     "клавиатурной навигацией" и подсвечивает focus-visible). Рамка не
+     несёт смысла в этом интерфейсе, поэтому убираем везде. */
+  button:focus, button:focus-visible{
     outline:none;
   }
   #app{
@@ -210,8 +234,9 @@
   #sidePanelPinRow{
     display:flex;
     align-items:center;
+    align-self:flex-start;
     gap:6px;
-    width:100%;
+    width:fit-content;
     font-size:20px;
     color:var(--app-text-color);
     font-family:var(--font);
@@ -576,6 +601,8 @@
   #trainExtraSettings label{
     display:flex;
     align-items:center;
+    align-self:flex-start;
+    width:fit-content;
     gap:6px;
     font-family:var(--font);
     font-size:20px;
@@ -622,6 +649,34 @@
   .trainAltNoteRow input[type="checkbox"]{
     cursor:pointer;
   }
+  /* ===== Настройка "Название нот": ABC / до-ре-ми (переключатель) ===== */
+  .noteNamingSwitchRow{
+    display:flex;
+    gap:8px;
+    align-self:flex-start;
+  }
+  .noteNamingBtn{
+    background:var(--btn-bg);
+    color:var(--btn-text);
+    border:none;
+    border-radius:8px;
+    padding:8px 16px;
+    font-size:18px;
+    font-family:var(--font);
+    cursor:pointer;
+    opacity:1;
+    transition:background 0.15s ease, color 0.15s ease;
+  }
+  .noteNamingBtn.active{
+    background:var(--btn-active-bg);
+    color:var(--btn-active-text);
+  }
+  .noteNamingBtn:hover{
+    background:var(--btn-bg-hover);
+  }
+  .noteNamingBtn.active:hover{
+    background:#666;
+  }
   /* Текст нот в режиме "дроби" на самом круге (верхняя/нижняя нота под
      чертой). РАЗМЕР ШРИФТА этих нот задаётся ОТДЕЛЬНО от обычных подписей
      круга (.selLabel) константой TRAIN_ALT_NOTE_FONT_SIZE в <script> ниже —
@@ -646,11 +701,13 @@
     display:flex;
     flex-direction:column;
     align-self:stretch;
-    gap:6px;
+    gap:10px;
   }
   #level3ExtraSettings label{
     display:flex;
     align-items:center;
+    align-self:flex-start;
+    width:fit-content;
     gap:6px;
     font-family:var(--font);
     font-size:20px;
@@ -696,6 +753,65 @@
   }
   #midiStatusLine.midiStatusError{
     color:#f88;
+  }
+  #dawOutPanel{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+    padding-bottom:10px;
+    margin-bottom:2px;
+    border-bottom:1px solid var(--panel-border, rgba(255,255,255,0.15));
+  }
+  .dawOutTitle{
+    font-family:var(--font);
+    font-size:15px;
+    color:var(--app-text-color);
+    opacity:0.85;
+  }
+  .dawOutBtnRow{
+    display:flex;
+    gap:8px;
+  }
+  .dawOutBtnRow .noteBtn{
+    flex:1;
+    font-size:14px;
+    padding:8px 6px;
+  }
+  .dawOutBtnRow .noteBtn.active{
+    background:var(--btn-active-bg);
+    color:var(--btn-active-text);
+  }
+  .dawOutFieldRow{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-family:var(--font);
+    font-size:14px;
+    color:var(--app-text-color);
+  }
+  .dawOutFieldRow label{
+    flex:1;
+  }
+  .dawOutFormatBlock{
+    display:flex;
+    flex-direction:row;
+    align-items:center;
+    justify-content:space-between;
+    gap:8px;
+  }
+  .dawOutFormatBlock .dawOutTitle{
+    flex:1;
+  }
+  .dawOutFieldRow input[type="text"],
+  .dawOutFieldRow input[type="number"]{
+    width:80px;
+    background:var(--btn-bg);
+    color:var(--btn-text);
+    border:none;
+    border-radius:8px;
+    padding:6px 8px;
+    font-family:var(--font);
+    font-size:14px;
   }
   .noteBtn{
     background:var(--btn-bg);
@@ -1268,15 +1384,46 @@
           <label><input type="checkbox" id="altNoteMinorCsm">Db</label>
           <label><input type="checkbox" id="altNoteMinorFsm">Gb</label>
         </div>
+        <div class="trainAltNoteGroupTitle">Название нот</div>
+        <div class="noteNamingSwitchRow" id="noteNamingSwitchRow">
+          <button type="button" class="noteNamingBtn active" id="noteNamingAbcBtn" data-system="abc">ABC</button>
+          <button type="button" class="noteNamingBtn" id="noteNamingSolfegeBtn" data-system="solfege">до ре ми</button>
+        </div>
       </div>
 
       <div id="midiPanel">
+        <div id="dawOutPanel">
+          <div class="dawOutTitle">Сыграть аккорд в DAW (при нажатии на ячейку аккорда):</div>
+          <div class="dawOutBtnRow">
+            <button type="button" class="noteBtn" id="dawPlayTogetherBtn" data-tip="Сыграть в DAW">Сыграть в DAW (за раз)</button>
+            <button type="button" class="noteBtn" id="dawPlaySequenceBtn" data-tip="Сыграть в DAW">Сыграть в DAW (по очереди)</button>
+          </div>
+          <div class="dawOutFieldRow">
+            <label for="dawIntervalInput">Интервал между нотами (сек):</label>
+            <input type="text" id="dawIntervalInput" inputmode="decimal" value="1">
+          </div>
+          <div class="dawOutFieldRow">
+            <label for="dawVelocityInput">Velocity:</label>
+            <input type="text" id="dawVelocityInput" inputmode="numeric" value="100">
+          </div>
+          <div class="dawOutFormatBlock">
+            <div class="dawOutTitle">Формат выхода:</div>
+            <div class="noteNamingSwitchRow" id="dawVelocityFormatSwitchRow">
+              <button type="button" class="noteNamingBtn active" id="dawFormatMidi1Btn" data-format="127">midi 1 (1-127)</button>
+              <button type="button" class="noteNamingBtn" id="dawFormatMidi2Btn" data-format="65536">midi 2(1-65536)</button>
+            </div>
+          </div>
+          <div class="midiPanelRow">
+            <label for="dawOutputSelect">MIDI выход:</label>
+            <select id="dawOutputSelect"><option>—</option></select>
+          </div>
+        </div>
         <div class="midiPanelRow">
           <label for="midiInputSelect">MIDI вход:</label>
           <select id="midiInputSelect"><option>—</option></select>
         </div>
-        <div id="midiStatusLine">Ожидание доступа к MIDI...</div>
-        <button type="button" class="noteBtn" id="midiReconnectBtn">Подключить MIDI</button>
+        <div id="midiStatusLine">MIDI-клавиатура не подключена. Нажмите кнопку ниже, чтобы подключить.</div>
+        <button type="button" class="noteBtn" id="midiReconnectBtn">Подключить MIDI клавиатуру</button>
       </div>
   </div>
 
@@ -1314,6 +1461,80 @@ const WEDGE_GAP_ANGLE  = 0.5;
 const majors = ['C','G','D','A','E','B','F#','Db','Ab','Eb','Bb','F'];
 const minors = ['Am','Em','Bm','F#m','C#m','G#m','D#m','Bbm','Fm','Cm','Gm','Dm'];
 const noteNames = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+
+/* =========================================================
+   НАСТРОЙКА "Название нот": ABC / до-ре-ми (сольфеджио)
+   Переключатель в настройках Обучения (#noteNamingSwitchRow).
+   Значение сохраняется в localStorage и применяется на всех
+   уровнях (Обучение, Практика 1/2/3) — везде, где рисуются
+   буквенные названия нот.
+   ========================================================= */
+const NOTE_NAMING_SYSTEM_KEY = 'circleNoteNamingSystem';
+const NOTE_TO_SOLFEGE = { C:'До', D:'Ре', E:'Ми', F:'Фа', G:'Соль', A:'Ля', B:'Си' };
+let noteNamingSystem = localStorage.getItem(NOTE_NAMING_SYSTEM_KEY) === 'solfege' ? 'solfege' : 'abc';
+
+// Заменяет ведущую букву ноты (A-G, с # или b) в начале строки на
+// слог сольфеджио, остаток строки (напр. "m", "maj7", "sus4") не
+// трогает. Если система "abc" — возвращает строку как есть.
+function noteDisplay(str){
+  if(noteNamingSystem !== 'solfege' || typeof str !== 'string') return str;
+  return str.replace(/^([A-G])(#|b)?/, (m, letter, acc) => (NOTE_TO_SOLFEGE[letter] || letter) + (acc || ''));
+}
+
+// Пересобирает текст всех уже нарисованных подписей нот на всех
+// кругах/клавиатурах/подсказках, не перестраивая сами элементы —
+// вызывается сразу при переключении настройки.
+function refreshAllNoteNameDisplays(){
+  ['minor','major'].forEach(ring=>{
+    const names = ringData[ring].names;
+    for(let i=0;i<12;i++){
+      const s1 = selectWedgeMap[ring+'-'+i];
+      if(s1) s1.label.textContent = noteDisplay(names[i]);
+      const s2 = selectWedgeMapL2[ring+'-'+i];
+      if(s2) s2.label.textContent = noteDisplay(names[i]);
+      const s3 = selectWedgeMap3[ring+'-'+i];
+      if(s3) s3.label.textContent = noteDisplay(names[i]);
+      const t = trainWedgeMap[ring+'-'+i];
+      if(t){
+        t.label.textContent = noteDisplay(t.name);
+        if(t.altBottomLabel){
+          const altNoteName = (TRAIN_ALT_NOTE_MAP[ring] || {})[t.name];
+          if(altNoteName) t.altBottomLabel.textContent = noteDisplay(altNoteName);
+        }
+      }
+    }
+  });
+  if(typeof refreshTrainChordLetters === 'function') refreshTrainChordLetters();
+  if(typeof centerText !== 'undefined' && centerText){
+    if(typeof practiceLevel !== 'undefined' && practiceLevel === 1 && typeof current !== 'undefined' && current){
+      centerText.textContent = noteDisplay(current.name);
+    } else if(typeof practiceLevel !== 'undefined' && practiceLevel === 3 && typeof currentL3 !== 'undefined' && currentL3){
+      centerText.textContent = noteDisplay(currentL3.name);
+    }
+  }
+  if(typeof renderLevel3Hint === 'function') renderLevel3Hint();
+  if(typeof updateTrainPiano === 'function') updateTrainPiano();
+  if(typeof updateL3Piano === 'function') updateL3Piano();
+}
+
+function setNoteNamingSystem(system){
+  noteNamingSystem = system === 'solfege' ? 'solfege' : 'abc';
+  localStorage.setItem(NOTE_NAMING_SYSTEM_KEY, noteNamingSystem);
+  const abcBtn = document.getElementById('noteNamingAbcBtn');
+  const solfegeBtn = document.getElementById('noteNamingSolfegeBtn');
+  if(abcBtn) abcBtn.classList.toggle('active', noteNamingSystem === 'abc');
+  if(solfegeBtn) solfegeBtn.classList.toggle('active', noteNamingSystem === 'solfege');
+  refreshAllNoteNameDisplays();
+}
+
+(function initNoteNamingSwitch(){
+  const abcBtn = document.getElementById('noteNamingAbcBtn');
+  const solfegeBtn = document.getElementById('noteNamingSolfegeBtn');
+  if(abcBtn) abcBtn.addEventListener('click', ()=>setNoteNamingSystem('abc'));
+  if(solfegeBtn) solfegeBtn.addEventListener('click', ()=>setNoteNamingSystem('solfege'));
+  if(abcBtn) abcBtn.classList.toggle('active', noteNamingSystem === 'abc');
+  if(solfegeBtn) solfegeBtn.classList.toggle('active', noteNamingSystem === 'solfege');
+})();
 
 const FLAT_TO_SHARP = { 'Db':'C#', 'Ab':'G#', 'Eb':'D#', 'Bb':'A#', 'Gb':'F#' };
 
@@ -1530,7 +1751,7 @@ function pickNewChord(){
   let idx = Math.floor(r / weight);
   if(idx >= pool.length) idx = pool.length - 1;
   current = pool[idx];
-  centerText.textContent = current.name;
+  centerText.textContent = noteDisplay(current.name);
 
   rootHistory.push(rootOf(current.name));
   if(rootHistory.length > 3) rootHistory.shift();
@@ -1603,7 +1824,7 @@ function buildSelectRing(ringName){
       class: 'selLabel',
       fill: 'var(--app-text-color)'
     });
-    label.textContent = names[i];
+    label.textContent = noteDisplay(names[i]);
     label.style.pointerEvents = 'none';
     selectSvg.appendChild(label);
 
@@ -1699,7 +1920,7 @@ function buildSelectRingL2(ringName){
       class: 'selLabel',
       fill: 'var(--app-text-color)'
     });
-    label.textContent = names[i];
+    label.textContent = noteDisplay(names[i]);
     label.style.pointerEvents = 'none';
     selectSvgL2.appendChild(label);
 
@@ -1795,7 +2016,7 @@ function buildSelectRing3(ringName){
       class: 'selLabel',
       fill: 'var(--app-text-color)'
     });
-    label.textContent = names[i];
+    label.textContent = noteDisplay(names[i]);
     label.style.pointerEvents = 'none';
     selectSvg3.appendChild(label);
 
@@ -1936,10 +2157,12 @@ const TRAIN_ALT_NOTE_MAP = {
 // от обычного размера подписей круга (.selLabel, 14px). Меняйте это число,
 // чтобы изменить размер шрифта именно у этих нот.
 const TRAIN_ALT_NOTE_FONT_SIZE = 14;
-// Расстояние (px) от центральной черты до текста нот сверху/снизу.
-// (увеличено в 1.5 раза от исходных 3px — меняйте это число, чтобы
-// подстроить расстояние и для верхней, и для нижней ноты одновременно).
-const TRAIN_ALT_NOTE_LINE_GAP = 5;
+// Расстояние (px) от верхней ноты до черты (черта — фиксированной
+// позиции, в центре ячейки; нижняя нота отсчитывается от черты отдельно,
+// через TRAIN_ALT_NOTE_LINE_TO_BOTTOM_GAP ниже, независимо от этого числа).
+const TRAIN_ALT_NOTE_TOP_BOTTOM_GAP = 10;
+// Расстояние (px) от центральной черты до нижней ноты.
+const TRAIN_ALT_NOTE_LINE_TO_BOTTOM_GAP = 7;
 // Половина длины горизонтальной черты (px).
 const TRAIN_ALT_NOTE_LINE_HALF_WIDTH = 11;
 
@@ -1964,7 +2187,7 @@ function buildTrainRing(ringName, names, rInner, rOuter, baseColor){
       class: 'selLabel',
       fill: 'var(--app-text-color)'
     });
-    label.textContent = names[i];
+    label.textContent = noteDisplay(names[i]);
     label.style.pointerEvents = 'none';
     trainSvg.appendChild(label);
 
@@ -1984,7 +2207,7 @@ function buildTrainRing(ringName, names, rInner, rOuter, baseColor){
       trainSvg.appendChild(altLine);
 
       altBottomLabel = el('text', {
-        x: mid.x, y: mid.y + TRAIN_ALT_NOTE_LINE_GAP,
+        x: mid.x, y: mid.y + TRAIN_ALT_NOTE_LINE_TO_BOTTOM_GAP,
         class: 'trainAltNoteText'
       });
       // dominant-baseline="hanging" — верхний край глифа стоит ровно в
@@ -1993,7 +2216,7 @@ function buildTrainRing(ringName, names, rInner, rOuter, baseColor){
       // сверху (там y — это baseline, а у наших нот нет "хвостов" вниз,
       // так что нижний край глифа практически совпадает с baseline).
       altBottomLabel.setAttribute('dominant-baseline', 'hanging');
-      altBottomLabel.textContent = altNoteName;
+      altBottomLabel.textContent = noteDisplay(altNoteName);
       altBottomLabel.style.fontSize = TRAIN_ALT_NOTE_FONT_SIZE + 'px';
       altBottomLabel.style.display = 'none';
       trainSvg.appendChild(altBottomLabel);
@@ -2098,7 +2321,7 @@ function refreshTrainAltNoteCell(ring, name){
   });
   const checked = checkboxId ? !!trainAltNoteState[checkboxId] : false;
   if(checked){
-    item.label.setAttribute('y', item.midY - TRAIN_ALT_NOTE_LINE_GAP);
+    item.label.setAttribute('y', item.midY - TRAIN_ALT_NOTE_TOP_BOTTOM_GAP);
     item.altLine.style.display = '';
     item.altBottomLabel.style.display = '';
   } else {
@@ -2207,7 +2430,7 @@ function refreshTrainChordLetters(){
     if(!item.chordLettersEl || !item.chordLettersTextPath) return;
     if(trainShowChordLetters){
       const letters = trainChordLettersFor(item.name, ring, trainChordType);
-      item.chordLettersTextPath.textContent = letters.join(' ');
+      item.chordLettersTextPath.textContent = letters.map(noteDisplay).join(' ');
       item.chordLettersEl.style.fontSize = (CHORD_LETTERS_FONT_SIZE_BY_COUNT[letters.length] || CHORD_LETTERS_FONT_SIZE_BY_COUNT.default) + 'px';
       item.chordLettersEl.style.display = '';
       // Если естественная длина текста больше доступной дуги (напр. для
@@ -2413,7 +2636,7 @@ function renderTrainPiano(notes){
       fill: key.isBlack ? '#fff' : '#141414',
       'font-size': key.isBlack ? '11' : '13'
     });
-    label.textContent = n.letter + (n.offset>0 ? '#'.repeat(n.offset) : n.offset<0 ? 'b'.repeat(-n.offset) : '');
+    label.textContent = noteDisplay(n.letter + (n.offset>0 ? '#'.repeat(n.offset) : n.offset<0 ? 'b'.repeat(-n.offset) : ''));
     svg.appendChild(label);
   });
 
@@ -2622,7 +2845,7 @@ function renderL3Piano(notes, foundPcSet){
       fill: key.isBlack ? '#fff' : '#141414',
       'font-size': key.isBlack ? '11' : '13'
     });
-    label.textContent = n.letter + (n.offset>0 ? '#'.repeat(n.offset) : n.offset<0 ? 'b'.repeat(-n.offset) : '');
+    label.textContent = noteDisplay(n.letter + (n.offset>0 ? '#'.repeat(n.offset) : n.offset<0 ? 'b'.repeat(-n.offset) : ''));
     svg.appendChild(label);
   });
 
@@ -3034,7 +3257,7 @@ function chordTypeHasVariant2(type, ring){
 // раньше, мажорное — по дополнительной просьбе пользователя); m9 —
 // заблокирован на обоих кольцах по просьбе пользователя.
 const CHORD_TYPES_UI_VARIANT2_BLOCKED = new Set(['madd11', 'm13', 'm9']);
-const CHORD_TYPES_UI_VARIANT2_BLOCKED_MINOR_ONLY = new Set(['add11', 'dom11', 'maj9', 'maj11', 'mmaj13', 'maj13']);
+const CHORD_TYPES_UI_VARIANT2_BLOCKED_MINOR_ONLY = new Set(['add11', 'dom11', 'maj9', 'maj11', 'mmaj13', 'maj13', 'dom13']);
 // m11 — по просьбе пользователя Вариант 2 заблокирован только на
 // МАЖОРНОМ кольце (m11 входит в TRAIN_V1V2_SWAPPED_TYPES, поэтому UI-кнопка
 // "Вариант 2" привязана к внутреннему числовому варианту — именно его и
@@ -4502,7 +4725,7 @@ function pickNewChordL3(){
     letters: getChordNoteLettersL3(chosen.ring, chosen.index, chordType),
     found: new Set()
   };
-  if(practiceLevel === 3) centerText.textContent = currentL3.name;
+  if(practiceLevel === 3) centerText.textContent = noteDisplay(currentL3.name);
   renderLevel3Hint();
   if(typeof updateL3Piano === 'function') updateL3Piano();
 
@@ -4570,13 +4793,13 @@ function renderLevel3Hint(){
     if(majorIdx !== -1){
       const p = polar(CX, CY, LEVEL3_HINT_RADIUS_MAJOR, majorIdx * 30);
       const t = el('text', {x:p.x, y:p.y, class:'level3HintLabel'});
-      t.textContent = letter;
+      t.textContent = noteDisplay(letter);
       level3HintLayer.appendChild(t);
     }
     if(minorIdx !== -1){
       const p = polar(CX, CY, LEVEL3_HINT_RADIUS_MINOR, minorIdx * 30);
       const t = el('text', {x:p.x, y:p.y, class:'level3HintLabel'});
-      t.textContent = letter;
+      t.textContent = noteDisplay(letter);
       level3HintLayer.appendChild(t);
     }
   });
@@ -5273,6 +5496,7 @@ function selectTrainTonic(ring, tonicIndex){
     // повторный клик по уже нажатой ноте — снимаем выбор
     clearTrainTonicPress();
     applyTrainChordType();
+    if(typeof clearDawTimers === 'function') clearDawTimers();
     return;
   }
   clearTrainTonicPress();
@@ -5293,6 +5517,7 @@ function selectTrainTonic(ring, tonicIndex){
     highlightTriadForTonic(ring, tonicIndex);
   }
   if(typeof updateTrainPiano === 'function') updateTrainPiano();
+  if(typeof playCurrentTrainChordToDaw === 'function') playCurrentTrainChordToDaw();
 }
 
 // изначально все ноты в отжатом состоянии — ничего не подсвечено
@@ -5649,9 +5874,9 @@ function applyPracticeLevel(){
   }
 
   if(practiceLevel === 1){
-    centerText.textContent = current ? current.name : '';
+    centerText.textContent = current ? noteDisplay(current.name) : '';
   } else if(practiceLevel === 3){
-    centerText.textContent = currentL3 ? currentL3.name : '';
+    centerText.textContent = currentL3 ? noteDisplay(currentL3.name) : '';
   } else {
     centerText.textContent = '';
   }
@@ -5897,9 +6122,9 @@ function updateSidePanelPinOffset(){
 
 /* ===== Расположение строки-чекбокса "Настройки сбоку от круга"
    (#sidePanelPinRow) внутри панели настроек — своё для каждой вкладки:
-   в Практике 1/2/3 — сразу под кругом (после соответствующего
-   selectCircleWrap*, перед доп. настройками уровня 3, если они есть),
-   в Обучении — сразу под чекбоксом "Показывать клавиатуру"
+   в Практике 1/2 — сразу под кругом (после соответствующего
+   selectCircleWrap*), в Практике 3 и в Обучении — сразу под чекбоксом
+   "Показывать клавиатуру"
    (#trainShowPianoCheckbox), внутри #trainExtraSettings. Строка одна и
    та же (не дублируется), просто переносится по DOM при смене вкладки —
    тем же приёмом, что и сам #sidePanel при закреплении сбоку. ===== */
@@ -5914,8 +6139,7 @@ function updateSidePanelPinRowPosition(){
   } else if(tab === 'p2'){
     target = level2Panel;
   } else if(tab === 'p3'){
-    target = level3Panel;
-    before = document.getElementById('level3ExtraSettings');
+    target = document.getElementById('level3ExtraSettings');
   } else if(tab === 'training'){
     target = document.getElementById('trainExtraSettings');
   }
@@ -6478,6 +6702,14 @@ function onMidiMessage(event){
   const note = data[1];
   const velocity = data[2];
   if(status === 0x90 && velocity > 0){
+    // Если это эхо нашей же ноты, только что отправленной в DAW через
+    // виртуальный MIDI-порт (LoopMIDI/LoopBe и т.п.) — игнорируем.
+    // Такие порты обычно видны браузеру одновременно и как выход, и
+    // как вход, поэтому без этой проверки любая отправленная в DAW
+    // нота тут же приходит обратно как "нажатие на MIDI-клавиатуре",
+    // это триггерит выбор новой ячейки/аккорда, тот снова шлётся в
+    // DAW — и так по кругу (отсюда "куча случайных аккордов подряд").
+    if(isDawEchoNote(note)) return;
     handleMidiNote(note % 12);
   }
 }
@@ -6523,7 +6755,8 @@ function requestMidiAccess(){
     .then(access => {
       midiAccess = access;
       populateMidiSelect();
-      access.onstatechange = () => populateMidiSelect();
+      populateDawOutputSelect();
+      access.onstatechange = () => { populateMidiSelect(); populateDawOutputSelect(); };
     })
     .catch(err => {
       statusLine.textContent = 'Ошибка доступа к MIDI: ' + err +
@@ -6542,14 +6775,257 @@ function requestMidiAccess(){
 function refreshMidiInputs(){
   if(midiAccess){
     populateMidiSelect();
+    populateDawOutputSelect();
   } else {
     requestMidiAccess();
   }
 }
 
-requestMidiAccess();
+/* Раньше здесь стоял вызов requestMidiAccess() сразу при загрузке
+   страницы — из-за этого браузер каждый раз при заходе на страницу
+   показывал запрос разрешения на доступ к MIDI, даже если пользователь
+   не собирался подключать клавиатуру. Теперь запрос доступа выполняется
+   только по нажатию на кнопку "Подключить MIDI клавиатуру" (см. ниже),
+   которая сама вызывает requestMidiAccess() (через refreshMidiInputs). */
 
 document.getElementById('midiReconnectBtn').addEventListener('click', refreshMidiInputs);
+
+/* =========================================================
+   "Сыграть в DAW" — отправка аккорда обучения как MIDI-нот на
+   выбранный виртуальный MIDI-выход (loopMIDI/loopBe и т.п.), чтобы
+   аккорд прозвучал в подключённой DAW через VST-пиано.
+
+   Две кнопки-переключателя (одновременно активна максимум одна):
+     - "за раз"      — все ноты аккорда отправляются одновременно;
+     - "по очереди"  — ноты отправляются одна за другой с заданным
+                        интервалом (по умолчанию 1 секунда).
+   Интервал и velocity вводятся вручную и сохраняются в localStorage.
+   Формат "MIDI 1 / MIDI 2" определяет диапазон velocity, который
+   пользователь считает "полной громкостью" для выбранного порта:
+   введённое значение нормализуется в стандартный 0-127 байт
+   Note On/Off (единственный диапазон, который умеет отправлять
+   Web MIDI API), пропорционально выбранному диапазону, — так что
+   ввод, например, 65536 при формате "MIDI 2" даёт ту же реальную
+   громкость, что и 127 при формате "MIDI 1".
+   ========================================================= */
+const DAW_OUT_MODE_KEY = 'circleOfFifths_dawOutMode_v1'; // 'off' | 'together' | 'sequence'
+const DAW_OUT_INTERVAL_KEY = 'circleOfFifths_dawOutInterval_v1';
+const DAW_OUT_VELOCITY_KEY = 'circleOfFifths_dawOutVelocity_v1';
+const DAW_OUT_FORMAT_KEY = 'circleOfFifths_dawOutFormat_v1'; // '127' | '65536'
+const DAW_OUT_PORT_KEY = 'circleOfFifths_dawOutPort_v1'; // имя выбранного MIDI-выхода
+
+let dawOutMode = 'off';
+try{
+  const savedMode = localStorage.getItem(DAW_OUT_MODE_KEY);
+  if(savedMode === 'together' || savedMode === 'sequence') dawOutMode = savedMode;
+}catch(e){}
+
+const dawIntervalInput = document.getElementById('dawIntervalInput');
+const dawVelocityInput = document.getElementById('dawVelocityInput');
+const dawFormatMidi1Btn = document.getElementById('dawFormatMidi1Btn');
+const dawFormatMidi2Btn = document.getElementById('dawFormatMidi2Btn');
+const dawOutputSelect = document.getElementById('dawOutputSelect');
+const dawPlayTogetherBtn = document.getElementById('dawPlayTogetherBtn');
+const dawPlaySequenceBtn = document.getElementById('dawPlaySequenceBtn');
+
+// интервал: принимает "1", "0.5", "0,5" и т.д. -> число секунд (>0)
+function parseDawInterval(raw){
+  const n = parseFloat(String(raw).trim().replace(',', '.'));
+  if(!isFinite(n) || n < 0) return 1;
+  return n;
+}
+function loadDawInterval(){
+  let saved = null;
+  try{ saved = localStorage.getItem(DAW_OUT_INTERVAL_KEY); }catch(e){}
+  return (saved !== null && saved !== '') ? saved : '1';
+}
+dawIntervalInput.value = loadDawInterval();
+function saveDawInterval(){
+  try{ localStorage.setItem(DAW_OUT_INTERVAL_KEY, dawIntervalInput.value); }catch(e){}
+}
+dawIntervalInput.addEventListener('change', saveDawInterval);
+dawIntervalInput.addEventListener('blur', saveDawInterval);
+
+// velocity: любое целое число (интерпретация зависит от выбранного формата)
+function parseDawVelocity(raw){
+  const n = parseInt(String(raw).trim().replace(',', '.'), 10);
+  if(!isFinite(n) || isNaN(n)) return 100;
+  return n;
+}
+function loadDawVelocity(){
+  let saved = null;
+  try{ saved = localStorage.getItem(DAW_OUT_VELOCITY_KEY); }catch(e){}
+  return (saved !== null && saved !== '') ? saved : '100';
+}
+dawVelocityInput.value = loadDawVelocity();
+function saveDawVelocity(){
+  try{ localStorage.setItem(DAW_OUT_VELOCITY_KEY, dawVelocityInput.value); }catch(e){}
+}
+dawVelocityInput.addEventListener('change', saveDawVelocity);
+dawVelocityInput.addEventListener('blur', saveDawVelocity);
+
+// формат диапазона velocity (MIDI 1 / MIDI 2)
+function loadDawFormat(){
+  let saved = null;
+  try{ saved = localStorage.getItem(DAW_OUT_FORMAT_KEY); }catch(e){}
+  return (saved === '65536') ? '65536' : '127';
+}
+// текущее значение формата ('127' или '65536'); кнопки — переключатель,
+// нажата всегда ровно одна из них (как ABC / до-ре-ми)
+let dawVelocityFormatValue = loadDawFormat();
+function applyDawFormatButtons(){
+  dawFormatMidi1Btn.classList.toggle('active', dawVelocityFormatValue === '127');
+  dawFormatMidi2Btn.classList.toggle('active', dawVelocityFormatValue === '65536');
+}
+function setDawVelocityFormat(value){
+  dawVelocityFormatValue = value;
+  applyDawFormatButtons();
+  try{ localStorage.setItem(DAW_OUT_FORMAT_KEY, dawVelocityFormatValue); }catch(e){}
+}
+applyDawFormatButtons();
+dawFormatMidi1Btn.addEventListener('click', ()=> setDawVelocityFormat('127'));
+dawFormatMidi2Btn.addEventListener('click', ()=> setDawVelocityFormat('65536'));
+
+// нормализует введённую velocity (в диапазоне выбранного формата) в
+// стандартный MIDI-байт 1..127 для Note On/Off (0 зарезервирован под
+// Note Off "по протоколу", поэтому нижняя граница — 1)
+function computeDawVelocityByte(){
+  const raw = parseDawVelocity(dawVelocityInput.value);
+  const max = parseInt(dawVelocityFormatValue, 10) || 127;
+  const clamped = Math.min(Math.max(raw, 0), max);
+  let byte = Math.round((clamped / max) * 127);
+  if(byte < 1) byte = 1;
+  if(byte > 127) byte = 127;
+  return byte;
+}
+
+let dawMidiOutput = null; // выбранный MIDIOutput
+
+function populateDawOutputSelect(){
+  dawOutputSelect.innerHTML = '';
+  if(!midiAccess){
+    dawOutputSelect.innerHTML = '<option value="">—</option>';
+    dawMidiOutput = null;
+    return;
+  }
+  const outputs = [...midiAccess.outputs.values()];
+  if(outputs.length === 0){
+    dawOutputSelect.innerHTML = '<option value="">Нет выходов</option>';
+    dawMidiOutput = null;
+    return;
+  }
+  let savedName = null;
+  try{ savedName = localStorage.getItem(DAW_OUT_PORT_KEY); }catch(e){}
+  outputs.forEach(out => {
+    const opt = document.createElement('option');
+    opt.value = out.id;
+    opt.textContent = out.name + (out.state !== 'connected' ? ' (не подключено)' : '');
+    dawOutputSelect.appendChild(opt);
+  });
+  const matchByName = savedName ? outputs.find(o => o.name === savedName) : null;
+  dawOutputSelect.value = matchByName ? matchByName.id : outputs[0].id;
+  dawMidiOutput = outputs.find(o => o.id === dawOutputSelect.value) || outputs[0];
+}
+dawOutputSelect.addEventListener('change', ()=>{
+  if(!midiAccess) return;
+  const out = [...midiAccess.outputs.values()].find(o => o.id === dawOutputSelect.value);
+  dawMidiOutput = out || null;
+  try{ if(out) localStorage.setItem(DAW_OUT_PORT_KEY, out.name); }catch(e){}
+});
+
+function applyDawOutModeButtons(){
+  dawPlayTogetherBtn.classList.toggle('active', dawOutMode === 'together');
+  dawPlaySequenceBtn.classList.toggle('active', dawOutMode === 'sequence');
+}
+applyDawOutModeButtons();
+function setDawOutMode(mode){
+  if(typeof clearDawTimers === 'function') clearDawTimers();
+  dawOutMode = (dawOutMode === mode) ? 'off' : mode; // повторный клик выключает
+  applyDawOutModeButtons();
+  try{ localStorage.setItem(DAW_OUT_MODE_KEY, dawOutMode); }catch(e){}
+}
+dawPlayTogetherBtn.addEventListener('click', ()=> setDawOutMode('together'));
+dawPlaySequenceBtn.addEventListener('click', ()=> setDawOutMode('sequence'));
+
+// pc(0..11) + rank(0,1,2...) ноты обучения -> абсолютный номер MIDI-ноты
+// (rank=0 -> октава начиная с C4=60, дальше вверх, как рисуется на
+// клавиатуре обучения в computeTrainPianoNotes)
+function dawNoteNumberFor(note){
+  return 60 + note.rank*12 + note.pc;
+}
+
+let dawActiveTimers = [];
+// Ноты, на которые был отправлен Note On, но ещё не отправлен Note Off
+// (ждут своего отложенного note-off в dawActiveTimers). Нужно, чтобы при
+// отмене (клавиша отжата / выбрана новая ячейка до истечения holdMs) не
+// оставлять "зависшие" звучащие ноты — вместо того чтобы просто отменить
+// таймер note-off, дожимаем его немедленно.
+let dawHeldNotes = new Set();
+
+// Эхо-подавление: какие абсолютные MIDI-ноты мы сами только что
+// отправили в DAW — чтобы не среагировать на их приход обратно как на
+// вход с MIDI-клавиатуры (петля через виртуальный порт LoopMIDI/LoopBe,
+// который одновременно виден и как выход, и как вход).
+const DAW_ECHO_SUPPRESS_MS = 700;
+let dawEchoTimers = new Map(); // noteNum -> timeoutId
+function markDawEchoNote(noteNum){
+  const prev = dawEchoTimers.get(noteNum);
+  if(prev) clearTimeout(prev);
+  dawEchoTimers.set(noteNum, setTimeout(()=>{ dawEchoTimers.delete(noteNum); }, DAW_ECHO_SUPPRESS_MS));
+}
+function isDawEchoNote(noteNum){
+  return dawEchoTimers.has(noteNum);
+}
+
+function clearDawTimers(){
+  dawActiveTimers.forEach(id => clearTimeout(id));
+  dawActiveTimers = [];
+  // не оставляем зависших нот — досылаем note-off сразу
+  if(dawHeldNotes.size){
+    dawHeldNotes.forEach(n => dawSendNoteOff(n));
+    dawHeldNotes.clear();
+  }
+}
+
+function dawSendNoteOn(noteNum, velByte){
+  markDawEchoNote(noteNum & 0x7f);
+  dawHeldNotes.add(noteNum & 0x7f);
+  if(!dawMidiOutput) return;
+  try{ dawMidiOutput.send([0x90, noteNum & 0x7f, velByte]); }catch(e){}
+}
+function dawSendNoteOff(noteNum){
+  dawHeldNotes.delete(noteNum & 0x7f);
+  if(!dawMidiOutput) return;
+  try{ dawMidiOutput.send([0x80, noteNum & 0x7f, 0]); }catch(e){}
+}
+
+// проигрывает текущий выбранный аккорд обучения в DAW, если включена
+// одна из кнопок "Сыграть в DAW" и выбран MIDI-выход
+function playCurrentTrainChordToDaw(){
+  if(dawOutMode === 'off') return;
+  if(!dawMidiOutput) return;
+  const notes = (typeof computeTrainPianoNotes === 'function') ? computeTrainPianoNotes() : null;
+  if(!notes || notes.length === 0) return;
+  clearDawTimers();
+  const velByte = computeDawVelocityByte();
+  const noteNums = notes.map(dawNoteNumberFor);
+  const holdMs = 600; // длительность звучания одной ноты/аккорда перед note-off
+
+  if(dawOutMode === 'together'){
+    noteNums.forEach(n => dawSendNoteOn(n, velByte));
+    dawActiveTimers.push(setTimeout(()=>{ noteNums.forEach(n => dawSendNoteOff(n)); }, holdMs));
+    return;
+  }
+
+  // 'sequence' — ноты подряд, с интервалом между началами нот
+  const intervalSec = parseDawInterval(dawIntervalInput.value);
+  const intervalMs = Math.max(0, intervalSec) * 1000;
+  noteNums.forEach((n, i)=>{
+    const startAt = i * intervalMs;
+    dawActiveTimers.push(setTimeout(()=>{ dawSendNoteOn(n, velByte); }, startAt));
+    dawActiveTimers.push(setTimeout(()=>{ dawSendNoteOff(n); }, startAt + Math.min(holdMs, intervalMs > 0 ? intervalMs : holdMs)));
+  });
+}
 
 /* =========================================================
    Хоткеи выбора типа аккорда для режимов "Обучение" и "Практика 3".
@@ -6630,6 +7106,13 @@ let chordHotkeySpacePending = false;
 
 document.addEventListener('keydown', (e)=>{
   if(e.ctrlKey || e.metaKey || e.altKey) return;
+  // Если фокус сейчас в поле ввода интервала/velocity (или в любом другом
+  // текстовом поле ввода) — цифровые хоткеи аккордов не перехватываем,
+  // даём цифрам вводиться в поле как обычно.
+  const activeEl = document.activeElement;
+  if(activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA' || activeEl.isContentEditable)){
+    return;
+  }
   const inChordHotkeyMode = appMode === 'training' ||
     (appMode === 'practice' && practiceLevel === 3);
   if(!inChordHotkeyMode) return;

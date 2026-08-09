@@ -88,6 +88,83 @@
     /* клавиатура-подсказка вкладки "Обучение" (справа от круга) */
     --piano-white-key:#6b6b6b;
     --piano-black-key:#161616;
+    --piano-key-label-on-white:#141414;
+    --piano-key-label-on-black:#fff;
+
+    /* доп. переменные, вынесенные из точечных цветов ниже по файлу —
+       нужны, чтобы светлая тема (см. body.theme-light) могла их
+       переопределить вместе со всем остальным. */
+    --btn-active-hover-bg:#666;
+    --panel-border:rgba(255,255,255,0.15);
+    --tooltip-bg:#222;
+    --tooltip-text:#fff;
+    --status-ok:#8f8;
+    --status-error:#f88;
+  }
+
+  /* ===== Светлая тема =====
+     Переопределяет ту же самую палитру переменных, что и :root выше.
+     Прежняя версия давала слишком блеклую картинку (кольца почти не
+     отличались по тону от фона, пастельные подсказки/красная подсветка
+     терялись на светлом фоне) — здесь контраст увеличен по всем узлам:
+     кольца круга, кнопки, клавиатура-подсказка и цвета
+     подсказок/подсветки нот адаптированы отдельно под светлый фон. */
+  body.theme-light{
+    --bg:#f4f3f0;
+    --shadow:#b7b6b0;
+
+    --app-text-color:#1b1b1b;
+
+    --ring-major:#ffffff;
+    --ring-minor:#e6e5e0;
+    --ring-note:#d3d2cc;
+    --ring-major-hover:#eceae4;
+    --ring-minor-hover:#d7d6cf;
+
+    --green:#4c8a49;
+    --red:#e8746b;
+    --green-flash:#4c8a49;
+    --red-flash:rgba(232,116,107,0.55);
+
+    --blue:rgba(51,122,214,0.55);
+    --cyan:rgba(0,150,166,0.55);
+    --yellow:rgba(196,140,0,0.55);
+    --orange:rgba(214,101,32,0.55);
+    --purple:rgba(140,66,201,0.55);
+    --lime:rgba(96,153,25,0.55);
+
+    --blue-solid:rgb(51,122,214);
+    --cyan-solid:rgb(0,150,166);
+    --yellow-solid:rgb(196,140,0);
+    --orange-solid:rgb(214,101,32);
+    --purple-solid:rgb(140,66,201);
+    --lime-solid:rgb(96,153,25);
+
+    --menu-bg:#ffffff;
+    --menu-border:#d3d2cc;
+    --btn-bg:#eae9e4;
+    --btn-bg-hover:#dcdbd4;
+    --btn-active-bg:#2f2f2f;
+    --btn-active-text:#ffffff;
+    --btn-active-hover-bg:#1c1c1c;
+
+    --key-pressed: var(--btn-active-bg);
+    --header-text:#1b1b1b;
+    --section-label:#1b1b1b;
+
+    /* клавиатура-подсказка: белые клавиши — чистый белый с тёмной обводкой
+       (задаётся отдельно в разметке клавиатуры), чёрные остаются тёмными
+       для контраста */
+    --piano-white-key:#ffffff;
+    --piano-black-key:#2a2a2a;
+    --piano-key-label-on-white:#1b1b1b;
+    --piano-key-label-on-black:#fff;
+
+    --panel-border:rgba(0,0,0,0.18);
+    --tooltip-bg:#2a2a2a;
+    --tooltip-text:#f5f5f5;
+    --status-ok:#1e7a34;
+    --status-error:#b3261e;
   }
   html,body{
     margin:0;padding:0;background:var(--bg);
@@ -170,7 +247,7 @@
     background:var(--btn-bg-hover);
   }
   .ringBtn.active:hover{
-    background:#666;
+    background:var(--btn-active-hover-bg, #666);
   }
   .ringBtn.disabled{
     opacity:0.4;
@@ -357,7 +434,7 @@
     background:var(--btn-bg-hover);
   }
   .topTabBtn.active:hover{
-    background:#666;
+    background:var(--btn-active-hover-bg, #666);
   }
   #level2TypeHeader{
     font-size:16px;
@@ -661,6 +738,13 @@
   .trainAltNoteRow input[type="checkbox"]{
     cursor:pointer;
   }
+  #trainLockKeyRow.disabled{
+    opacity:0.4;
+    cursor:not-allowed;
+  }
+  #trainLockKeyRow.disabled input[type="checkbox"]{
+    cursor:not-allowed;
+  }
   /* ===== Настройка "Название нот": ABC / до-ре-ми (переключатель) ===== */
   .noteNamingSwitchRow{
     display:flex;
@@ -687,7 +771,7 @@
     background:var(--btn-bg-hover);
   }
   .noteNamingBtn.active:hover{
-    background:#666;
+    background:var(--btn-active-hover-bg, #666);
   }
   /* Текст нот в режиме "дроби" на самом круге (верхняя/нижняя нота под
      чертой). РАЗМЕР ШРИФТА этих нот задаётся ОТДЕЛЬНО от обычных подписей
@@ -768,10 +852,10 @@
   #midiStatusLine{
     font-family:var(--font);
     font-size:14px;
-    color:#8f8;
+    color:var(--status-ok, #8f8);
   }
   #midiStatusLine.midiStatusError{
-    color:#f88;
+    color:var(--status-error, #f88);
   }
   #dawOutPanel{
     display:flex;
@@ -928,7 +1012,7 @@
     background:var(--btn-bg-hover);
   }
   .noteBtn.active:hover{
-    background:#666;
+    background:var(--btn-active-hover-bg, #666);
   }
   #trainingPanel, #practicePanel{
     display:flex;
@@ -1002,6 +1086,20 @@
   }
   .chordGridCard.cols5{
     grid-template-columns:repeat(5, 1fr);
+  }
+  /* Сетка кнопок ладов — под кнопками аккордов, того же стиля/высоты
+     (см. .chordGridCard .ringBtn ниже), но в 7 колонок в один ряд;
+     шрифт чуть мельче общего 13px, чтобы влезли длинные названия
+     ("Миксолидийский") без переноса кнопки на две строки. */
+  #trainModeGroups{
+    margin-top:10px;
+  }
+  .chordGridCard.cols7{
+    grid-template-columns:repeat(7, 1fr);
+  }
+  .chordGridCard.cols7 .ringBtn{
+    font-size:10.5px;
+    padding:9px 1px;
   }
   .chordGridCard .ringBtnRow{
     gap:4px;
@@ -1125,8 +1223,8 @@
     position:fixed;
     max-width:min(320px, 90vw);
     width:max-content;
-    background:#222;
-    color:#fff;
+    background:var(--tooltip-bg, #222);
+    color:var(--tooltip-text, #fff);
     font-style:normal;
     font-weight:normal;
     font-size:18px;
@@ -1190,22 +1288,22 @@
 <div id="sidePanel">
 
   <div id="topTabBar">
-    <button class="topTabBtn active" id="topTabPractice1Btn" data-tab="p1">Практика 1</button>
-    <button class="topTabBtn" id="topTabPractice2Btn" data-tab="p2">Практика 2</button>
-    <button class="topTabBtn" id="topTabPractice3Btn" data-tab="p3">Практика 3</button>
-    <button class="topTabBtn" id="topTabTrainingBtn" data-tab="training">Обучение</button>
+    <button class="topTabBtn" id="topTabTrainingBtn" data-tab="training" data-i18n="tabTraining">Обучение</button>
+    <button class="topTabBtn" id="topTabPractice1Btn" data-tab="p1" data-i18n="tabNotes1">Ноты 1</button>
+    <button class="topTabBtn" id="topTabPractice2Btn" data-tab="p2" data-i18n="tabNotes2">Ноты 2</button>
+    <button class="topTabBtn" id="topTabPractice3Btn" data-tab="p3" data-i18n="tabChords">Аккорды</button>
   </div>
 
-  <label id="sidePanelPinRow"><input type="checkbox" id="sidePanelPinCheckbox">Настройки сбоку от круга</label>
+  <label id="sidePanelPinRow"><input type="checkbox" id="sidePanelPinCheckbox"><span data-i18n="sidePanelPin">Настройки сбоку от круга</span></label>
 
   <div id="practicePanel">
 
     <div id="level1Panel">
-      <div id="selectHeader">Выберите ноты</div>
+      <div id="selectHeader" data-i18n="selectHeader">Выберите ноты</div>
       <div id="selectButtons">
-        <button class="ringBtn" data-ring="major">Мажор</button>
-        <button class="ringBtn" data-ring="minor">Минор</button>
-        <button id="clearAllBtn" class="ringBtn" type="button">Убрать все</button>
+        <button class="ringBtn" data-ring="major" data-i18n="btnMajor">Мажор</button>
+        <button class="ringBtn" data-ring="minor" data-i18n="btnMinor">Минор</button>
+        <button id="clearAllBtn" class="ringBtn" type="button" data-i18n="btnClearAll">Убрать все</button>
       </div>
       <div id="selectCircleWrap">
         <svg id="selectCircle" width="480" height="480" viewBox="0 0 480 480"></svg>
@@ -1213,11 +1311,11 @@
     </div>
 
     <div id="level2Panel" style="display:none">
-      <div id="selectHeader2">Выберите ноты</div>
+      <div id="selectHeader2" data-i18n="selectHeader">Выберите ноты</div>
       <div id="selectButtons2">
-        <button class="ringBtn" data-ring="major">Мажор</button>
-        <button class="ringBtn" data-ring="minor">Минор</button>
-        <button id="clearAllBtn2" class="ringBtn" type="button">Убрать все</button>
+        <button class="ringBtn" data-ring="major" data-i18n="btnMajor">Мажор</button>
+        <button class="ringBtn" data-ring="minor" data-i18n="btnMinor">Минор</button>
+        <button id="clearAllBtn2" class="ringBtn" type="button" data-i18n="btnClearAll">Убрать все</button>
       </div>
       <div id="selectCircleWrap2">
         <svg id="selectCircle2" width="480" height="480" viewBox="0 0 480 480"></svg>
@@ -1225,10 +1323,10 @@
     </div>
 
     <div id="level3Panel" style="display:none">
-      <div id="level2TypeHeader">Тип аккорда</div>
+      <div id="level2TypeHeader" data-i18n="chordTypeHeader">Тип аккорда</div>
       <div id="level2TypeButtons">
         <div class="ringBtnRow">
-          <button class="ringBtn active" id="level2MajorMinorBtn" type="button" data-chordtype="triad">Мажор/Минор</button>
+          <button class="ringBtn active" id="level2MajorMinorBtn" type="button" data-chordtype="triad" data-i18n="majMinChord">Мажор/Минор</button>
           <span class="infoIcon" data-tip="Обычные трезвучия: мажор или минор — в зависимости от того, по какому кольцу круга кликнули.">i</span>
         </div>
         <div class="ringBtnRow">
@@ -1316,17 +1414,17 @@
           <span class="infoIcon" data-tip="m(Maj13) = Минор + большая 7-я ступень + большая 9-я ступень + чистая 11-я ступень + большая 13-я ступень - 1 b3 5 7 9(2) 11(4) 13(6).">i</span>
         </div>
       </div>
-      <div id="selectHeader3">Выберите ноты</div>
+      <div id="selectHeader3" data-i18n="selectHeader">Выберите ноты</div>
       <div id="selectButtons3">
-        <button class="ringBtn" data-ring="major">Мажор</button>
-        <button class="ringBtn" data-ring="minor">Минор</button>
-        <button id="clearAllBtn3" class="ringBtn" type="button">Убрать все</button>
+        <button class="ringBtn" data-ring="major" data-i18n="btnMajor">Мажор</button>
+        <button class="ringBtn" data-ring="minor" data-i18n="btnMinor">Минор</button>
+        <button id="clearAllBtn3" class="ringBtn" type="button" data-i18n="btnClearAll">Убрать все</button>
       </div>
       <div id="selectCircleWrap3">
         <svg id="selectCircle3" width="480" height="480" viewBox="0 0 480 480"></svg>
       </div>
       <div id="level3ExtraSettings">
-        <label><input type="checkbox" id="level3ShowPianoCheckbox">Показывать клавиатуру</label>
+        <label><input type="checkbox" id="level3ShowPianoCheckbox"><span data-i18n="showKeyboard">Показывать клавиатуру</span></label>
       </div>
     </div>
 
@@ -1336,28 +1434,28 @@
       <div id="trainDisplayModeButtons" style="display:none">
         <div class="variantCardsRow">
           <div class="variantGroup">
-            <div class="variantGroupLabel">Вариант 1
+            <div class="variantGroupLabel"><span data-i18n="variant1">Вариант 1</span>
               <span class="infoIcon" data-tip="Стрелки показываются прямо на круге. Берутся максиально близко расположенные друг к другу ноты. Цветом покрашены те же самые ноты на которые указывают стрелки.">i</span>
             </div>
             <div class="variantGroupRow">
-              <button class="ringBtn" id="trainV1ArrowsBtn" data-variant="2" data-style="arrows">Стрелками</button>
-              <button class="ringBtn" id="trainV1ColorBtn" data-variant="2" data-style="cells">Цветом</button>
+              <button class="ringBtn" id="trainV1ArrowsBtn" data-variant="2" data-style="arrows" data-i18n="byArrows">Стрелками</button>
+              <button class="ringBtn" id="trainV1ColorBtn" data-variant="2" data-style="cells" data-i18n="byColor">Цветом</button>
             </div>
           </div>
           <div class="variantGroup">
-            <div class="variantGroupLabel">Вариант 2
-              <span class="infoIcon" data-tip="Стрелки показываются над или внутри круга. Альтернатива варианту 1, но есть не для всех аккородов. Цветом покрашены те же самые ноты на которые указывают стрелки.">i</span>
+            <div class="variantGroupLabel"><span data-i18n="variant2">Вариант 2</span>
+              <span class="infoIcon" data-tip="Стрелки показываются над или внутри круга. Альтернатива варианту 1, но есть не для всех аккордов. Цветом покрашены те же самые ноты на которые указывают стрелки.">i</span>
             </div>
             <div class="variantGroupRow">
-              <button class="ringBtn active" id="trainV2ArrowsBtn" data-variant="1" data-style="arrows">Стрелками</button>
-              <button class="ringBtn" id="trainV2ColorBtn" data-variant="1" data-style="cells">Цветом</button>
+              <button class="ringBtn active" id="trainV2ArrowsBtn" data-variant="1" data-style="arrows" data-i18n="byArrows">Стрелками</button>
+              <button class="ringBtn" id="trainV2ColorBtn" data-variant="1" data-style="cells" data-i18n="byColor">Цветом</button>
             </div>
           </div>
         </div>
 
         <div id="trainChordGroups" class="chordGridCard cols5">
           <div class="ringBtnRow">
-            <button class="ringBtn active" id="trainMajorMinorBtn" data-chord="triad">Мажор/Минор</button>
+            <button class="ringBtn active" id="trainMajorMinorBtn" data-chord="triad" data-i18n="majMinChord">Мажор/Минор</button>
             <span class="infoIcon" data-tip="Обычные трезвучия: мажор или минор — в зависимости от того, по какому кольцу круга кликнули.">i</span>
           </div>
           <div class="ringBtnRow">
@@ -1452,18 +1550,65 @@
             <span class="infoIcon" data-tip="m(Maj13) = Минор + большая 7-я ступень + большая 9-я ступень + чистая 11-я ступень + большая 13-я ступень - 1 b3 5 7 9(2) 11(4) 13(6).">i</span>
           </div>
         </div>
+
+        <!-- ===== Лады: 7 кнопок под аккордами, того же размера/стиля
+             (.chordGridCard), но в 7 колонок. Одновременно можно выбрать
+             либо аккорд, либо лад (см. setTrainModeType/setTrainChordType
+             в <script> ниже) — активны они всегда взаимоисключающе.
+             Порядок — по формуле "нот слева-справа от тоники по кругу
+             квинт" (0-6 .. 6-0), подсказка (i) показывает эту формулу. ===== -->
+        <div id="trainModeGroups" class="chordGridCard cols7">
+          <div class="ringBtnRow">
+            <button class="ringBtn" id="trainModeLydianBtn" data-mode="lydian">Лидийский</button>
+            <span class="infoIcon" data-tip="0-6">i</span>
+          </div>
+          <div class="ringBtnRow">
+            <button class="ringBtn" id="trainModeMajorBtn" data-mode="major">Мажор</button>
+            <span class="infoIcon" data-tip="1-5">i</span>
+          </div>
+          <div class="ringBtnRow">
+            <button class="ringBtn" id="trainModeMixolydianBtn" data-mode="mixolydian">Миксолидийский</button>
+            <span class="infoIcon" data-tip="2-4">i</span>
+          </div>
+          <div class="ringBtnRow">
+            <button class="ringBtn" id="trainModeDorianBtn" data-mode="dorian">Дорийский</button>
+            <span class="infoIcon" data-tip="3-3">i</span>
+          </div>
+          <div class="ringBtnRow">
+            <button class="ringBtn" id="trainModeMinorBtn" data-mode="minor">Минор</button>
+            <span class="infoIcon" data-tip="4-2">i</span>
+          </div>
+          <div class="ringBtnRow">
+            <button class="ringBtn" id="trainModePhrygianBtn" data-mode="phrygian">Фригийский</button>
+            <span class="infoIcon" data-tip="5-1">i</span>
+          </div>
+          <div class="ringBtnRow">
+            <button class="ringBtn" id="trainModeLocrianBtn" data-mode="locrian">Локрийский</button>
+            <span class="infoIcon" data-tip="6-0">i</span>
+          </div>
+        </div>
       </div>
 
       <div id="trainLegend" style="display:none"></div>
 
       <div id="trainExtraSettings">
-        <label><input type="checkbox" id="trainShowChordLettersCheckbox">Показывать буквы аккорда под нотами</label>
-        <label><input type="checkbox" id="trainShowDegreesCheckbox">Показывать ступени аккорда</label>
-        <label><input type="checkbox" id="trainShowPianoCheckbox">Показывать клавиатуру</label>
+        <div class="noteNamingSwitchRow" id="langSwitchRow">
+          <button type="button" class="noteNamingBtn" id="langRuBtn" data-lang="ru">Русский</button>
+          <button type="button" class="noteNamingBtn" id="langEnBtn" data-lang="en">English</button>
+          <button type="button" class="noteNamingBtn" id="langZhBtn" data-lang="zh">中文</button>
+        </div>
+        <div class="noteNamingSwitchRow" id="themeSwitchRow">
+          <button type="button" class="noteNamingBtn" id="themeDarkBtn" data-theme="dark" data-i18n="themeDark">Тёмная тема</button>
+          <button type="button" class="noteNamingBtn" id="themeLightBtn" data-theme="light" data-i18n="themeLight">Светлая тема</button>
+        </div>
+        <label><input type="checkbox" id="trainShowChordLettersCheckbox"><span data-i18n="showChordLetters">Показывать буквы аккорда под нотами</span></label>
+        <label><input type="checkbox" id="trainShowDegreesCheckbox"><span data-i18n="showDegrees">Показывать ступени аккорда</span></label>
+        <label id="trainLockKeyRow" style="margin-left:24px;"><input type="checkbox" id="trainLockKeyCheckbox"><span data-i18n="lockKey">Привязать тональность</span></label>
+        <label><input type="checkbox" id="trainShowPianoCheckbox"><span data-i18n="showKeyboard">Показывать клавиатуру</span></label>
       </div>
 
       <div id="trainAltNoteSettings">
-        <div class="trainAltNoteGroupTitle">Показать альтернативную ноту на мажорном кругу</div>
+        <div class="trainAltNoteGroupTitle" data-i18n="altNoteMajorTitle">Показать альтернативную ноту на мажорном кругу</div>
         <div class="trainAltNoteRow">
           <label><input type="checkbox" id="altNoteMajorBb">A♯</label>
           <label><input type="checkbox" id="altNoteMajorEb">D♯</label>
@@ -1471,7 +1616,7 @@
           <label><input type="checkbox" id="altNoteMajorDb">C♯</label>
           <label><input type="checkbox" id="altNoteMajorFsharp">G♭</label>
         </div>
-        <div class="trainAltNoteGroupTitle">Показать альтернативную ноту на минорном кругу</div>
+        <div class="trainAltNoteGroupTitle" data-i18n="altNoteMinorTitle">Показать альтернативную ноту на минорном кругу</div>
         <div class="trainAltNoteRow">
           <label><input type="checkbox" id="altNoteMinorBbm">A♯</label>
           <label><input type="checkbox" id="altNoteMinorDsm">E♭</label>
@@ -1479,7 +1624,7 @@
           <label><input type="checkbox" id="altNoteMinorCsm">D♭</label>
           <label><input type="checkbox" id="altNoteMinorFsm">G♭</label>
         </div>
-        <div class="trainAltNoteGroupTitle">Название нот</div>
+        <div class="trainAltNoteGroupTitle" data-i18n="noteNamingTitle">Название нот</div>
         <div class="noteNamingSwitchRow" id="noteNamingSwitchRow">
           <button type="button" class="noteNamingBtn active" id="noteNamingAbcBtn" data-system="abc">ABC</button>
           <button type="button" class="noteNamingBtn" id="noteNamingSolfegeBtn" data-system="solfege">до ре ми</button>
@@ -1488,7 +1633,7 @@
 
       <div id="midiPanel">
         <div class="midiPanelRow">
-          <label for="midiInputCountSelect">MIDI вход:</label>
+          <label for="midiInputCountSelect" data-i18n="midiInputLabel">MIDI вход:</label>
           <select id="midiInputCountSelect">
             <option value="1">1</option>
             <option value="2">2</option>
@@ -1504,20 +1649,20 @@
         </div>
         <div id="dawOutPanel">
           <div class="midiPanelRow">
-            <label for="dawOutputSelect">MIDI выход:</label>
+            <label for="dawOutputSelect" data-i18n="midiOutputLabel">MIDI выход:</label>
             <select id="dawOutputSelect"><option>—</option></select>
           </div>
         </div>
-        <div id="midiStatusLine">MIDI-клавиатура не подключена. Нажмите кнопку ниже, чтобы подключить.</div>
-        <button type="button" class="noteBtn" id="midiReconnectBtn">Подключить MIDI клавиатуру</button>
+        <div id="midiStatusLine" data-i18n="midiStatusDefault">MIDI-клавиатура не подключена. Нажмите кнопку ниже, чтобы подключить.</div>
+        <button type="button" class="noteBtn" id="midiReconnectBtn" data-i18n="midiReconnectBtn">Подключить MIDI клавиатуру</button>
 
-        <div class="dawOutTitle">Сыграть аккорд в DAW (при нажатии на ячейку аккорда):</div>
+        <div class="dawOutTitle" data-i18n="dawOutTitle">Сыграть аккорд в DAW (при нажатии на ячейку аккорда):</div>
         <div class="dawOutBtnRow">
-          <button type="button" class="noteBtn" id="dawPlayTogetherBtn" data-tip="Сыграть в DAW">Сыграть в DAW (за раз)</button>
-          <button type="button" class="noteBtn" id="dawPlaySequenceBtn" data-tip="Сыграть в DAW">Сыграть в DAW (по очереди)</button>
+          <button type="button" class="noteBtn" id="dawPlayTogetherBtn" data-tip="Сыграть в DAW" data-i18n="dawPlayTogetherBtn">Сыграть в DAW (за раз)</button>
+          <button type="button" class="noteBtn" id="dawPlaySequenceBtn" data-tip="Сыграть в DAW" data-i18n="dawPlaySequenceBtn">Сыграть в DAW (по очереди)</button>
         </div>
         <div class="dawOutFieldRow">
-          <label for="dawIntervalInput">Интервал между нотами (сек):</label>
+          <label for="dawIntervalInput" data-i18n="dawIntervalLabel">Интервал между нотами (сек):</label>
           <input type="text" id="dawIntervalInput" inputmode="decimal" value="1">
         </div>
         <div class="dawOutFieldRow">
@@ -1525,7 +1670,7 @@
           <input type="text" id="dawVelocityInput" inputmode="numeric" value="100">
         </div>
         <div class="dawOutFormatBlock">
-          <div class="dawOutTitle">Формат выхода:</div>
+          <div class="dawOutTitle" data-i18n="dawFormatTitle">Формат выхода:</div>
           <div class="noteNamingSwitchRow" id="dawVelocityFormatSwitchRow">
             <button type="button" class="noteNamingBtn active" id="dawFormatMidi1Btn" data-format="127">midi 1 (1-127)</button>
             <button type="button" class="noteNamingBtn" id="dawFormatMidi2Btn" data-format="65536">midi 2(1-65536)</button>
@@ -1534,7 +1679,7 @@
 
         <label class="dawOutFieldRow dawSplitToggleRow" for="dawSplitChannelsCheckbox">
           <input type="checkbox" id="dawSplitChannelsCheckbox">
-          <span style="flex:1;">Разделить сигнал на каналы</span>
+          <span style="flex:1;" data-i18n="splitChannels">Разделить сигнал на каналы</span>
         </label>
         <div id="dawSplitChannelsPanel"></div>
       </div>
@@ -1549,7 +1694,12 @@
    ========================================================= */
 const CENTER_NOTE_CONFIG = {
   fontSize: 47,
-  color: getComputedStyle(document.documentElement).getPropertyValue('--app-text-color').trim(),
+  // было: getComputedStyle(...).trim() — значение "запекалось" один раз при
+  // старте скрипта (ДО применения сохранённой темы, см. applyTheme() ниже),
+  // поэтому нота в центре круга всегда красилась в тёмный цвет, даже если
+  // была выбрана светлая тема. 'var(--app-text-color)' — это живая ссылка
+  // на CSS-переменную, она сама пересчитывается при смене темы.
+  color: 'var(--app-text-color)',
   fontFamily: "'PT Sans Bold Embedded'",
   verticalOffset: 0.07
 };
@@ -1662,6 +1812,137 @@ function setNoteNamingSystem(system){
   if(solfegeBtn) solfegeBtn.classList.toggle('active', noteNamingSystem === 'solfege');
 })();
 
+/* =========================================================
+   НАСТРОЙКА "Язык интерфейса": русский / English / 中文.
+   Переключатель — в настройках Обучения, над чекбоксом
+   "Показывать буквы аккорда под нотами" (#langSwitchRow).
+   Меняет текст всех элементов с атрибутом data-i18n,
+   без перезагрузки страницы. Выбор сохраняется в localStorage
+   и применяется при следующем открытии.
+   ========================================================= */
+const APP_LANG_KEY = 'circleAppLang';
+const I18N = {
+  tabTraining:        { ru:'Обучение',  en:'Training',  zh:'训练' },
+  tabNotes1:           { ru:'Ноты 1',    en:'Notes 1',   zh:'音符 1' },
+  tabNotes2:           { ru:'Ноты 2',    en:'Notes 2',   zh:'音符 2' },
+  tabChords:           { ru:'Аккорды',   en:'Chords',    zh:'和弦' },
+  sidePanelPin:        { ru:'Настройки сбоку от круга', en:'Settings beside the circle', zh:'设置显示在圆圈旁边' },
+  selectHeader:        { ru:'Выберите ноты', en:'Select notes', zh:'选择音符' },
+  btnMajor:            { ru:'Мажор', en:'Major', zh:'大调' },
+  btnMinor:            { ru:'Минор', en:'Minor', zh:'小调' },
+  btnClearAll:         { ru:'Убрать все', en:'Clear all', zh:'全部清除' },
+  chordTypeHeader:     { ru:'Тип аккорда', en:'Chord type', zh:'和弦类型' },
+  majMinChord:         { ru:'Мажор/Минор', en:'Major/Minor', zh:'大调/小调' },
+  showKeyboard:        { ru:'Показывать клавиатуру', en:'Show keyboard', zh:'显示键盘' },
+  variant1:            { ru:'Вариант 1', en:'Variant 1', zh:'方案 1' },
+  variant2:            { ru:'Вариант 2', en:'Variant 2', zh:'方案 2' },
+  byArrows:            { ru:'Стрелками', en:'Arrows', zh:'箭头' },
+  byColor:             { ru:'Цветом', en:'Color', zh:'颜色' },
+  showChordLetters:    { ru:'Показывать буквы аккорда под нотами', en:'Show chord letters under notes', zh:'在音符下方显示和弦字母' },
+  showDegrees:         { ru:'Показывать ступени аккорда', en:'Show chord degrees', zh:'显示和弦音级' },
+  lockKey:             { ru:'Привязать тональность', en:'Lock key', zh:'锁定调性' },
+  themeDark:           { ru:'Тёмная тема', en:'Dark theme', zh:'深色主题' },
+  themeLight:          { ru:'Светлая тема', en:'Light theme', zh:'浅色主题' },
+  altNoteMajorTitle:   { ru:'Показать альтернативную ноту на мажорном кругу', en:'Show alternate note on the major circle', zh:'在大调圆圈上显示替代音符' },
+  altNoteMinorTitle:   { ru:'Показать альтернативную ноту на минорном кругу', en:'Show alternate note on the minor circle', zh:'在小调圆圈上显示替代音符' },
+  noteNamingTitle:     { ru:'Название нот', en:'Note naming', zh:'音符命名' },
+  midiInputLabel:      { ru:'MIDI вход:', en:'MIDI input:', zh:'MIDI 输入：' },
+  midiOutputLabel:     { ru:'MIDI выход:', en:'MIDI output:', zh:'MIDI 输出：' },
+  midiStatusDefault:   { ru:'MIDI-клавиатура не подключена. Нажмите кнопку ниже, чтобы подключить.', en:'MIDI keyboard not connected. Press the button below to connect.', zh:'MIDI键盘未连接。请点击下方按钮进行连接。' },
+  midiReconnectBtn:    { ru:'Подключить MIDI клавиатуру', en:'Connect MIDI keyboard', zh:'连接MIDI键盘' },
+  dawOutTitle:         { ru:'Сыграть аккорд в DAW (при нажатии на ячейку аккорда):', en:'Play chord in DAW (when clicking a chord cell):', zh:'在DAW中播放和弦（点击和弦单元格时）：' },
+  dawPlayTogetherBtn:  { ru:'Сыграть в DAW (за раз)', en:'Play in DAW (together)', zh:'在DAW中播放（同时）' },
+  dawPlaySequenceBtn:  { ru:'Сыграть в DAW (по очереди)', en:'Play in DAW (in sequence)', zh:'在DAW中播放（依次）' },
+  dawIntervalLabel:    { ru:'Интервал между нотами (сек):', en:'Interval between notes (sec):', zh:'音符间隔（秒）：' },
+  dawFormatTitle:      { ru:'Формат выхода:', en:'Output format:', zh:'输出格式：' },
+  splitChannels:       { ru:'Разделить сигнал на каналы', en:'Split signal into channels', zh:'将信号分配到不同通道' }
+};
+
+const DEGREE_LABEL_I18N = {
+  1:  { ru:'Тоника',    en:'Root',       zh:'根音' },
+  2:  { ru:'Секунда',   en:'Second',     zh:'二度' },
+  3:  { ru:'Терция',    en:'Third',      zh:'三度' },
+  4:  { ru:'Кварта',    en:'Fourth',     zh:'四度' },
+  5:  { ru:'Квинта',    en:'Fifth',      zh:'五度' },
+  7:  { ru:'Септима',   en:'Seventh',    zh:'七度' },
+  9:  { ru:'Нона',      en:'Ninth',      zh:'九度' },
+  11: { ru:'Ундецима',  en:'Eleventh',   zh:'十一度' },
+  13: { ru:'Тердецима', en:'Thirteenth', zh:'十三度' }
+};
+
+let appLang = localStorage.getItem(APP_LANG_KEY) || 'ru';
+if(appLang !== 'ru' && appLang !== 'en' && appLang !== 'zh') appLang = 'ru';
+
+function degreeLegendText(degree){
+  const label = (DEGREE_LABEL_I18N[degree] || {})[appLang] || '';
+  if(appLang === 'en') return `${label} — degree ${degree}`;
+  if(appLang === 'zh') return `${label} — 第${degree}音级`;
+  return `${label} — ${degree}я ступень`;
+}
+
+function applyLanguage(lang){
+  appLang = (lang === 'en' || lang === 'zh') ? lang : 'ru';
+  localStorage.setItem(APP_LANG_KEY, appLang);
+  document.querySelectorAll('[data-i18n]').forEach(el=>{
+    const key = el.getAttribute('data-i18n');
+    const entry = I18N[key];
+    if(entry) el.textContent = entry[appLang] || entry.ru;
+  });
+  const ruBtn = document.getElementById('langRuBtn');
+  const enBtn = document.getElementById('langEnBtn');
+  const zhBtn = document.getElementById('langZhBtn');
+  if(ruBtn) ruBtn.classList.toggle('active', appLang === 'ru');
+  if(enBtn) enBtn.classList.toggle('active', appLang === 'en');
+  if(zhBtn) zhBtn.classList.toggle('active', appLang === 'zh');
+  // renderTrainLegend() ссылается на trainLegendEl, которая объявлена
+  // (const) ниже по файлу — при самом первом вызове applyLanguage()
+  // (сразу при загрузке страницы, до объявления trainLegendEl) это
+  // упадёт с ReferenceError из-за temporal dead zone. На этом этапе
+  // легенда всё равно ещё не видна (обучение не отрисовано), поэтому
+  // просто безопасно игнорируем ошибку — легенда перерисуется позже,
+  // когда откроется вкладка "Обучение" (см. applyMode()/renderTrainLegend()).
+  try{
+    if(typeof renderTrainLegend === 'function') renderTrainLegend();
+  }catch(e){}
+}
+
+(function initLangSwitch(){
+  const ruBtn = document.getElementById('langRuBtn');
+  const enBtn = document.getElementById('langEnBtn');
+  const zhBtn = document.getElementById('langZhBtn');
+  if(ruBtn) ruBtn.addEventListener('click', ()=>applyLanguage('ru'));
+  if(enBtn) enBtn.addEventListener('click', ()=>applyLanguage('en'));
+  if(zhBtn) zhBtn.addEventListener('click', ()=>applyLanguage('zh'));
+  applyLanguage(appLang);
+})();
+
+/* =========================================================
+   Тёмная / светлая тема. По умолчанию — тёмная. Выбор
+   сохраняется в localStorage и применяется при следующем
+   открытии.
+   ========================================================= */
+const APP_THEME_KEY = 'circleAppTheme';
+let appTheme = localStorage.getItem(APP_THEME_KEY) || 'dark';
+if(appTheme !== 'dark' && appTheme !== 'light') appTheme = 'dark';
+
+function applyTheme(theme){
+  appTheme = (theme === 'light') ? 'light' : 'dark';
+  localStorage.setItem(APP_THEME_KEY, appTheme);
+  document.body.classList.toggle('theme-light', appTheme === 'light');
+  const darkBtn = document.getElementById('themeDarkBtn');
+  const lightBtn = document.getElementById('themeLightBtn');
+  if(darkBtn) darkBtn.classList.toggle('active', appTheme === 'dark');
+  if(lightBtn) lightBtn.classList.toggle('active', appTheme === 'light');
+}
+
+(function initThemeSwitch(){
+  const darkBtn = document.getElementById('themeDarkBtn');
+  const lightBtn = document.getElementById('themeLightBtn');
+  if(darkBtn) darkBtn.addEventListener('click', ()=>applyTheme('dark'));
+  if(lightBtn) lightBtn.addEventListener('click', ()=>applyTheme('light'));
+  applyTheme(appTheme);
+})();
+
 const FLAT_TO_SHARP = { 'D♭':'C♯', 'A♭':'G♯', 'E♭':'D♯', 'B♭':'A♯', 'G♭':'F♯' };
 
 function rootOf(name){
@@ -1678,26 +1959,27 @@ function polar(cx, cy, r, angleDeg){
   return { x: cx + r * Math.cos(a), y: cy + r * Math.sin(a) };
 }
 
-// Угловая полуширина дуги для буквенной подписи аккорда (в градусах от
+// Угловая полуширина зоны для буквенной подписи аккорда (в градусах от
 // центра ячейки в обе стороны). Меньше половины ширины ячейки (15°),
 // чтобы буквы не пересекали её боковые границы.
 const CHORD_LETTERS_ARC_HALF_ANGLE = 13;
 
-// Строит "d" для невидимой дуги, вдоль которой рисуются буквы аккорда
-// (через <textPath>). На нижней половине круга (90°..270°) дуга рисуется
-// в обратном направлении — иначе текст оказался бы перевёрнутым вверх
-// ногами (стандартная особенность текста на SVG-путях).
-function chordLettersArcD(radius, centerAngle){
-  const a1 = centerAngle - CHORD_LETTERS_ARC_HALF_ANGLE;
-  const a2 = centerAngle + CHORD_LETTERS_ARC_HALF_ANGLE;
-  const norm = ((centerAngle % 360) + 360) % 360;
-  const flip = norm > 90 && norm < 270;
-  const startAngle = flip ? a2 : a1;
-  const endAngle = flip ? a1 : a2;
-  const p1 = polar(CX, CY, radius, startAngle);
-  const p2 = polar(CX, CY, radius, endAngle);
-  const sweep = endAngle > startAngle ? 1 : 0;
-  return `M ${p1.x} ${p1.y} A ${radius} ${radius} 0 0 ${sweep} ${p2.x} ${p2.y}`;
+// Максимальное число букв аккорда, на которое заранее заводятся <text>-
+// элементы в каждой ячейке (самый длинный поддерживаемый аккорд — 7 нот,
+// напр. 13-й). Лишние элементы просто остаются скрытыми.
+const CHORD_LETTERS_MAX_COUNT = 7;
+
+// Угловые смещения букв аккорда внутри ячейки: буквы раскладываются
+// равномерно по обе стороны от центра ячейки. Каждая буква рисуется как
+// отдельный прямостоящий <text> (без наклона вдоль дуги), поэтому всегда
+// остаётся вертикальной — и сверху, и снизу круга, и во время вращения.
+function chordLetterOffsets(count){
+  if(count <= 1) return [0];
+  const half = CHORD_LETTERS_ARC_HALF_ANGLE * 0.85;
+  const step = (2 * half) / (count - 1);
+  const offsets = [];
+  for(let k = 0; k < count; k++) offsets.push(-half + step * k);
+  return offsets;
 }
 
 function segmentPath(rInner, rOuter, startAngle, endAngle){
@@ -1744,8 +2026,8 @@ function buildRing(ringName, rInner, rOuter, baseColor){
   }
 }
 
-buildRing('minor', R0, R2, getComputedStyle(document.documentElement).getPropertyValue('--ring-minor').trim());
-buildRing('major', R2, R3, getComputedStyle(document.documentElement).getPropertyValue('--ring-major').trim());
+buildRing('minor', R0, R2, 'var(--ring-minor)');
+buildRing('major', R2, R3, 'var(--ring-major)');
 
 const level3HintLayer = el('g', {id:'level3HintLayer', style:'pointer-events:none;'});
 svg.appendChild(level3HintLayer);
@@ -1883,8 +2165,8 @@ function pickNewChord(){
   if(rootHistory.length > 3) rootHistory.shift();
 }
 
-const FLASH_GREEN = getComputedStyle(document.documentElement).getPropertyValue('--green-flash').trim();
-const FLASH_RED = getComputedStyle(document.documentElement).getPropertyValue('--red-flash').trim();
+const FLASH_GREEN = 'var(--green-flash)';
+const FLASH_RED = 'var(--red-flash)';
 
 function flashWedge(ringName, index, color, duration){
   const item = wedgeMap[ringName+'-'+index];
@@ -1924,8 +2206,8 @@ const DIM_OPACITY = 0.22;
 const selectWedgeMap = {};
 
 const ringData = {
-  minor: { names: minors, rInner: R0, rOuter: R2, color: getComputedStyle(document.documentElement).getPropertyValue('--ring-minor').trim() },
-  major: { names: majors, rInner: R2, rOuter: R3, color: getComputedStyle(document.documentElement).getPropertyValue('--ring-major').trim() }
+  minor: { names: minors, rInner: R0, rOuter: R2, color: 'var(--ring-minor)' },
+  major: { names: majors, rInner: R2, rOuter: R3, color: 'var(--ring-major)' }
 };
 
 function buildSelectRing(ringName){
@@ -2350,31 +2632,23 @@ function buildTrainRing(ringName, names, rInner, rOuter, baseColor){
 
     // Буквы аккорда (напр. "C E G") — показываются чуть ниже названия
     // ноты, ближе к внешнему краю ячейки; включаются/выключаются чекбоксом
-    // "Показывать буквы аккорда под нотами". Текст рисуется вдоль
-    // невидимой дуги (textPath), повторяющей кривизну нижней части
-    // ячейки, и не пересекает её боковые границы (см. CHORD_LETTERS_ARC_*).
+    // "Показывать буквы аккорда под нотами". Каждая буква — отдельный
+    // прямостоящий <text> (без наклона вдоль дуги круга), поэтому буквы
+    // всегда остаются вертикальными, как и остальные подписи, в любой
+    // точке круга и при любом угле поворота (см. CHORD_LETTERS_MAX_COUNT,
+    // chordLetterOffsets()).
     const chordLettersOffset = (rOuter - rInner) / 2 * CHORD_LETTERS_RADIUS_OFFSET_RATIO;
     const chordLettersRadius = (rInner+rOuter)/2 - chordLettersOffset;
-    const chordArcId = 'chordArc-' + ringName + '-' + i;
-    const chordArcPath = el('path', {
-      id: chordArcId,
-      d: chordLettersArcD(chordLettersRadius, trA(i*30)),
-      fill: 'none',
-      stroke: 'none'
-    });
-    trainSvg.appendChild(chordArcPath);
-    const chordLettersEl = el('text', {
-      class: 'trainChordLetters'
-    });
-    const chordLettersTextPath = el('textPath', {
-      'href': '#' + chordArcId,
-      startOffset: '50%'
-    });
-    chordLettersEl.appendChild(chordLettersTextPath);
-    chordLettersEl.style.pointerEvents = 'none';
-    chordLettersEl.style.display = 'none';
-    trainSvg.appendChild(chordLettersEl);
-    const chordArcLength = chordArcPath.getTotalLength();
+    const chordLetterEls = [];
+    for(let k = 0; k < CHORD_LETTERS_MAX_COUNT; k++){
+      const letterEl = el('text', {
+        class: 'trainChordLetters'
+      });
+      letterEl.style.pointerEvents = 'none';
+      letterEl.style.display = 'none';
+      trainSvg.appendChild(letterEl);
+      chordLetterEls.push(letterEl);
+    }
 
     // Ступень аккорда в тональности (римская цифра, напр. "IV") — показывается
     // в правом верхнем углу ячейки, только для диатонических аккордов
@@ -2387,12 +2661,12 @@ function buildTrainRing(ringName, names, rInner, rOuter, baseColor){
     });
     trainSvg.appendChild(romanEl);
 
-    trainWedgeMap[ringName+'-'+i] = { el: path, baseColor, name: names[i], label, chordLettersEl, chordLettersTextPath, chordArcLength, romanEl, altLine, altBottomLabel, midX: mid.x, midY: mid.y };
+    trainWedgeMap[ringName+'-'+i] = { el: path, baseColor, name: names[i], label, chordLetterEls, chordLettersRadius, romanEl, altLine, altBottomLabel, midX: mid.x, midY: mid.y };
   }
 }
 
-buildTrainRing('minor', minors, R0, R2, getComputedStyle(document.documentElement).getPropertyValue('--ring-minor').trim());
-buildTrainRing('major', majors, R2, R3, getComputedStyle(document.documentElement).getPropertyValue('--ring-major').trim());
+buildTrainRing('minor', minors, R0, R2, 'var(--ring-minor)');
+buildTrainRing('major', majors, R2, R3, 'var(--ring-major)');
 
 /* =========================================================
    Поворот круга Обучения (стрелки влево/вправо на клавиатуре):
@@ -2428,13 +2702,16 @@ function repositionTrainRing(ringName, names, rInner, rOuter){
       item.altBottomLabel.setAttribute('y', mid.y + TRAIN_ALT_NOTE_LINE_TO_BOTTOM_GAP);
     }
 
-    const chordArcId = 'chordArc-' + ringName + '-' + i;
-    const chordArcPath = document.getElementById(chordArcId);
-    if(chordArcPath){
+    if(item.chordLetterEls){
       const chordLettersOffset = (rOuter - rInner) / 2 * CHORD_LETTERS_RADIUS_OFFSET_RATIO;
       const chordLettersRadius = (rInner+rOuter)/2 - chordLettersOffset;
-      chordArcPath.setAttribute('d', chordLettersArcD(chordLettersRadius, trA(i*30)));
-      item.chordArcLength = chordArcPath.getTotalLength();
+      item.chordLettersRadius = chordLettersRadius;
+      const offsets = chordLetterOffsets(item.chordLetterCount || item.chordLetterEls.length);
+      item.chordLetterEls.forEach((letterEl, k) => {
+        const pos = polar(CX, CY, chordLettersRadius, trA(i*30) + offsets[k]);
+        letterEl.setAttribute('x', pos.x);
+        letterEl.setAttribute('y', pos.y);
+      });
     }
 
     const romanPos = polar(CX, CY, rOuter - ROMAN_LABEL_RADIAL_INSET, trA(i*30) + ROMAN_LABEL_ANGLE_INSET);
@@ -2702,6 +2979,42 @@ function trainChordLettersFor(noteRaw, ring, chordType){
   return trainChordFormula(chordType, ring).map(iv => spellTrainInterval(noteRaw, iv));
 }
 
+/* =========================================================
+   Лады (диатонические): 7 кнопок под аккордами вкладки "Обучение".
+   Формулы — стандартные интервалы (в полутонах от тоники) 7 ладов
+   мажорной гаммы, от самого "яркого" (лидийский) до самого "тёмного"
+   (локрийский). L/R — сколько нот лада лежит левее/правее тоники на
+   круге квинт (ровно L предыдущих по кругу квинт нот и R следующих —
+   это и есть те же самые 7 нот лада, только уже как позиции на круге,
+   а не как интервалы; см. highlightModeForTonic ниже). Именно эта пара
+   чисел показывается в подсказке (i) кнопки, как просил пользователь
+   ("0-6", "1-5" и т.д.). */
+const TRAIN_MODES = [
+  { id:'lydian',      L:0, R:6, formula:[0,2,4,6,7,9,11] },
+  { id:'major',       L:1, R:5, formula:[0,2,4,5,7,9,11] },
+  { id:'mixolydian',  L:2, R:4, formula:[0,2,4,5,7,9,10] },
+  { id:'dorian',      L:3, R:3, formula:[0,2,3,5,7,9,10] },
+  { id:'minor',       L:4, R:2, formula:[0,2,3,5,7,8,10] },
+  { id:'phrygian',    L:5, R:1, formula:[0,1,3,5,7,8,10] },
+  { id:'locrian',     L:6, R:0, formula:[0,1,3,5,6,8,10] }
+];
+const TRAIN_MODE_BTN_IDS = {
+  lydian:'trainModeLydianBtn', major:'trainModeMajorBtn', mixolydian:'trainModeMixolydianBtn',
+  dorian:'trainModeDorianBtn', minor:'trainModeMinorBtn', phrygian:'trainModePhrygianBtn',
+  locrian:'trainModeLocrianBtn'
+};
+function trainModeCfg(modeId){
+  return TRAIN_MODES.find(m => m.id === modeId) || null;
+}
+// то же самое, что trainChordLettersFor, но для лада — переиспользует
+// spellTrainInterval, поэтому буквы всегда в ASCII-виде ('#'/'b'),
+// совместимом с parseSpelledLetter() в computeTrainPianoNotes ниже.
+function trainModeLettersFor(noteRaw, modeId){
+  const cfg = trainModeCfg(modeId);
+  if(!cfg) return null;
+  return cfg.formula.map(iv => spellTrainInterval(noteRaw, iv));
+}
+
 // Размер шрифта букв аккорда в зависимости от количества нот в нём —
 // чем длиннее аккорд (9/11/13-е), тем мельче буквы, чтобы больше
 // поместилось на дуге ячейки, не вылезая за её пределы.
@@ -2717,30 +3030,28 @@ function refreshTrainChordLetters(){
   Object.keys(trainWedgeMap).forEach(key=>{
     const item = trainWedgeMap[key];
     const ring = key.split('-')[0];
-    if(!item.chordLettersEl || !item.chordLettersTextPath) return;
+    const i = parseInt(key.split('-')[1], 10);
+    if(!item.chordLetterEls) return;
     if(trainShowChordLetters){
       const letters = trainChordLettersFor(item.name, ring, trainChordType);
-      item.chordLettersTextPath.textContent = letters.map(noteDisplay).join(' ');
-      item.chordLettersEl.style.fontSize = (CHORD_LETTERS_FONT_SIZE_BY_COUNT[letters.length] || CHORD_LETTERS_FONT_SIZE_BY_COUNT.default) + 'px';
-      item.chordLettersEl.style.display = '';
-      // Размер шрифта фиксирован по количеству нот в аккорде (см.
-      // CHORD_LETTERS_FONT_SIZE_BY_COUNT) — одинаков для всех ячеек
-      // одного вида аккорда (напр. все трезвучия — 9px, все 13-е — 6.2px).
-      // Буквы НЕ растягиваются под ширину дуги (это меняло видимый
-      // размер шрифта от ячейки к ячейке). Сжимаем только межбуквенное
-      // расстояние (lengthAdjust=spacing, без искажения формы глифов),
-      // и только если естественная ширина текста при фиксированном
-      // размере шрифта не помещается в дугу ячейки.
-      item.chordLettersTextPath.removeAttribute('textLength');
-      item.chordLettersTextPath.removeAttribute('lengthAdjust');
-      const naturalLength = item.chordLettersTextPath.getComputedTextLength();
-      const maxLength = item.chordArcLength * 0.96;
-      if(naturalLength > maxLength){
-        item.chordLettersTextPath.setAttribute('textLength', maxLength);
-        item.chordLettersTextPath.setAttribute('lengthAdjust', 'spacing');
-      }
+      const displayLetters = letters.map(noteDisplay);
+      item.chordLetterCount = displayLetters.length;
+      const fontSize = (CHORD_LETTERS_FONT_SIZE_BY_COUNT[displayLetters.length] || CHORD_LETTERS_FONT_SIZE_BY_COUNT.default) + 'px';
+      const offsets = chordLetterOffsets(displayLetters.length);
+      item.chordLetterEls.forEach((letterEl, k) => {
+        if(k < displayLetters.length){
+          const pos = polar(CX, CY, item.chordLettersRadius, trA(i*30) + offsets[k]);
+          letterEl.setAttribute('x', pos.x);
+          letterEl.setAttribute('y', pos.y);
+          letterEl.style.fontSize = fontSize;
+          letterEl.textContent = displayLetters[k];
+          letterEl.style.display = '';
+        } else {
+          letterEl.style.display = 'none';
+        }
+      });
     } else {
-      item.chordLettersEl.style.display = 'none';
+      item.chordLetterEls.forEach(letterEl => { letterEl.style.display = 'none'; });
     }
   });
 }
@@ -2818,6 +3129,25 @@ function parseSpelledLetter(raw){
 // если тоника не выбрана.
 function computeTrainPianoNotes(){
   if(!pressedTrainTonicName || !pressedTrainTonicRing) return null;
+  // Лад выбран (см. trainModeType) — считаем ноты гаммы вместо аккорда.
+  // Тот же формат {letter, offset, pc, rank, degree, color}, поэтому
+  // проигрывание в DAW (playCurrentTrainChordToDaw -> тот же
+  // computeTrainPianoNotes), учёт velocity/интервала между нотами и
+  // клавиатура-подсказка работают для лада точно так же, как для
+  // аккорда, без отдельного кода.
+  if(trainModeType){
+    const spelledMode = trainModeLettersFor(pressedTrainTonicName, trainModeType);
+    if(!spelledMode) return null;
+    const notesMode = [];
+    let rankM = 0, prevPcM = null;
+    spelledMode.forEach((raw, i)=>{
+      const p = parseSpelledLetter(raw);
+      if(prevPcM !== null && p.pc <= prevPcM) rankM++;
+      prevPcM = p.pc;
+      notesMode.push({ letter:p.letter, offset:p.offset, pc:p.pc, rank:rankM, degree:(i===0?'root':'second'), color:(i===0?'var(--green)':'var(--red)') });
+    });
+    return notesMode;
+  }
   const spelled = trainChordLettersFor(pressedTrainTonicName, pressedTrainTonicRing, trainChordType);
   const degreeNames = trainChordDegreeNamesFor(trainChordType, pressedTrainTonicRing);
   const notes = [];
@@ -2928,7 +3258,7 @@ function renderTrainPiano(notes){
     const labelY = key.isBlack ? (keysTopY + TRAIN_PIANO_BLACK_H - 10) : (keysTopY + TRAIN_PIANO_WHITE_H - 14);
     const label = el('text', {
       x:key.x + key.w/2, y:labelY, class:'trainPianoKeyLabel',
-      fill: key.isBlack ? '#fff' : '#141414',
+      fill: key.isBlack ? 'var(--piano-key-label-on-black, #fff)' : 'var(--piano-key-label-on-white, #141414)',
       'font-size': key.isBlack ? '11' : '13'
     });
     label.textContent = noteDisplay(n.letter + (n.offset>0 ? '#'.repeat(n.offset) : n.offset<0 ? 'b'.repeat(-n.offset) : ''));
@@ -3137,7 +3467,7 @@ function renderL3Piano(notes, foundPcSet){
     const labelY = key.isBlack ? (keysTopY + TRAIN_PIANO_BLACK_H - 10) : (keysTopY + TRAIN_PIANO_WHITE_H - 14);
     const label = el('text', {
       x:key.x + key.w/2, y:labelY, class:'trainPianoKeyLabel',
-      fill: key.isBlack ? '#fff' : '#141414',
+      fill: key.isBlack ? 'var(--piano-key-label-on-black, #fff)' : 'var(--piano-key-label-on-white, #141414)',
       'font-size': key.isBlack ? '11' : '13'
     });
     label.textContent = noteDisplay(n.letter + (n.offset>0 ? '#'.repeat(n.offset) : n.offset<0 ? 'b'.repeat(-n.offset) : ''));
@@ -3257,7 +3587,28 @@ function clearTrainRomanLabels(){
   });
 }
 
+// "Привязать тональность": пока включено, ступени (римские цифры)
+// считаются не от текущей нажатой ноты, а от той, что была нажата
+// первой после включения этой настройки — так они не "прыгают" при
+// переключении между аккордами внутри одной тональности.
+const TRAIN_LOCK_KEY_STORAGE_KEY = 'circleTrainLockKey';
+let trainLockKey = localStorage.getItem(TRAIN_LOCK_KEY_STORAGE_KEY) === '1';
+let lockedTrainTonicRing = null;
+let lockedTrainTonicIndex = null;
+
 function updateTrainDegreeLabels(ring, tonicIndex){
+  if(trainLockKey){
+    if(lockedTrainTonicRing === null && ring !== null && tonicIndex !== null){
+      // первая нота, нажатая с момента включения привязки — она и
+      // становится основой тональности.
+      lockedTrainTonicRing = ring;
+      lockedTrainTonicIndex = tonicIndex;
+    }
+    if(lockedTrainTonicRing !== null){
+      ring = lockedTrainTonicRing;
+      tonicIndex = lockedTrainTonicIndex;
+    }
+  }
   clearTrainRomanLabels();
   if(!trainShowDegrees || ring === null || tonicIndex === null) return;
   const item = trainWedgeMap[ring+'-'+tonicIndex];
@@ -3277,14 +3628,46 @@ function updateTrainDegreeLabels(ring, tonicIndex){
 
 const trainShowDegreesCheckbox = document.getElementById('trainShowDegreesCheckbox');
 trainShowDegreesCheckbox.checked = trainShowDegrees;
+const trainLockKeyCheckbox = document.getElementById('trainLockKeyCheckbox');
+const trainLockKeyRow = document.getElementById('trainLockKeyRow');
+
+function updateTrainLockKeyRowEnabled(){
+  const enabled = trainShowDegrees;
+  trainLockKeyCheckbox.disabled = !enabled;
+  trainLockKeyRow.classList.toggle('disabled', !enabled);
+}
+
 trainShowDegreesCheckbox.addEventListener('change', ()=>{
   trainShowDegrees = trainShowDegreesCheckbox.checked;
   localStorage.setItem(TRAIN_SHOW_DEGREES_KEY, trainShowDegrees ? '1' : '0');
+  updateTrainLockKeyRowEnabled();
   if(trainShowDegrees && pressedTrainTonicRing !== null){
     updateTrainDegreeLabels(pressedTrainTonicRing, pressedTrainTonicIndex);
   } else {
     updateTrainDegreeLabels(null, null);
   }
+});
+
+trainLockKeyCheckbox.checked = trainLockKey;
+updateTrainLockKeyRowEnabled();
+trainLockKeyCheckbox.addEventListener('change', ()=>{
+  trainLockKey = trainLockKeyCheckbox.checked;
+  localStorage.setItem(TRAIN_LOCK_KEY_STORAGE_KEY, trainLockKey ? '1' : '0');
+  if(trainLockKey){
+    // если в момент включения привязки уже нажата какая-то нота —
+    // сразу берём её за основу тональности.
+    if(pressedTrainTonicRing !== null){
+      lockedTrainTonicRing = pressedTrainTonicRing;
+      lockedTrainTonicIndex = pressedTrainTonicIndex;
+    } else {
+      lockedTrainTonicRing = null;
+      lockedTrainTonicIndex = null;
+    }
+  } else {
+    lockedTrainTonicRing = null;
+    lockedTrainTonicIndex = null;
+  }
+  updateTrainDegreeLabels(pressedTrainTonicRing, pressedTrainTonicIndex);
 });
 
 trainSvg.appendChild(el('circle', {cx:CX, cy:CY, r:R0-2, id:'trainCenterCircle'}));
@@ -5448,7 +5831,7 @@ function renderTrainLegend(){
     swatch.style.background = d.color;
     const text = document.createElement('span');
     text.className = 'legendText';
-    text.textContent = `${DEGREE_LABEL_RU[d.degree]} — ${d.degree}я ступень`;
+    text.textContent = typeof degreeLegendText === 'function' ? degreeLegendText(d.degree) : `${DEGREE_LABEL_RU[d.degree]} — ${d.degree}я ступень`;
     row.appendChild(swatch);
     row.appendChild(text);
     trainLegendEl.appendChild(row);
@@ -5509,6 +5892,37 @@ function highlightTriadForTonic(ring, tonicIndex){
       highlightedTrainWedges.push(item);
     }
   });
+}
+
+// красит ячейки лада (см. TRAIN_MODES) для заданной тоники: L ячеек
+// левее тоники и R ячеек правее тоники ПО ТОМУ ЖЕ КОЛЬЦУ (мажор или
+// минор — в зависимости от того, на каком кольце кликнули ноту), тем же
+// красным, что и везде в приложении (--red), с прозрачностью 50%
+// (TRIAD_DEGREE_HIGHLIGHT_OPACITY). Сама тоника уже подсвечена сплошным
+// зелёным в selectTrainTonic — здесь её не трогаем. Использует тот же
+// highlightedTrainWedges/setWedgeInstant, что и highlightTriadForTonic,
+// поэтому существующий clearTriadHighlights() (вызывается из
+// clearTrainTonicPress и т.д.) корректно снимает и подсветку лада —
+// отдельная функция очистки не нужна.
+function highlightModeForTonic(ring, tonicIndex){
+  const cfg = trainModeCfg(trainModeType);
+  if(!cfg) return;
+  for(let k = 1; k <= cfg.L; k++){
+    const idx = ((tonicIndex - k) % 12 + 12) % 12;
+    const item = trainWedgeMap[ring + '-' + idx];
+    if(item){
+      setWedgeInstant(item, 'var(--red)', TRIAD_DEGREE_HIGHLIGHT_OPACITY);
+      highlightedTrainWedges.push(item);
+    }
+  }
+  for(let k = 1; k <= cfg.R; k++){
+    const idx = ((tonicIndex + k) % 12 + 12) % 12;
+    const item = trainWedgeMap[ring + '-' + idx];
+    if(item){
+      setWedgeInstant(item, 'var(--red)', TRIAD_DEGREE_HIGHLIGHT_OPACITY);
+      highlightedTrainWedges.push(item);
+    }
+  }
 }
 
 // красит ячейки sus-аккорда (тоника + 2-3 ноты) для тоники, выбранной на
@@ -5788,6 +6202,19 @@ function saveTrainChordType(){
   localStorage.setItem(TRAIN_CHORD_TYPE_KEY, trainChordType);
 }
 
+// --- Лад (см. TRAIN_MODES выше): null, пока не выбран; иначе один из
+// id ('lydian'..'locrian'). Взаимоисключающе с trainChordType — см.
+// setTrainModeType/setTrainChordType. Объявлено здесь (а не рядом с
+// кнопками ниже), т.к. applyTrainChordType() уже читает эту переменную,
+// а вызывается она чуть ниже впервые ДО того места, где создаются сами
+// кнопки ладов.
+const TRAIN_MODE_TYPE_KEY = 'trainModeType';
+let trainModeType = localStorage.getItem(TRAIN_MODE_TYPE_KEY) || null;
+if(trainModeType && !trainModeCfg(trainModeType)) trainModeType = null;
+function saveTrainModeType(){
+  try{ localStorage.setItem(TRAIN_MODE_TYPE_KEY, trainModeType || ''); }catch(e){}
+}
+
 function clearTrainTonicPress(){
   if(pressedTrainTonicWedge){
     pressedTrainTonicWedge.el.setAttribute('fill', pressedTrainTonicWedge.baseColor);
@@ -5810,7 +6237,7 @@ function selectTrainTonic(ring, tonicIndex){
   if(pressedTrainTonicRing === ring && pressedTrainTonicIndex === tonicIndex){
     // повторный клик по уже нажатой ноте — снимаем выбор
     clearTrainTonicPress();
-    applyTrainChordType();
+    if(!trainModeType) applyTrainChordType();
     if(typeof clearDawTimers === 'function') clearDawTimers();
     return;
   }
@@ -5822,14 +6249,20 @@ function selectTrainTonic(ring, tonicIndex){
   pressedTrainTonicRing = ring;
   pressedTrainTonicIndex = tonicIndex;
   updateTrainDegreeLabels(ring, tonicIndex);
-  // Вариант 2 доступен не для всех аккордов на минорном кольце — при
-  // смене тоники (и, возможно, кольца) нужно обновить блокировку кнопок
-  // "Вариант 2" и при необходимости принудительно переключиться на Вариант 1
-  applyTrainChordType();
-  if(trainDisplayMode === 'arrows'){
-    buildTriadArrowsForTonic(ring, tonicIndex);
+  if(trainModeType){
+    // Выбран лад (не аккорд) — стрелки не строим нигде (ни в режиме
+    // "Стрелками", ни "Цветом"), просто красим ноты лада красным.
+    highlightModeForTonic(ring, tonicIndex);
   } else {
-    highlightTriadForTonic(ring, tonicIndex);
+    // Вариант 2 доступен не для всех аккордов на минорном кольце — при
+    // смене тоники (и, возможно, кольца) нужно обновить блокировку кнопок
+    // "Вариант 2" и при необходимости принудительно переключиться на Вариант 1
+    applyTrainChordType();
+    if(trainDisplayMode === 'arrows'){
+      buildTriadArrowsForTonic(ring, tonicIndex);
+    } else {
+      highlightTriadForTonic(ring, tonicIndex);
+    }
   }
   if(typeof updateTrainPiano === 'function') updateTrainPiano();
   if(typeof playCurrentTrainChordToDaw === 'function') playCurrentTrainChordToDaw();
@@ -5947,6 +6380,10 @@ applyTrainDisplayMode();
 // переключиться на заданную комбинацию (UI-кнопка + style) и перерисовать подсказку
 // uiLabel: 'v1' | 'v2' — какая именно UI-кнопка была нажата
 function setTrainVariantStyle(uiLabel, style){
+  // Кнопки "Стрелками"/"Цветом" (Вариант 1/2) заблокированы, пока выбран
+  // лад (см. applyTrainVariantLockForMode) — при ладе стрелки/подсказки
+  // аккорда нигде не показываются, эти кнопки на него не влияют.
+  if(trainModeType) return;
   const swapped = trainVariantUISwapped();
   const variant = uiLabel === 'v1' ? (swapped ? '2' : '1') : (swapped ? '1' : '2');
   if(variant === '2' && !chordTypeHasVariant2(trainChordType, pressedTrainTonicRing || 'major')) return; // Вариант 2 недоступен для этого аккорда/кольца
@@ -6025,6 +6462,12 @@ function applyTrainChordType(){
   trainM13Btn.classList.toggle('active', trainChordType === 'm13');
   trainMMaj13Btn.classList.toggle('active', trainChordType === 'mmaj13');
 
+  // Аккорд и лад взаимоисключающи (см. setTrainModeType) — пока активен
+  // лад, ни одна из кнопок аккордов не должна выглядеть выбранной.
+  if(trainModeType){
+    document.querySelectorAll('#trainChordGroups .ringBtn').forEach(b => b.classList.remove('active'));
+  }
+
   // Вариант 2 (внутреннее значение trainVariant='2') недоступен для
   // некоторых аккордов (напр. m(Maj7)). Для каких-то типов UI "Вариант 1" и
   // "Вариант 2" поменяны местами (см. TRAIN_V1V2_SWAP_TYPES / trainVariantUISwapped)
@@ -6081,8 +6524,23 @@ function applyTrainChordTypeChange(){
 // Sus2/Sus4 — переключают на соответствующий sus-аккорд. Повторный клик
 // по уже активной sus-кнопке ничего не делает (возврат к трезвучиям —
 // только через явный клик по кнопке "Мажор/Минор").
+// снимает выбор лада (если он был активен) — вызывается при выборе
+// любого аккорда, т.к. аккорд и лад взаимоисключающи (см. также
+// setTrainModeType). Возвращает true, если лад реально был активен
+// (тогда даже "тот же" аккорд, что уже запомнен в trainChordType, нужно
+// применить заново — иначе клик ни на что не повлияет).
+function clearTrainModeTypeForChordPick(){
+  if(!trainModeType) return false;
+  trainModeType = null;
+  saveTrainModeType();
+  if(typeof applyTrainModeButtonsUI === 'function') applyTrainModeButtonsUI();
+  if(typeof applyTrainVariantLockForMode === 'function') applyTrainVariantLockForMode();
+  return true;
+}
+
 function setTrainChordType(type){
-  if(trainChordType === type) return;
+  const modeWasActive = clearTrainModeTypeForChordPick();
+  if(trainChordType === type && !modeWasActive) return;
   trainChordType = type;
   trainVariant = trainVariantUISwapped() ? '2' : '1';
   saveTrainVariant();
@@ -6094,7 +6552,8 @@ function setTrainChordType(type){
 // Мажор/Минор — Sus2 — Sus4, и в этой группе всегда должен быть выбран
 // ровно один вариант.
 trainMajorMinorBtn.addEventListener('click', ()=>{
-  if(trainChordType === 'triad') return;
+  const modeWasActive = clearTrainModeTypeForChordPick();
+  if(trainChordType === 'triad' && !modeWasActive) return;
   trainChordType = 'triad';
   trainVariant = trainVariantUISwapped() ? '2' : '1';
   saveTrainVariant();
@@ -6124,9 +6583,80 @@ trainM13Btn.addEventListener('click', ()=> setTrainChordType('m13'));
 trainMMaj13Btn.addEventListener('click', ()=> setTrainChordType('mmaj13'));
 
 /* =========================================================
+   Лады (см. TRAIN_MODES / trainModeType выше) — 7 кнопок под кнопками
+   аккордов. Выбор лада и выбор аккорда взаимоисключающи: активна всегда
+   только кнопка из ОДНОЙ из двух групп (applyTrainChordType() снимает
+   active с кнопок аккордов, пока trainModeType задан; здесь —
+   applyTrainModeButtonsUI() делает то же самое с кнопками ладов, когда
+   выбран аккорд). Пока активен лад: стрелки/подсказки аккорда нигде не
+   рисуются (buildTriadArrowsForTonic/highlightTriadForTonic не
+   вызываются — см. selectTrainTonic), а кнопки "Стрелками"/"Цветом"
+   Варианта 1/2 блокируются (applyTrainVariantLockForMode). ===== */
+const trainModeBtnEls = {};
+Object.keys(TRAIN_MODE_BTN_IDS).forEach(modeId=>{
+  trainModeBtnEls[modeId] = document.getElementById(TRAIN_MODE_BTN_IDS[modeId]);
+});
+
+function applyTrainModeButtonsUI(){
+  Object.keys(trainModeBtnEls).forEach(modeId=>{
+    const btn = trainModeBtnEls[modeId];
+    if(btn) btn.classList.toggle('active', trainModeType === modeId);
+  });
+}
+
+function applyTrainVariantLockForMode(){
+  const locked = !!trainModeType;
+  [trainV1ArrowsBtn, trainV1ColorBtn, trainV2ArrowsBtn, trainV2ColorBtn].forEach(btn=>{
+    if(btn) btn.classList.toggle('disabled', locked);
+  });
+}
+
+function setTrainModeType(modeId){
+  // повторный клик по уже активному ладу — снимаем выбор лада целиком
+  // (возвращаемся к обычному режиму аккордов, ничего не подсвечено,
+  // пока не нажата кнопка аккорда заново)
+  trainModeType = (trainModeType === modeId) ? null : modeId;
+  saveTrainModeType();
+  applyTrainModeButtonsUI();
+  applyTrainChordType(); // снимает active с кнопок аккордов, если лад теперь выбран
+  applyTrainVariantLockForMode();
+  clearTrainArrows();
+  if(pressedTrainTonicRing !== null){
+    clearTriadHighlights();
+    if(trainModeType){
+      highlightModeForTonic(pressedTrainTonicRing, pressedTrainTonicIndex);
+    } else if(trainDisplayMode === 'arrows'){
+      buildTriadArrowsForTonic(pressedTrainTonicRing, pressedTrainTonicIndex);
+    } else {
+      highlightTriadForTonic(pressedTrainTonicRing, pressedTrainTonicIndex);
+    }
+  }
+  if(typeof updateTrainPiano === 'function') updateTrainPiano();
+  if(typeof playCurrentTrainChordToDaw === 'function') playCurrentTrainChordToDaw();
+}
+
+Object.keys(trainModeBtnEls).forEach(modeId=>{
+  const btn = trainModeBtnEls[modeId];
+  if(btn) btn.addEventListener('click', ()=> setTrainModeType(modeId));
+});
+
+applyTrainModeButtonsUI();
+applyTrainVariantLockForMode();
+
+/* =========================================================
    Переключение режимов: Практика / Обучение
    ========================================================= */
 const MODE_KEY = 'circleAppMode';
+// При самом первом открытии приложения (флаг ещё не выставлен) —
+// принудительно открываем вкладку "Обучение" и показываем настройки,
+// чтобы новый пользователь сразу их увидел. Дальше — как обычно,
+// раскладка запоминается в localStorage.
+const FIRST_LAUNCH_DONE_KEY = 'circleFirstLaunchDone';
+if(localStorage.getItem(FIRST_LAUNCH_DONE_KEY) !== '1'){
+  localStorage.setItem(FIRST_LAUNCH_DONE_KEY, '1');
+  localStorage.setItem(MODE_KEY, 'training');
+  localStorage.setItem('sidePanelOpen', '1');
+}
 let appMode = localStorage.getItem(MODE_KEY) === 'training' ? 'training' : 'practice';
 
 const practicePanel = document.getElementById('practicePanel');

@@ -59,6 +59,18 @@
     --purple:rgba(217,179,255,0.5);
     --lime:rgba(220,255,179,0.5);
 
+    /* сплошные (непрозрачные) версии тех же цветов — только для стрелок
+       круга Обучения (палка стрелки + треугольник-наконечник красятся
+       ОДНИМ и тем же непрозрачным цветом, см. solidArrowColor() в JS),
+       чтобы место их нахлёста не давало более тёмный/светлый шов, как
+       было бы с полупрозрачным --blue/--yellow и т.д. выше. */
+    --blue-solid:rgb(179,217,255);
+    --cyan-solid:rgb(179,255,255);
+    --yellow-solid:rgb(255,242,179);
+    --orange-solid:rgb(255,217,179);
+    --purple-solid:rgb(217,179,255);
+    --lime-solid:rgb(220,255,179);
+
     /* палитра настроек — как на скриншотах */
     --menu-bg:#1e1e1e;
     --menu-border:#333333;
@@ -736,7 +748,9 @@
     color:var(--app-text-color);
   }
   .midiPanelRow select{
-    flex:1;
+    flex:0 0 auto;
+    width:50%;
+    margin-left:auto;
     background:var(--btn-bg);
     color:var(--btn-text);
     border:none;
@@ -745,6 +759,11 @@
     font-family:var(--font);
     font-size:15px;
     cursor:pointer;
+  }
+  #midiInputCountSelect{
+    flex:0 0 auto;
+    width:auto;
+    margin-left:auto;
   }
   #midiStatusLine{
     font-family:var(--font);
@@ -812,6 +831,82 @@
     padding:6px 8px;
     font-family:var(--font);
     font-size:14px;
+  }
+  .dawSplitToggleRow{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-family:var(--font);
+    font-size:14px;
+    color:var(--app-text-color);
+    cursor:pointer;
+  }
+  .dawSplitToggleRow input{
+    width:16px;
+    height:16px;
+    cursor:pointer;
+  }
+  #dawSplitChannelsPanel{
+    display:none;
+    flex-direction:column;
+    gap:8px;
+    margin-top:2px;
+  }
+  #dawSplitChannelsPanel.open{
+    display:flex;
+  }
+  .dawSplitRow{
+    background:var(--btn-bg);
+    border-radius:8px;
+    padding:8px 10px;
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+  }
+  .dawSplitRowTitle{
+    font-family:var(--font);
+    font-size:13px;
+    color:var(--app-text-color);
+    opacity:0.85;
+    font-weight:bold;
+  }
+  .dawSplitRowGrid{
+    display:grid;
+    grid-template-columns:1fr 1fr 1fr auto;
+    gap:6px;
+    align-items:end;
+  }
+  .dawSplitRowGrid label{
+    display:flex;
+    flex-direction:column;
+    font-family:var(--font);
+    font-size:11px;
+    color:var(--app-text-color);
+    opacity:0.7;
+    gap:3px;
+  }
+  .dawSplitRowGrid select,
+  .dawSplitRowGrid input[type="number"]{
+    background:var(--btn-bg-hover, #555);
+    color:var(--btn-text);
+    border:none;
+    border-radius:6px;
+    padding:5px 6px;
+    font-family:var(--font);
+    font-size:13px;
+    width:100%;
+    box-sizing:border-box;
+  }
+  .dawSplitLiveLabel{
+    flex-direction:row !important;
+    align-items:center;
+    gap:4px;
+    white-space:nowrap;
+  }
+  .dawSplitLiveLabel input{
+    width:15px;
+    height:15px;
+    cursor:pointer;
   }
   .noteBtn{
     background:var(--btn-bg);
@@ -1370,19 +1465,19 @@
       <div id="trainAltNoteSettings">
         <div class="trainAltNoteGroupTitle">Показать альтернативную ноту на мажорном кругу</div>
         <div class="trainAltNoteRow">
-          <label><input type="checkbox" id="altNoteMajorBb">A#</label>
-          <label><input type="checkbox" id="altNoteMajorEb">D#</label>
-          <label><input type="checkbox" id="altNoteMajorAb">G#</label>
-          <label><input type="checkbox" id="altNoteMajorDb">C#</label>
-          <label><input type="checkbox" id="altNoteMajorFsharp">Gb</label>
+          <label><input type="checkbox" id="altNoteMajorBb">A♯</label>
+          <label><input type="checkbox" id="altNoteMajorEb">D♯</label>
+          <label><input type="checkbox" id="altNoteMajorAb">G♯</label>
+          <label><input type="checkbox" id="altNoteMajorDb">C♯</label>
+          <label><input type="checkbox" id="altNoteMajorFsharp">G♭</label>
         </div>
         <div class="trainAltNoteGroupTitle">Показать альтернативную ноту на минорном кругу</div>
         <div class="trainAltNoteRow">
-          <label><input type="checkbox" id="altNoteMinorBbm">A#</label>
-          <label><input type="checkbox" id="altNoteMinorDsm">Eb</label>
-          <label><input type="checkbox" id="altNoteMinorGsm">Ab</label>
-          <label><input type="checkbox" id="altNoteMinorCsm">Db</label>
-          <label><input type="checkbox" id="altNoteMinorFsm">Gb</label>
+          <label><input type="checkbox" id="altNoteMinorBbm">A♯</label>
+          <label><input type="checkbox" id="altNoteMinorDsm">E♭</label>
+          <label><input type="checkbox" id="altNoteMinorGsm">A♭</label>
+          <label><input type="checkbox" id="altNoteMinorCsm">D♭</label>
+          <label><input type="checkbox" id="altNoteMinorFsm">G♭</label>
         </div>
         <div class="trainAltNoteGroupTitle">Название нот</div>
         <div class="noteNamingSwitchRow" id="noteNamingSwitchRow">
@@ -1392,38 +1487,56 @@
       </div>
 
       <div id="midiPanel">
+        <div class="midiPanelRow">
+          <label for="midiInputCountSelect">MIDI вход:</label>
+          <select id="midiInputCountSelect">
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+          </select>
+        </div>
+        <div id="midiInputSelectsContainer">
+          <div class="midiPanelRow"><select class="midiInputPortSelect" id="midiInputSelect"><option>—</option></select></div>
+        </div>
         <div id="dawOutPanel">
-          <div class="dawOutTitle">Сыграть аккорд в DAW (при нажатии на ячейку аккорда):</div>
-          <div class="dawOutBtnRow">
-            <button type="button" class="noteBtn" id="dawPlayTogetherBtn" data-tip="Сыграть в DAW">Сыграть в DAW (за раз)</button>
-            <button type="button" class="noteBtn" id="dawPlaySequenceBtn" data-tip="Сыграть в DAW">Сыграть в DAW (по очереди)</button>
-          </div>
-          <div class="dawOutFieldRow">
-            <label for="dawIntervalInput">Интервал между нотами (сек):</label>
-            <input type="text" id="dawIntervalInput" inputmode="decimal" value="1">
-          </div>
-          <div class="dawOutFieldRow">
-            <label for="dawVelocityInput">Velocity:</label>
-            <input type="text" id="dawVelocityInput" inputmode="numeric" value="100">
-          </div>
-          <div class="dawOutFormatBlock">
-            <div class="dawOutTitle">Формат выхода:</div>
-            <div class="noteNamingSwitchRow" id="dawVelocityFormatSwitchRow">
-              <button type="button" class="noteNamingBtn active" id="dawFormatMidi1Btn" data-format="127">midi 1 (1-127)</button>
-              <button type="button" class="noteNamingBtn" id="dawFormatMidi2Btn" data-format="65536">midi 2(1-65536)</button>
-            </div>
-          </div>
           <div class="midiPanelRow">
             <label for="dawOutputSelect">MIDI выход:</label>
             <select id="dawOutputSelect"><option>—</option></select>
           </div>
         </div>
-        <div class="midiPanelRow">
-          <label for="midiInputSelect">MIDI вход:</label>
-          <select id="midiInputSelect"><option>—</option></select>
-        </div>
         <div id="midiStatusLine">MIDI-клавиатура не подключена. Нажмите кнопку ниже, чтобы подключить.</div>
         <button type="button" class="noteBtn" id="midiReconnectBtn">Подключить MIDI клавиатуру</button>
+
+        <div class="dawOutTitle">Сыграть аккорд в DAW (при нажатии на ячейку аккорда):</div>
+        <div class="dawOutBtnRow">
+          <button type="button" class="noteBtn" id="dawPlayTogetherBtn" data-tip="Сыграть в DAW">Сыграть в DAW (за раз)</button>
+          <button type="button" class="noteBtn" id="dawPlaySequenceBtn" data-tip="Сыграть в DAW">Сыграть в DAW (по очереди)</button>
+        </div>
+        <div class="dawOutFieldRow">
+          <label for="dawIntervalInput">Интервал между нотами (сек):</label>
+          <input type="text" id="dawIntervalInput" inputmode="decimal" value="1">
+        </div>
+        <div class="dawOutFieldRow">
+          <label for="dawVelocityInput">Velocity:</label>
+          <input type="text" id="dawVelocityInput" inputmode="numeric" value="100">
+        </div>
+        <div class="dawOutFormatBlock">
+          <div class="dawOutTitle">Формат выхода:</div>
+          <div class="noteNamingSwitchRow" id="dawVelocityFormatSwitchRow">
+            <button type="button" class="noteNamingBtn active" id="dawFormatMidi1Btn" data-format="127">midi 1 (1-127)</button>
+            <button type="button" class="noteNamingBtn" id="dawFormatMidi2Btn" data-format="65536">midi 2(1-65536)</button>
+          </div>
+        </div>
+
+        <label class="dawOutFieldRow dawSplitToggleRow" for="dawSplitChannelsCheckbox">
+          <input type="checkbox" id="dawSplitChannelsCheckbox">
+          <span style="flex:1;">Разделить сигнал на каналы</span>
+        </label>
+        <div id="dawSplitChannelsPanel"></div>
       </div>
   </div>
 
@@ -1458,9 +1571,22 @@ const WEDGE_GAP_RADIAL = 1;
 const CHORD_LETTERS_RADIUS_OFFSET_RATIO = 0.72;
 const WEDGE_GAP_ANGLE  = 0.5;
 
-const majors = ['C','G','D','A','E','B','F#','Db','Ab','Eb','Bb','F'];
-const minors = ['Am','Em','Bm','F#m','C#m','G#m','D#m','Bbm','Fm','Cm','Gm','Dm'];
-const noteNames = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+const majors = ['C','G','D','A','E','B','F♯','D♭','A♭','E♭','B♭','F'];
+const minors = ['Am','Em','Bm','F♯m','C♯m','G♯m','D♯m','B♭m','Fm','Cm','Gm','Dm'];
+
+/* =========================================================
+   Поворот круга ОБУЧЕНИЯ стрелками влево/вправо на клавиатуре.
+   Никакая логика (индексы, majors/minors, определение аккордов,
+   подсветка) не меняется — сдвигается только УГОЛ, под которым
+   рисуется каждая ячейка/стрелка/подпись кольца #trainCircle.
+   trA(deg) применяется ко всем абсолютным углам этого круга
+   (см. buildTrainRing и функции построения стрелок ниже).
+   Положение не сохраняется между перезагрузками — при каждом
+   заходе снова C сверху (trainRotationOffset = 0).
+   ========================================================= */
+let trainRotationOffset = 0;
+function trA(deg){ return deg - trainRotationOffset; }
+const noteNames = ['C','C♯','D','D♯','E','F','F♯','G','G♯','A','A♯','B'];
 
 /* =========================================================
    НАСТРОЙКА "Название нот": ABC / до-ре-ми (сольфеджио)
@@ -1536,7 +1662,7 @@ function setNoteNamingSystem(system){
   if(solfegeBtn) solfegeBtn.classList.toggle('active', noteNamingSystem === 'solfege');
 })();
 
-const FLAT_TO_SHARP = { 'Db':'C#', 'Ab':'G#', 'Eb':'D#', 'Bb':'A#', 'Gb':'F#' };
+const FLAT_TO_SHARP = { 'D♭':'C♯', 'A♭':'G♯', 'E♭':'D♯', 'B♭':'A♯', 'G♭':'F♯' };
 
 function rootOf(name){
   let root = name.replace('°','').replace(/m$/,'');
@@ -2112,7 +2238,7 @@ const ROMAN_LABEL_ANGLE_INSET = 10;
 // Точечная ручная коррекция позиции римской цифры (ступени аккорда) для
 // отдельных ячеек — на случай, если общее смещение (ROMAN_LABEL_*_INSET)
 // подходит не всем ячейкам одинаково из-за разной ширины/формы глифов.
-// Ключ — название ноты как в массивах majors/minors ('F#', 'C#m', ...),
+// Ключ — название ноты как в массивах majors/minors ('F♯', 'C♯m', ...),
 // значение — { dx, dy } в пикселях (dx: + вправо, dy: + ВВЕРХ, - ВНИЗ).
 // Если для ячейки записи нет — используется базовая позиция без изменений.
 // ВАЖНО: каждый ключ должен встречаться в этом объекте только один раз —
@@ -2124,20 +2250,20 @@ const ROMAN_LABEL_MANUAL_OFFSETS = {
   'A':   { dx: 3,  dy: -5 },
   'E':   { dx: 0,  dy: -3 },
   'B':   { dx: -5, dy: 0 },
-  'F#':  { dx: -5, dy: 4 },
-  'Db':  { dx: -2, dy: 9 },
-  'Ab':  { dx: 1, dy: 12 },
-  'Eb':  { dx: 7,  dy: 12 },
-  'Bb':  { dx: 10,  dy: 7 },
+  'F♯':  { dx: -5, dy: 4 },
+  'D♭':  { dx: -2, dy: 9 },
+  'A♭':  { dx: 1, dy: 12 },
+  'E♭':  { dx: 7,  dy: 12 },
+  'B♭':  { dx: 10,  dy: 7 },
   'F':   { dx: 12,  dy: 5 },
   'Am':  { dx: 7,  dy: 3 },
   'Em':  { dx: 5,  dy: 1 },
   'Bm':  { dx: 5,  dy: 1 },
-  'F#m': { dx: 5,  dy: 2 },
-  'C#m': { dx: 4,  dy: 0 },
-  'G#m': { dx: 1,  dy: 2 },
-  'D#m': { dx: -1,  dy: 3 },
-  'Bbm': { dx: 0,  dy: 7 },
+  'F♯m': { dx: 5,  dy: 2 },
+  'C♯m': { dx: 4,  dy: 0 },
+  'G♯m': { dx: 1,  dy: 2 },
+  'D♯m': { dx: -1,  dy: 3 },
+  'B♭m': { dx: 0,  dy: 7 },
   'Fm':  { dx: 2,  dy: 7 },
   'Cm':  { dx: 3,  dy: 8 },
   'Gm':  { dx: 5,  dy: 7 },
@@ -2150,8 +2276,8 @@ const ROMAN_LABEL_MANUAL_OFFSETS = {
 // Для каждой ячейки (по названию, как в majors/minors) — какую
 // альтернативную ноту показать под чертой, если включён её чекбокс.
 const TRAIN_ALT_NOTE_MAP = {
-  major: { 'Bb':'A#', 'Eb':'D#', 'Ab':'G#', 'Db':'C#', 'F#':'Gb' },
-  minor: { 'Bbm':'A#', 'D#m':'Eb', 'G#m':'Ab', 'C#m':'Db', 'F#m':'Gb' }
+  major: { 'B♭':'A♯', 'E♭':'D♯', 'A♭':'G♯', 'D♭':'C♯', 'F♯':'G♭' },
+  minor: { 'B♭m':'A♯', 'D♯m':'E♭', 'G♯m':'A♭', 'C♯m':'D♭', 'F♯m':'G♭' }
 };
 // РАЗМЕР ШРИФТА нот в режиме "дроби" (верхняя и нижняя ноты) — отдельный
 // от обычного размера подписей круга (.selLabel, 14px). Меняйте это число,
@@ -2168,8 +2294,8 @@ const TRAIN_ALT_NOTE_LINE_HALF_WIDTH = 11;
 
 function buildTrainRing(ringName, names, rInner, rOuter, baseColor){
   for(let i=0;i<12;i++){
-    const startA = i*30 - 15 + WEDGE_GAP_ANGLE;
-    const endA = i*30 + 15 - WEDGE_GAP_ANGLE;
+    const startA = trA(i*30) - 15 + WEDGE_GAP_ANGLE;
+    const endA = trA(i*30) + 15 - WEDGE_GAP_ANGLE;
     const path = el('path', {
       d: segmentPath(rInner + WEDGE_GAP_RADIAL, rOuter - WEDGE_GAP_RADIAL, startA, endA),
       fill: baseColor,
@@ -2181,7 +2307,7 @@ function buildTrainRing(ringName, names, rInner, rOuter, baseColor){
     path.addEventListener('click', onTrainWedgeClick);
     trainSvg.appendChild(path);
 
-    const mid = polar(CX, CY, (rInner+rOuter)/2, i*30);
+    const mid = polar(CX, CY, (rInner+rOuter)/2, trA(i*30));
     const label = el('text', {
       x: mid.x, y: mid.y,
       class: 'selLabel',
@@ -2232,7 +2358,7 @@ function buildTrainRing(ringName, names, rInner, rOuter, baseColor){
     const chordArcId = 'chordArc-' + ringName + '-' + i;
     const chordArcPath = el('path', {
       id: chordArcId,
-      d: chordLettersArcD(chordLettersRadius, i*30),
+      d: chordLettersArcD(chordLettersRadius, trA(i*30)),
       fill: 'none',
       stroke: 'none'
     });
@@ -2253,7 +2379,7 @@ function buildTrainRing(ringName, names, rInner, rOuter, baseColor){
     // Ступень аккорда в тональности (римская цифра, напр. "IV") — показывается
     // в правом верхнем углу ячейки, только для диатонических аккордов
     // нажатой тоники; включается/выключается тем же чекбоксом.
-    const romanPos = polar(CX, CY, rOuter - ROMAN_LABEL_RADIAL_INSET, i*30 + ROMAN_LABEL_ANGLE_INSET);
+    const romanPos = polar(CX, CY, rOuter - ROMAN_LABEL_RADIAL_INSET, trA(i*30) + ROMAN_LABEL_ANGLE_INSET);
     const romanManualOffset = ROMAN_LABEL_MANUAL_OFFSETS[names[i]] || { dx: 0, dy: 0 };
     const romanEl = el('text', {
       x: romanPos.x + romanManualOffset.dx, y: romanPos.y - romanManualOffset.dy,
@@ -2269,22 +2395,179 @@ buildTrainRing('minor', minors, R0, R2, getComputedStyle(document.documentElemen
 buildTrainRing('major', majors, R2, R3, getComputedStyle(document.documentElement).getPropertyValue('--ring-major').trim());
 
 /* =========================================================
+   Поворот круга Обучения (стрелки влево/вправо на клавиатуре):
+   пересчитывает ТОЛЬКО геометрию (позиции) уже существующих
+   ячеек кольца #trainCircle под новый trainRotationOffset —
+   ничего не создаёт заново и не трогает текущую заливку/цвет,
+   поэтому подсветка выбранной тоники не сбрасывается.
+   Все стрелки текущего аккорда (если он выбран) перерисовываются
+   отдельно, см. rotateTrainCircle() ниже.
+   ========================================================= */
+function repositionTrainRing(ringName, names, rInner, rOuter){
+  for(let i=0;i<12;i++){
+    const item = trainWedgeMap[ringName+'-'+i];
+    if(!item) continue;
+    const startA = trA(i*30) - 15 + WEDGE_GAP_ANGLE;
+    const endA = trA(i*30) + 15 - WEDGE_GAP_ANGLE;
+    item.el.setAttribute('d', segmentPath(rInner + WEDGE_GAP_RADIAL, rOuter - WEDGE_GAP_RADIAL, startA, endA));
+
+    const mid = polar(CX, CY, (rInner+rOuter)/2, trA(i*30));
+    item.label.setAttribute('x', mid.x);
+    item.label.setAttribute('y', mid.y);
+    item.midX = mid.x;
+    item.midY = mid.y;
+
+    if(item.altLine){
+      item.altLine.setAttribute('x1', mid.x - TRAIN_ALT_NOTE_LINE_HALF_WIDTH);
+      item.altLine.setAttribute('x2', mid.x + TRAIN_ALT_NOTE_LINE_HALF_WIDTH);
+      item.altLine.setAttribute('y1', mid.y);
+      item.altLine.setAttribute('y2', mid.y);
+    }
+    if(item.altBottomLabel){
+      item.altBottomLabel.setAttribute('x', mid.x);
+      item.altBottomLabel.setAttribute('y', mid.y + TRAIN_ALT_NOTE_LINE_TO_BOTTOM_GAP);
+    }
+
+    const chordArcId = 'chordArc-' + ringName + '-' + i;
+    const chordArcPath = document.getElementById(chordArcId);
+    if(chordArcPath){
+      const chordLettersOffset = (rOuter - rInner) / 2 * CHORD_LETTERS_RADIUS_OFFSET_RATIO;
+      const chordLettersRadius = (rInner+rOuter)/2 - chordLettersOffset;
+      chordArcPath.setAttribute('d', chordLettersArcD(chordLettersRadius, trA(i*30)));
+      item.chordArcLength = chordArcPath.getTotalLength();
+    }
+
+    const romanPos = polar(CX, CY, rOuter - ROMAN_LABEL_RADIAL_INSET, trA(i*30) + ROMAN_LABEL_ANGLE_INSET);
+    const romanManualOffset = ROMAN_LABEL_MANUAL_OFFSETS[names[i]] || { dx: 0, dy: 0 };
+    item.romanEl.setAttribute('x', romanPos.x + romanManualOffset.dx);
+    item.romanEl.setAttribute('y', romanPos.y - romanManualOffset.dy);
+  }
+}
+
+// Применяет конкретный угол поворота (может быть промежуточным, во время
+// анимации) ко всей геометрии кольца и ко всем зависящим от неё элементам:
+// альтернативным нотам (сдвиг подписи + подпись снизу) и буквам аккорда
+// (пересчёт под новую длину дуги) — раньше эти два вызова отсутствовали
+// после поворота, из-за чего их расположение "слетало" при вращении.
+function applyTrainRotationOffset(offset){
+  trainRotationOffset = ((offset % 360) + 360) % 360;
+  repositionTrainRing('minor', minors, R0, R2);
+  repositionTrainRing('major', majors, R2, R3);
+  refreshAllTrainAltNoteCells();
+  if(typeof refreshTrainChordLetters === 'function'){
+    refreshTrainChordLetters();
+  }
+  if(pressedTrainTonicRing !== null && pressedTrainTonicIndex !== null){
+    clearTrainArrows();
+    if(trainDisplayMode === 'arrows'){
+      buildTriadArrowsForTonic(pressedTrainTonicRing, pressedTrainTonicIndex);
+    }
+  }
+}
+
+/* =========================================================
+   Анимация поворота кольца стрелками влево/вправо: угол плавно
+   интерполируется через requestAnimationFrame с простым
+   ease-out (без пружинного overshoot — круг едет прямо к цели
+   и останавливается там, не проезжая дальше и не возвращаясь).
+   Подписи нот при этом остаются "прямыми" (не наклоняются) —
+   это сохраняет текущий стиль отрисовки колеса, где каждая
+   ячейка/подпись просто пересчитывает свою позицию под угол,
+   а не крутится как единая картинка.
+
+   Повторное нажатие стрелки во время анимации прерывает текущую
+   анимацию и стартует новую от текущего визуального угла —
+   поэтому быстрые нажатия не дёргаются. Логическая цель при этом
+   считается НЕ от текущего (возможно промежуточного) визуального
+   угла, а от отдельно хранимого trainRotTarget, который всегда
+   держится ровно на сетке 30°×N — иначе при частых нажатиях
+   во время анимации промежуточные (не кратные 30°) значения
+   накапливались бы в цепочке target = current + 30, и после
+   нескольких полных оборотов колесо останавливалось бы не по
+   центру.
+   ========================================================= */
+let trainRotVisual = 0;        // непрерывный (не завёрнутый в 0..360) угол поворота — то, что сейчас нарисовано
+let trainRotTarget = 0;        // непрерывная логическая цель, всегда кратна 30°
+let trainRotAnimId = null;
+let trainRotAnimFrom = 0;
+let trainRotAnimTo = 0;
+let trainRotAnimStartTime = 0;
+const TRAIN_ROT_DURATION = 220; // мс
+
+function trainEaseOut(t){
+  // простой ease-out cubic, без overshoot/пружины
+  return 1 - Math.pow(1 - t, 3);
+}
+
+function trainRotationAnimStep(now){
+  if(!trainRotAnimStartTime) trainRotAnimStartTime = now;
+  const elapsed = now - trainRotAnimStartTime;
+  const t = Math.min(1, elapsed / TRAIN_ROT_DURATION);
+  const eased = trainEaseOut(t);
+  const current = trainRotAnimFrom + (trainRotAnimTo - trainRotAnimFrom) * eased;
+  trainRotVisual = current;
+  applyTrainRotationOffset(current);
+
+  if(t < 1){
+    trainRotAnimId = requestAnimationFrame(trainRotationAnimStep);
+  } else {
+    trainRotVisual = trainRotAnimTo;
+    applyTrainRotationOffset(trainRotAnimTo);
+    trainRotAnimId = null;
+  }
+}
+
+// пересчитывает геометрию обоих колец (анимированно) + перерисовывает
+// стрелки текущего выбранного аккорда под новым углом поворота
+function rotateTrainCircle(direction){
+  if(trainRotAnimId !== null){
+    // прерываем текущую анимацию и стартуем новую от её текущего
+    // промежуточного угла (trainRotVisual), а не от конечной цели
+    cancelAnimationFrame(trainRotAnimId);
+    trainRotAnimId = null;
+  }
+  trainRotAnimFrom = trainRotVisual;
+  // Цель всегда считается от предыдущей ТОЧНОЙ цели (кратной 30°), а
+  // не от текущего промежуточного визуального угла — это гарантирует,
+  // что после любого количества нажатий (даже прерывающих анимацию)
+  // суммарный поворот остаётся точным кратным 30°.
+  trainRotTarget += direction * 30;
+  trainRotAnimTo = trainRotTarget;
+  trainRotAnimStartTime = 0;
+  trainRotAnimId = requestAnimationFrame(trainRotationAnimStep);
+}
+
+document.addEventListener('keydown', (e)=>{
+  if(appMode !== 'training') return;
+  if(e.ctrlKey || e.metaKey || e.altKey || e.shiftKey) return;
+  const activeEl = document.activeElement;
+  if(activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA' || activeEl.isContentEditable)) return;
+  if(e.key === 'ArrowRight'){
+    rotateTrainCircle(1);
+    e.preventDefault();
+  } else if(e.key === 'ArrowLeft'){
+    rotateTrainCircle(-1);
+    e.preventDefault();
+  }
+});
+
+/* =========================================================
    "Альтернативная нота" — состояние чекбоксов, сохранение в
    localStorage, применение к соответствующим ячейкам круга.
    ========================================================= */
 const TRAIN_ALT_NOTE_STATE_KEY = 'circleTrainAltNotes';
 // checkboxId -> { ring, name } (name — ключ ячейки в TRAIN_ALT_NOTE_MAP)
 const TRAIN_ALT_NOTE_CHECKBOXES = {
-  altNoteMajorBb:  { ring:'major', name:'Bb' },
-  altNoteMajorEb:  { ring:'major', name:'Eb' },
-  altNoteMajorAb:  { ring:'major', name:'Ab' },
-  altNoteMajorDb:  { ring:'major', name:'Db' },
-  altNoteMajorFsharp: { ring:'major', name:'F#' },
-  altNoteMinorBbm: { ring:'minor', name:'Bbm' },
-  altNoteMinorDsm: { ring:'minor', name:'D#m' },
-  altNoteMinorGsm: { ring:'minor', name:'G#m' },
-  altNoteMinorCsm: { ring:'minor', name:'C#m' },
-  altNoteMinorFsm: { ring:'minor', name:'F#m' }
+  altNoteMajorBb:  { ring:'major', name:'B♭' },
+  altNoteMajorEb:  { ring:'major', name:'E♭' },
+  altNoteMajorAb:  { ring:'major', name:'A♭' },
+  altNoteMajorDb:  { ring:'major', name:'D♭' },
+  altNoteMajorFsharp: { ring:'major', name:'F♯' },
+  altNoteMinorBbm: { ring:'minor', name:'B♭m' },
+  altNoteMinorDsm: { ring:'minor', name:'D♯m' },
+  altNoteMinorGsm: { ring:'minor', name:'G♯m' },
+  altNoteMinorCsm: { ring:'minor', name:'C♯m' },
+  altNoteMinorFsm: { ring:'minor', name:'F♯m' }
 };
 
 function loadTrainAltNoteState(){
@@ -2369,7 +2652,14 @@ function parseTrainNoteName(raw){
   const name = raw.endsWith('m') ? raw.slice(0,-1) : raw;
   const letter = name[0];
   let offset = 0;
-  for(const c of name.slice(1)){ if(c==='#') offset++; else if(c==='b') offset--; }
+  // Поддерживаем как ASCII '#'/'b', так и юникодные '♯'/'♭' — тоники
+  // приходят из majors/minors, где используются именно юникодные знаки
+  // (напр. "B♭", "F♯m"); раньше эти символы не распознавались и
+  // отбрасывались, из-за чего "B♭" читалась как "B" (натуральная).
+  for(const c of name.slice(1)){
+    if(c === '#' || c === '♯') offset++;
+    else if(c === 'b' || c === '♭') offset--;
+  }
   const pc = ((NATURAL_PC[letter] + offset) % 12 + 12) % 12;
   return {letter, pc};
 }
@@ -2433,17 +2723,22 @@ function refreshTrainChordLetters(){
       item.chordLettersTextPath.textContent = letters.map(noteDisplay).join(' ');
       item.chordLettersEl.style.fontSize = (CHORD_LETTERS_FONT_SIZE_BY_COUNT[letters.length] || CHORD_LETTERS_FONT_SIZE_BY_COUNT.default) + 'px';
       item.chordLettersEl.style.display = '';
-      // Если естественная длина текста больше доступной дуги (напр. для
-      // 9/11/13-аккордов с двойными диезами/бемолями) — сжимаем текст по
-      // ширине дуги, чтобы буквы не заезжали в соседнюю ячейку.
-      // Всегда растягиваем/сжимаем текст до одной и той же ширины дуги
-      // (а не только когда он "случайно" не помещается) — иначе при
-      // смене тоники в пределах одного типа аккорда буквы визуально
-      // меняют размер из-за разной длины конкретного написания
-      // (диезы/бемоли/дубль-знаки занимают разную ширину).
+      // Размер шрифта фиксирован по количеству нот в аккорде (см.
+      // CHORD_LETTERS_FONT_SIZE_BY_COUNT) — одинаков для всех ячеек
+      // одного вида аккорда (напр. все трезвучия — 9px, все 13-е — 6.2px).
+      // Буквы НЕ растягиваются под ширину дуги (это меняло видимый
+      // размер шрифта от ячейки к ячейке). Сжимаем только межбуквенное
+      // расстояние (lengthAdjust=spacing, без искажения формы глифов),
+      // и только если естественная ширина текста при фиксированном
+      // размере шрифта не помещается в дугу ячейки.
+      item.chordLettersTextPath.removeAttribute('textLength');
+      item.chordLettersTextPath.removeAttribute('lengthAdjust');
+      const naturalLength = item.chordLettersTextPath.getComputedTextLength();
       const maxLength = item.chordArcLength * 0.96;
-      item.chordLettersTextPath.setAttribute('textLength', maxLength);
-      item.chordLettersTextPath.setAttribute('lengthAdjust', 'spacingAndGlyphs');
+      if(naturalLength > maxLength){
+        item.chordLettersTextPath.setAttribute('textLength', maxLength);
+        item.chordLettersTextPath.setAttribute('lengthAdjust', 'spacing');
+      }
     } else {
       item.chordLettersEl.style.display = 'none';
     }
@@ -2509,7 +2804,7 @@ const TRAIN_DEGREE_COLOR = {
 };
 const TRAIN_PIANO_ARROW_COLORS = ['var(--green)','var(--yellow)','var(--blue)','var(--purple)','var(--cyan)','var(--orange)','var(--lime)'];
 
-// "C", "F#", "Bbb" и т.п. -> {letter, offset, pc}
+// "C", "F♯", "Bbb" и т.п. -> {letter, offset, pc}
 function parseSpelledLetter(raw){
   const letter = raw[0];
   let offset = 0;
@@ -2765,7 +3060,7 @@ function computeL3PianoNotes(){
 }
 
 // Множество высот (0..11), уже правильно найденных на круге для
-// текущего аккорда (currentL3.found хранит буквы вида "C", "F#" — без
+// текущего аккорда (currentL3.found хранит буквы вида "C", "F♯" — без
 // бемолей, см. rootOf()), — по нему решаем, какие ноты на клавиатуре
 // уже можно подсветить/подписать стрелкой.
 function l3FoundPcSet(){
@@ -3027,6 +3322,22 @@ const TRAIN_ARROW_CONFIG = {
   strokeWidth: 3,          // толщина линий (стойки и дуги)
   arrowHeadSize: 7         // размер наконечника стрелки
 };
+
+// переводит полупрозрачный цвет стрелки (var(--blue) и т.п., как в
+// конфигах TRIAD_V1/SUS_CONFIGS ниже) в его непрозрачный аналог —
+// используется и для линии/дуги стрелки, и для наконечника-маркера,
+// чтобы оба были ровно одного цвета без более тёмного шва на стыке
+function solidArrowColor(color){
+  const SOLID_ARROW_COLOR_MAP = {
+    'var(--blue)':'var(--blue-solid)',
+    'var(--cyan)':'var(--cyan-solid)',
+    'var(--yellow)':'var(--yellow-solid)',
+    'var(--orange)':'var(--orange-solid)',
+    'var(--purple)':'var(--purple-solid)',
+    'var(--lime)':'var(--lime-solid)'
+  };
+  return SOLID_ARROW_COLOR_MAP[color] || color;
+}
 
 /* ===== Именованные точки начала стрелок =====
    Верхняя дуга тоники делится на равные части, здесь — на 3 (получаются
@@ -3306,7 +3617,7 @@ function buildTrainArrowDefs(){
         markerHeight: String(TRAIN_ARROW_CONFIG.arrowHeadSize),
         orient: 'auto-start-reverse'
       });
-      const arrowPath = el('path', { d: 'M 0 0 L 10 5 L 0 10 z', fill: arrowCfg.color });
+      const arrowPath = el('path', { d: 'M 0 0 L 10 5 L 0 10 z', fill: solidArrowColor(arrowCfg.color) });
       marker.appendChild(arrowPath);
       defs.appendChild(marker);
     });
@@ -3358,7 +3669,8 @@ function drawTrainArrow(fromAngle, toAngle, stubLength, color, markerId, rBase){
   const arrowPath = el('path', {
     d,
     fill: 'none',
-    stroke: color,
+    stroke: solidArrowColor(color),
+    opacity: '0.5',
     'stroke-width': TRAIN_ARROW_CONFIG.strokeWidth,
     'stroke-linejoin': 'round',
     'marker-end': `url(#${markerId})`
@@ -3379,8 +3691,8 @@ function buildTriadArrowsForMajorTonic(tonicNoteName, variant){
   const tonicIndex = majors.indexOf(tonicNoteName);
   if(tonicIndex === -1) return;
 
-  const startA = tonicIndex*30 - 15 + WEDGE_GAP_ANGLE;
-  const endA = tonicIndex*30 + 15 - WEDGE_GAP_ANGLE;
+  const startA = trA(tonicIndex*30) - 15 + WEDGE_GAP_ANGLE;
+  const endA = trA(tonicIndex*30) + 15 - WEDGE_GAP_ANGLE;
 
   // именованные точки на верхней дуге тоники (см. TRIAD_START_POINTS)
   const startPointAngles = {};
@@ -3401,12 +3713,12 @@ function buildTriadArrowsForMajorTonic(tonicNoteName, variant){
     drawTrainDirectLabelArrow(tonicLabel, fifthLabel, fifthCfg.color, 'trainArrowHead_fifth');
 
     const thirdColor = TRIAD_V1.major.third.color;
-    drawTrainRadialArrowBetween(fifthTargetIndex*30, thirdColor, 'trainArrowHead_third', 'major', fifthTargetIndex, 'minor', fifthTargetIndex);
+    drawTrainRadialArrowBetween(trA(fifthTargetIndex*30), thirdColor, 'trainArrowHead_third', 'major', fifthTargetIndex, 'minor', fifthTargetIndex);
   } else {
-    drawTrainArrow(startPointAngles[fifthCfg.startPoint], fifthTargetIndex*30, fifthCfg.stubLength, fifthCfg.color, 'trainArrowHead_fifth');
+    drawTrainArrow(startPointAngles[fifthCfg.startPoint], trA(fifthTargetIndex*30), fifthCfg.stubLength, fifthCfg.color, 'trainArrowHead_fifth');
     const thirdCfg = TRIAD_V1.major.third;
     const thirdTargetIndex = ((tonicIndex + thirdCfg.degreeSteps) % 12 + 12) % 12;
-    drawTrainArrow(startPointAngles[thirdCfg.startPoint], thirdTargetIndex*30, thirdCfg.stubLength, thirdCfg.color, 'trainArrowHead_third');
+    drawTrainArrow(startPointAngles[thirdCfg.startPoint], trA(thirdTargetIndex*30), thirdCfg.stubLength, thirdCfg.color, 'trainArrowHead_third');
   }
 }
 
@@ -3458,7 +3770,8 @@ function drawTrainDirectLabelArrow(labelFrom, labelTo, color, markerId){
 
   const line = el('line', {
     x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y,
-    stroke: color,
+    stroke: solidArrowColor(color),
+    opacity: '0.5',
     'stroke-width': TRAIN_ARROW_CONFIG.strokeWidth,
     'marker-end': `url(#${markerId})`
   });
@@ -3493,7 +3806,8 @@ function drawTrainRadialArrowBetween(angle, color, markerId, fromRing, fromIndex
 
   const line = el('line', {
     x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y,
-    stroke: color,
+    stroke: solidArrowColor(color),
+    opacity: '0.5',
     'stroke-width': TRAIN_ARROW_CONFIG.strokeWidth,
     'marker-end': `url(#${markerId})`
   });
@@ -3536,8 +3850,8 @@ const MINOR_ARC_RADIUS = R1 + MINOR_CENTER_ARROW_STUB; // тот же радиу
 function drawMinorCenterArc(tonicIndex, targetIndex, color, markerId){
   // начало/конец дуги — не от подписи ноты, а от центра нижней (внутренней,
   // R0) грани ячейки минорного кольца, на угле этой ячейки
-  const p1 = polar(CX, CY, R0, tonicIndex * 30);
-  const p2 = polar(CX, CY, R0, targetIndex * 30);
+  const p1 = polar(CX, CY, R0, trA(tonicIndex*30));
+  const p2 = polar(CX, CY, R0, trA(targetIndex*30));
 
   // радиус дуги не может быть меньше половины хорды (иначе дуга такого
   // радиуса физически не дотянется от p1 до p2)
@@ -3554,7 +3868,8 @@ function drawMinorCenterArc(tonicIndex, targetIndex, color, markerId){
   const path = el('path', {
     d,
     fill: 'none',
-    stroke: color,
+    stroke: solidArrowColor(color),
+    opacity: '0.5',
     'stroke-width': TRAIN_ARROW_CONFIG.strokeWidth,
     'stroke-linecap': 'round',
     'marker-end': `url(#${markerId})`
@@ -3588,7 +3903,7 @@ function buildTriadArrowsForMinorTonic(tonicIndex, variant){
     drawMinorV1Arrow(tonicIndex, thirdTargetIndex, thirdCfg.color, 'trainArrowHead_third');
   } else {
     // относительный мажор находится под тем же индексом, что и минорная тоника
-    drawTrainRadialArrowBetween(tonicIndex*30, thirdCfg.color, 'trainArrowHead_third', 'minor', tonicIndex, 'major', tonicIndex);
+    drawTrainRadialArrowBetween(trA(tonicIndex*30), thirdCfg.color, 'trainArrowHead_third', 'minor', tonicIndex, 'major', tonicIndex);
   }
 }
 
@@ -3695,8 +4010,8 @@ function buildSusArrowsForTonic(chordType, ring, tonicIndex){
   const angleIndex = majors.indexOf(tonicNoteName);
   if(angleIndex === -1) return;
 
-  const startA = angleIndex*30 - 15 + WEDGE_GAP_ANGLE;
-  const endA = angleIndex*30 + 15 - WEDGE_GAP_ANGLE;
+  const startA = trA(angleIndex*30) - 15 + WEDGE_GAP_ANGLE;
+  const endA = trA(angleIndex*30) + 15 - WEDGE_GAP_ANGLE;
   const startPointAngles = {};
   Object.keys(TRIAD_START_POINTS).forEach(name=>{
     startPointAngles[name] = startA + (endA - startA) * TRIAD_START_POINTS[name];
@@ -3721,7 +4036,7 @@ function buildSusArrowsForTonic(chordType, ring, tonicIndex){
       if(key === 'fifth' || key === 'ninth') return;
       const arrowCfg = susCfg.arrows[key];
       const targetIndex = ((angleIndex + arrowCfg.degreeSteps) % 12 + 12) % 12;
-      const targetAngle = targetIndex * 30;
+      const targetAngle = trA(targetIndex*30);
       const fromAngle = startPointAngles[arrowCfg.startPoint];
       drawTrainArrow(fromAngle, targetAngle, arrowCfg.stubLength, arrowCfg.color, `trainArrowHead_${key}`);
     });
@@ -3797,7 +4112,7 @@ function buildSusArrowsForTonic(chordType, ring, tonicIndex){
       if(key === 'fifth' || key === 'eleventh') return;
       const arrowCfg = susCfg.arrows[key];
       const targetIndex = ((angleIndex + arrowCfg.degreeSteps) % 12 + 12) % 12;
-      const targetAngle = targetIndex * 30;
+      const targetAngle = trA(targetIndex*30);
       const fromAngle = startPointAngles[arrowCfg.startPoint];
       drawTrainArrow(fromAngle, targetAngle, arrowCfg.stubLength, arrowCfg.color, `trainArrowHead_${key}`);
     });
@@ -3807,7 +4122,7 @@ function buildSusArrowsForTonic(chordType, ring, tonicIndex){
   Object.keys(susCfg.arrows).forEach(key=>{
     const arrowCfg = susCfg.arrows[key];
     const targetIndex = ((angleIndex + arrowCfg.degreeSteps) % 12 + 12) % 12;
-    const targetAngle = targetIndex * 30;
+    const targetAngle = trA(targetIndex*30);
     const fromAngle = startPointAngles[arrowCfg.startPoint];
     drawTrainArrow(fromAngle, targetAngle, arrowCfg.stubLength, arrowCfg.color, `trainArrowHead_${key}`);
   });
@@ -3857,14 +4172,14 @@ function buildSeventhLetterArrows(chordType, ring, tonicIndex){
     const thirdIndex = ((tonicIndex + 4) % 12 + 12) % 12;
     drawMinorV1Arrow(tonicIndex, thirdIndex, arrowsCfg.third.color, 'trainArrowHead_third');
     drawTrainRadialArrowBetween(
-      fifthIndex * 30, arrowsCfg.seventh.color, 'trainArrowHead_seventh',
+      trA(fifthIndex*30), arrowsCfg.seventh.color, 'trainArrowHead_seventh',
       ring, fifthIndex, otherRing, fifthIndex
     );
   } else if(chordType === 'dom7'){
     // терция: от квинты — переход на противоположное кольцо (та же
     // позиция круга, что и квинта)
     drawTrainRadialArrowBetween(
-      fifthIndex * 30, arrowsCfg.third.color, 'trainArrowHead_third',
+      trA(fifthIndex*30), arrowsCfg.third.color, 'trainArrowHead_third',
       ring, fifthIndex, otherRing, fifthIndex
     );
     // септима: два шага по своему кольцу вниз от тоники (напр. C -> Bb) —
@@ -3872,13 +4187,13 @@ function buildSeventhLetterArrows(chordType, ring, tonicIndex){
     // радиусу напрямую от тоники до септимы, а не цепочкой через F
     const targetIndex = ((tonicIndex - 2) % 12 + 12) % 12;
     drawTrainArrow(
-      tonicIndex * 30, targetIndex * 30,
+      trA(tonicIndex*30), trA(targetIndex*30),
       arrowsCfg.seventh.stubLength, arrowsCfg.seventh.color, 'trainArrowHead_seventh'
     );
   } else if(chordType === 'maj7'){
     // терция: от квинты — переход на противоположное кольцо
     drawTrainRadialArrowBetween(
-      fifthIndex * 30, arrowsCfg.third.color, 'trainArrowHead_third',
+      trA(fifthIndex*30), arrowsCfg.third.color, 'trainArrowHead_third',
       ring, fifthIndex, otherRing, fifthIndex
     );
     // септима: от терции (на противоположном кольце) ещё шаг +1 по нему же
@@ -3891,7 +4206,7 @@ function buildSeventhLetterArrows(chordType, ring, tonicIndex){
     // терция: от тоники — переход на противоположное кольцо (та же
     // позиция круга, что и тоника), напр. Am -> C
     drawTrainRadialArrowBetween(
-      tonicIndex * 30, arrowsCfg.third.color, 'trainArrowHead_third',
+      trA(tonicIndex*30), arrowsCfg.third.color, 'trainArrowHead_third',
       ring, tonicIndex, otherRing, tonicIndex
     );
     // септима: прямая стрелка от самой тоники сразу к септиме на
@@ -3924,7 +4239,7 @@ function buildMMaj7LetterArrows(ring, tonicIndex){
       arrowsCfg.fifth.color, 'trainArrowHead_fifth'
     );
     drawTrainRadialArrowBetween(
-      tonicIndex * 30, arrowsCfg.third.color, 'trainArrowHead_third',
+      trA(tonicIndex*30), arrowsCfg.third.color, 'trainArrowHead_third',
       'minor', tonicIndex, 'major', tonicIndex
     );
     const seventhIndex = ((tonicIndex + 5) % 12 + 12) % 12;
@@ -3942,7 +4257,7 @@ function buildMMaj7LetterArrows(ring, tonicIndex){
     );
     const thirdIndex = ((tonicIndex - 3) % 12 + 12) % 12;
     drawTrainArrow(
-      tonicIndex * 30, thirdIndex * 30,
+      trA(tonicIndex*30), trA(thirdIndex*30),
       arrowsCfg.third.stubLength, arrowsCfg.third.color, 'trainArrowHead_third'
     );
   }
@@ -3963,7 +4278,7 @@ function buildAdd9LetterArrows(ring, tonicIndex){
     arrowsCfg.fifth.color, 'trainArrowHead_fifth'
   );
   drawTrainRadialArrowBetween(
-    fifthIndex * 30, arrowsCfg.third.color, 'trainArrowHead_third',
+    trA(fifthIndex*30), arrowsCfg.third.color, 'trainArrowHead_third',
     ring, fifthIndex, otherRing, fifthIndex
   );
   const ninthIndex = (fifthIndex + 1) % 12;
@@ -3998,12 +4313,12 @@ function buildMAdd9LetterArrows(ring, tonicIndex){
   const tonicNoteName = majors[fifthsIndex];
   const angleIndex = majors.indexOf(tonicNoteName);
   if(angleIndex === -1) return;
-  const startA = angleIndex*30 - 15 + WEDGE_GAP_ANGLE;
-  const endA = angleIndex*30 + 15 - WEDGE_GAP_ANGLE;
+  const startA = trA(angleIndex*30) - 15 + WEDGE_GAP_ANGLE;
+  const endA = trA(angleIndex*30) + 15 - WEDGE_GAP_ANGLE;
   const thirdCfg = arrowsCfg.third;
   const fromAngle = startA + (endA - startA) * TRIAD_START_POINTS[thirdCfg.startPoint];
   const targetIndex = ((angleIndex + thirdCfg.degreeSteps) % 12 + 12) % 12;
-  const targetAngle = targetIndex * 30;
+  const targetAngle = trA(targetIndex*30);
   drawTrainArrow(fromAngle, targetAngle, thirdCfg.stubLength, thirdCfg.color, 'trainArrowHead_third');
 }
 
@@ -4038,7 +4353,7 @@ function buildExtendedLetterArrows(chordType, ring, tonicIndex){
     arrowsCfg[cfgKey].color, 'trainArrowHead_' + cfgKey
   );
   const drawCrossAt = (angleIdx, cfgKey) => drawTrainRadialArrowBetween(
-    angleIdx * 30, arrowsCfg[cfgKey].color, 'trainArrowHead_' + cfgKey,
+    trA(angleIdx * 30), arrowsCfg[cfgKey].color, 'trainArrowHead_' + cfgKey,
     ring, angleIdx, otherRing, angleIdx
   );
 
@@ -4058,11 +4373,11 @@ function buildExtendedLetterArrows(chordType, ring, tonicIndex){
     // терция (Eb) — рисуем её прямой дугой по внешнему радиусу от тоники,
     // тем же приёмом, что и у m9 на мажорном кольце.
     if((chordType === 'mmaj9' || chordType === 'mmaj13') && ring === 'major'){
-      const startA = tonicIndex*30 - 15 + WEDGE_GAP_ANGLE;
-      const endA = tonicIndex*30 + 15 - WEDGE_GAP_ANGLE;
+      const startA = trA(tonicIndex*30) - 15 + WEDGE_GAP_ANGLE;
+      const endA = trA(tonicIndex*30) + 15 - WEDGE_GAP_ANGLE;
       const thirdIndex = ((tonicIndex + degrees.third) % 12 + 12) % 12;
       const thirdFromAngle = startA + (endA - startA) * TRIAD_START_POINTS[arrowsCfg.third.startPoint];
-      drawTrainArrow(thirdFromAngle, thirdIndex * 30, arrowsCfg.third.stubLength, arrowsCfg.third.color, 'trainArrowHead_third');
+      drawTrainArrow(thirdFromAngle, trA(thirdIndex*30), arrowsCfg.third.stubLength, arrowsCfg.third.color, 'trainArrowHead_third');
     } else if(chordType === 'mmaj13' && ring === 'minor'){
       // по просьбе пользователя: вместо креста к отн. мажору (Am->C) и
       // отдельного шага септимы (Bm->G#m) — продолжаем цепочку по своему
@@ -4119,10 +4434,10 @@ function buildExtendedLetterArrows(chordType, ring, tonicIndex){
         // рисуем прямую стрелку по своему кольцу от ноны: D -> A
         drawSame(ninthIndex, targetIndex, 'thirteenth');
       } else {
-        const startA = tonicIndex*30 - 15 + WEDGE_GAP_ANGLE;
-        const endA = tonicIndex*30 + 15 - WEDGE_GAP_ANGLE;
+        const startA = trA(tonicIndex*30) - 15 + WEDGE_GAP_ANGLE;
+        const endA = trA(tonicIndex*30) + 15 - WEDGE_GAP_ANGLE;
         const fromAngle = startA + (endA - startA) * TRIAD_START_POINTS[arrowsCfg.thirteenth.startPoint];
-        drawTrainArrow(fromAngle, targetIndex*30, arrowsCfg.thirteenth.stubLength, arrowsCfg.thirteenth.color, 'trainArrowHead_thirteenth');
+        drawTrainArrow(fromAngle, trA(targetIndex*30), arrowsCfg.thirteenth.stubLength, arrowsCfg.thirteenth.color, 'trainArrowHead_thirteenth');
       }
     }
   } else if(chordType === 'add11' || chordType === 'dom9' || chordType === 'dom11' || chordType === 'dom13'){
@@ -4144,7 +4459,7 @@ function buildExtendedLetterArrows(chordType, ring, tonicIndex){
         // радиусу напрямую от тоники до септимы, а не цепочкой через F
         const targetIndex = ((tonicIndex - 2) % 12 + 12) % 12;
         drawTrainArrow(
-          tonicIndex * 30, targetIndex * 30,
+          trA(tonicIndex*30), trA(targetIndex*30),
           arrowsCfg.seventh.stubLength, arrowsCfg.seventh.color, 'trainArrowHead_seventh'
         );
       }
@@ -4254,15 +4569,15 @@ function buildExtendedLetterArrows(chordType, ring, tonicIndex){
         // двумя дугами по внешнему радиусу из разных точек на дуге
         // тоники (тот же приём, что и у тердецимы выше), без перехода
         // на другое кольцо
-        const startA = tonicIndex*30 - 15 + WEDGE_GAP_ANGLE;
-        const endA = tonicIndex*30 + 15 - WEDGE_GAP_ANGLE;
+        const startA = trA(tonicIndex*30) - 15 + WEDGE_GAP_ANGLE;
+        const endA = trA(tonicIndex*30) + 15 - WEDGE_GAP_ANGLE;
         const thirdIndex = ((tonicIndex + degrees.third) % 12 + 12) % 12;
         const thirdFromAngle = startA + (endA - startA) * TRIAD_START_POINTS[arrowsCfg.third.startPoint];
-        drawTrainArrow(thirdFromAngle, thirdIndex * 30, arrowsCfg.third.stubLength, arrowsCfg.third.color, 'trainArrowHead_third');
+        drawTrainArrow(thirdFromAngle, trA(thirdIndex*30), arrowsCfg.third.stubLength, arrowsCfg.third.color, 'trainArrowHead_third');
         if(degrees.seventh !== undefined){
           const seventhIndex = ((tonicIndex + degrees.seventh) % 12 + 12) % 12;
           const seventhFromAngle = startA + (endA - startA) * TRIAD_START_POINTS[arrowsCfg.seventh.startPoint];
-          drawTrainArrow(seventhFromAngle, seventhIndex * 30, arrowsCfg.seventh.stubLength, arrowsCfg.seventh.color, 'trainArrowHead_seventh');
+          drawTrainArrow(seventhFromAngle, trA(seventhIndex*30), arrowsCfg.seventh.stubLength, arrowsCfg.seventh.color, 'trainArrowHead_seventh');
         }
       }
     } else if(chordType === 'madd11' && ring !== 'minor'){
@@ -4270,11 +4585,11 @@ function buildExtendedLetterArrows(chordType, ring, tonicIndex){
       // соседняя нота с тоникой (C -> Eb), поэтому рисуем прямую дугу по
       // внешнему радиусу от тоники (тот же приём, что у m9 на мажорном
       // кольце), а не крест к относительному минору (C -> Am)
-      const startA = tonicIndex*30 - 15 + WEDGE_GAP_ANGLE;
-      const endA = tonicIndex*30 + 15 - WEDGE_GAP_ANGLE;
+      const startA = trA(tonicIndex*30) - 15 + WEDGE_GAP_ANGLE;
+      const endA = trA(tonicIndex*30) + 15 - WEDGE_GAP_ANGLE;
       const thirdIndex = ((tonicIndex + degrees.third) % 12 + 12) % 12;
       const thirdFromAngle = startA + (endA - startA) * TRIAD_START_POINTS[arrowsCfg.third.startPoint];
-      drawTrainArrow(thirdFromAngle, thirdIndex * 30, arrowsCfg.third.stubLength, arrowsCfg.third.color, 'trainArrowHead_third');
+      drawTrainArrow(thirdFromAngle, trA(thirdIndex*30), arrowsCfg.third.stubLength, arrowsCfg.third.color, 'trainArrowHead_third');
     } else if(chordType === 'm11' && ring !== 'minor'){
       // m11 на мажорном кольце (напр. Cm11): терция/септима/ундецима —
       // одна цепочка по своему же кольцу вниз по квинтам от тоники:
@@ -4339,10 +4654,10 @@ function buildExtendedLetterArrows(chordType, ring, tonicIndex){
         // рисуем прямую стрелку по своему кольцу от ноны: D -> A
         drawSame(ninthIndex, targetIndex, 'thirteenth');
       } else {
-        const startA = tonicIndex*30 - 15 + WEDGE_GAP_ANGLE;
-        const endA = tonicIndex*30 + 15 - WEDGE_GAP_ANGLE;
+        const startA = trA(tonicIndex*30) - 15 + WEDGE_GAP_ANGLE;
+        const endA = trA(tonicIndex*30) + 15 - WEDGE_GAP_ANGLE;
         const fromAngle = startA + (endA - startA) * TRIAD_START_POINTS[arrowsCfg.thirteenth.startPoint];
-        drawTrainArrow(fromAngle, targetIndex*30, arrowsCfg.thirteenth.stubLength, arrowsCfg.thirteenth.color, 'trainArrowHead_thirteenth');
+        drawTrainArrow(fromAngle, trA(targetIndex*30), arrowsCfg.thirteenth.stubLength, arrowsCfg.thirteenth.color, 'trainArrowHead_thirteenth');
       }
     }
   }
@@ -6652,6 +6967,24 @@ function findL3PositionForPc(pc){
   return null;
 }
 
+// Переключатель мажорного/минорного кольца колесом Pitch Bend на MIDI-
+// клавиатуре. null — обычное поведение (цикл мажор->минор при повторном
+// нажатии той же клавиши, как раньше). 'major'/'minor' — колесо отклонено
+// от центра в соответствующую сторону: ЛЮБОЕ нажатие клавиши (сколько бы
+// раз подряд ни нажали одну и ту же ноту) всегда играет аккорд только на
+// зафиксированном кольце. Это чисто внутреннее состояние приложения —
+// никуда не передаётся и не форвардится (в DAW и т.п.).
+let midiPitchbendRingLock = null;
+// "мёртвая зона" вокруг центра колеса (8192 из 0..16383), чтобы дрожание
+// колеса около нуля не мешало обычному циклическому поведению
+const PITCHBEND_DEADZONE = 1024;
+// Зона, в которой сейчас находится колесо (для переключателя, а не
+// "держи-колесо-у-края"): 'center' | 'major' | 'minor'. Фиксация кольца
+// переключается только в момент ПЕРЕСЕЧЕНИЯ границы зоны (край
+// сработал один раз за отклонение), а возврат колеса в центр НЕ сбрасывает
+// midiPitchbendRingLock — он остаётся зафиксированным до следующего отклонения.
+let midiPitchbendZone = 'center';
+
 function handleMidiNote(pc){
   // Практика 2: загаданная ячейка стоит на строго определённом кольце
   // (мажор или минор) — как и в клавиатурном handleNoteHotkeyLevel2,
@@ -6677,6 +7010,26 @@ function handleMidiNote(pc){
       clickWedgeByRing(pos.ring, pos.index);
       return;
     }
+  }
+
+  // Pitch Bend отклонён от центра — кольцо зафиксировано, обычный цикл
+  // мажор<->минор не используется: каждое нажатие (даже повторное на той
+  // же клавише) играет аккорд только на зафиксированном кольце.
+  if(midiPitchbendRingLock === 'major'){
+    midiHotkeyPc = pc;
+    midiHotkeyStage = 1;
+    const idx = majorsSemitone.indexOf(pc);
+    if(idx === -1) return;
+    clickWedgeByRing('major', idx);
+    return;
+  }
+  if(midiPitchbendRingLock === 'minor'){
+    midiHotkeyPc = pc;
+    midiHotkeyStage = 2;
+    const idx = minorsSemitone.indexOf(pc);
+    if(idx === -1) return;
+    clickWedgeByRing('minor', idx);
+    return;
   }
 
   if(midiHotkeyPc !== pc){
@@ -6710,39 +7063,180 @@ function onMidiMessage(event){
     // это триггерит выбор новой ячейки/аккорда, тот снова шлётся в
     // DAW — и так по кругу (отсюда "куча случайных аккордов подряд").
     if(isDawEchoNote(note)) return;
+    // Помечаем, что текущий (синхронный) выбор ячейки/аккорда вызван
+    // реальным нажатием клавиши на MIDI-клавиатуре, а не кликом мышью —
+    // это читает playCurrentTrainChordToDaw(), чтобы в режиме "за раз"
+    // не отпускать ноту через фиксированные 600мс, а держать её звучащей,
+    // пока эта же физическая клавиша не будет отжата (см. ниже, note-off).
+    midiKeyTriggerActive = true;
+    midiKeyTriggerNoteNum = note;
     handleMidiNote(note % 12);
+    midiKeyTriggerActive = false;
+    return;
+  }
+  if(status === 0x80 || (status === 0x90 && velocity === 0)){
+    // Note Off с MIDI-клавиатуры (или Note On с velocity=0, что по
+    // протоколу равнозначно Note Off).
+    //
+    // ВАЖНО: если отжатая клавиша — это та самая физическая нота, которая
+    // сейчас держит звучащий аккорд (dawMidiHeldChordNoteNum), её нужно
+    // отпустить ВСЕГДА, даже если её номер совпал с одной из нот, которые
+    // мы сами только что отправили в DAW (и поэтому формально попадает
+    // под фильтр "эхо" isDawEchoNote). Раньше проверка isDawEchoNote шла
+    // первой и при коротком нажатии (быстрее ~0.6-0.7с — как раз то время,
+    // на которое эхо-нота помечается) реальный note-off от клавиатуры
+    // ошибочно проглатывался как "эхо", и нота/аккорд оставались звучать
+    // бесконечно, пока не будет выбрана следующая ячейка. Поэтому сначала
+    // проверяем совпадение с реально удерживаемой нотой и отпускаем её —
+    // и только если совпадения нет, применяем фильтр эха.
+    if(dawMidiHeldChordNoteNum === note){
+      if(typeof releaseMidiHeldChordIfMatches === 'function') releaseMidiHeldChordIfMatches(note);
+      return;
+    }
+    if(isDawEchoNote(note)) return;
+    if(typeof releaseMidiHeldChordIfMatches === 'function') releaseMidiHeldChordIfMatches(note);
+    return;
+  }
+  // Pitch Bend (0xE0) с MIDI-клавиатуры — используется ТОЛЬКО внутри
+  // приложения для переключения мажорного/минорного кольца (см.
+  // midiPitchbendRingLock в handleMidiNote): колесо вправо/вверх от
+  // центра — зафиксировать мажорное кольцо, влево/вниз — минорное,
+  // отпущено в центр — вернуться к обычному циклу мажор<->минор.
+  // Никуда дальше (в DAW и т.п.) это сообщение не передаётся.
+  if(status === 0xE0){
+    const bendValue = ((data[2] & 0x7f) << 7) | (data[1] & 0x7f); // 0..16383, центр 8192
+    let zone;
+    if(bendValue > 8192 + PITCHBEND_DEADZONE) zone = 'major';
+    else if(bendValue < 8192 - PITCHBEND_DEADZONE) zone = 'minor';
+    else zone = 'center';
+    // Переключатель, а не "держи колесо у края": фиксируем кольцо только
+    // в момент входа в major/minor зону (переход из другой зоны), а при
+    // возврате колеса в центр (zone === 'center') ничего не меняем —
+    // midiPitchbendRingLock остаётся тем, что было выбрано последним
+    // отклонением, пока колесо снова не толкнут в ту же или другую сторону.
+    if(zone !== midiPitchbendZone){
+      if(zone === 'major') midiPitchbendRingLock = 'major';
+      else if(zone === 'minor') midiPitchbendRingLock = 'minor';
+      midiPitchbendZone = zone;
+    }
+    return;
+  }
+  // CC1 (modwheel) с MIDI-клавиатуры — используется режимом "Разделить
+  // сигнал на каналы" для строк, у которых включена галочка "С MIDI":
+  // значение форвардится в DAW сразу же, при каждом изменении.
+  if(status === 0xB0 && note === 1){
+    if(typeof forwardLiveModwheelToDaw === 'function') forwardLiveModwheelToDaw(velocity);
   }
 }
 
 function bindAllMidiInputs(){
   if(!midiAccess) return;
+  // Раньше слушались ВСЕ входы сразу, независимо от выбора в
+  // выпадающих списках. Из-за этого некоторые MIDI-клавиатуры (например,
+  // Native Instruments Komplete Kontrol), которые регистрируют в системе
+  // СРАЗУ ДВА порта — обычный "клавиатурный" и служебный порт
+  // DAW-интеграции (NIHIA), — приводили к дублированию/спаму сообщений
+  // (в т.ч. постоянные CC1/modwheel), потому что оба порта слушались
+  // одновременно. Теперь слушаем ТОЛЬКО те порты, что реально выбраны
+  // в строке(-ах) "MIDI вход" — остальные явно отключаем (onmidimessage
+  // = null), чтобы дублирующий/служебный порт не мог ничего прислать.
+  const selects = midiInputSelectsContainer
+    ? midiInputSelectsContainer.querySelectorAll('.midiInputPortSelect')
+    : [];
+  const selectedIds = new Set(
+    [...selects].map(sel => sel.value).filter(v => v)
+  );
   midiAccess.inputs.forEach(inp => {
-    inp.onmidimessage = onMidiMessage;
+    inp.onmidimessage = selectedIds.has(inp.id) ? onMidiMessage : null;
   });
 }
 
+// Сколько строк выбора MIDI-входа показывать (1..7). Значение — только
+// отображение/информация: сигналы в любом случае принимаются СРАЗУ со
+// ВСЕХ подключённых входов (см. bindAllMidiInputs), независимо от того,
+// сколько строк выбора отрисовано и что в них выбрано.
+const MIDI_INPUT_COUNT_KEY = 'circleOfFifths_midiInputCount_v1';
+function loadMidiInputCount(){
+  let saved = null;
+  try{ saved = localStorage.getItem(MIDI_INPUT_COUNT_KEY); }catch(e){}
+  const n = parseInt(saved, 10);
+  return (n >= 1 && n <= 7) ? n : 1;
+}
+function saveMidiInputCount(n){
+  try{ localStorage.setItem(MIDI_INPUT_COUNT_KEY, String(n)); }catch(e){}
+}
+let midiInputRowCount = loadMidiInputCount();
+
+const midiInputCountSelect = document.getElementById('midiInputCountSelect');
+const midiInputSelectsContainer = document.getElementById('midiInputSelectsContainer');
+midiInputCountSelect.value = String(midiInputRowCount);
+
+function ensureMidiInputRows(count){
+  const rows = midiInputSelectsContainer.querySelectorAll('.midiPanelRow');
+  // первая строка/select уже есть в разметке (id="midiInputSelect"),
+  // остальные создаём/удаляем динамически
+  for(let i = rows.length; i < count; i++){
+    const row = document.createElement('div');
+    row.className = 'midiPanelRow';
+    const sel = document.createElement('select');
+    sel.className = 'midiInputPortSelect';
+    sel.innerHTML = '<option>—</option>';
+    row.appendChild(sel);
+    midiInputSelectsContainer.appendChild(row);
+  }
+  for(let i = rows.length - 1; i >= count; i--){
+    rows[i].remove();
+  }
+}
+
+midiInputCountSelect.addEventListener('change', ()=>{
+  midiInputRowCount = parseInt(midiInputCountSelect.value, 10) || 1;
+  saveMidiInputCount(midiInputRowCount);
+  ensureMidiInputRows(midiInputRowCount);
+  populateMidiSelect();
+});
+
 function populateMidiSelect(){
-  const sel = document.getElementById('midiInputSelect');
+  ensureMidiInputRows(midiInputRowCount);
+  const selects = midiInputSelectsContainer.querySelectorAll('.midiInputPortSelect');
   const statusLine = document.getElementById('midiStatusLine');
-  sel.innerHTML = '';
   const inputs = [...midiAccess.inputs.values()];
+  selects.forEach((sel, idx) => {
+    sel.innerHTML = '';
+    if(inputs.length === 0){
+      sel.innerHTML = '<option>Нет входов</option>';
+    } else {
+      inputs.forEach(inp => {
+        const opt = document.createElement('option');
+        opt.value = inp.id;
+        opt.textContent = inp.name + (inp.state !== 'connected' ? ' (не подключено)' : '');
+        sel.appendChild(opt);
+      });
+      // если для этой строки есть отдельный вход по порядку — выбираем
+      // его по умолчанию (просто для наглядности, на приём сигналов не
+      // влияет — см. bindAllMidiInputs)
+      if(inputs[idx]) sel.value = inputs[idx].id;
+    }
+  });
   if(inputs.length === 0){
-    sel.innerHTML = '<option>Нет входов</option>';
     statusLine.textContent = 'MIDI входы не найдены';
     statusLine.classList.add('midiStatusError');
   } else {
-    inputs.forEach(inp => {
-      const opt = document.createElement('option');
-      opt.value = inp.id;
-      opt.textContent = inp.name + (inp.state !== 'connected' ? ' (не подключено)' : '');
-      sel.appendChild(opt);
-    });
     statusLine.textContent = `Входы: ${inputs.map(i => i.name).join(', ')}`;
     statusLine.classList.remove('midiStatusError');
   }
-  // слушаем ВСЕ входы сразу, выбор в списке — только информационный
+  // слушаем ТОЛЬКО выбранные в строках порты (см. bindAllMidiInputs)
   bindAllMidiInputs();
 }
+
+// Пере-привязка входов при ручном изменении выбора в любой из строк
+// "MIDI вход" (делегирование, чтобы работало и для строк, добавленных
+// позже динамически при увеличении количества входов).
+midiInputSelectsContainer.addEventListener('change', (e)=>{
+  if(e.target && e.target.classList.contains('midiInputPortSelect')){
+    bindAllMidiInputs();
+  }
+});
 
 function requestMidiAccess(){
   const statusLine = document.getElementById('midiStatusLine');
@@ -6954,6 +7448,30 @@ function dawNoteNumberFor(note){
   return 60 + note.rank*12 + note.pc;
 }
 
+// Признак того, что текущий (синхронный) вызов playCurrentTrainChordToDaw()
+// произошёл из-за реального нажатия клавиши на MIDI-клавиатуре (а не из-за
+// клика мышью по кругу) — и, если да, номер этой физической MIDI-ноты.
+// Клик мышью по кругу должен работать ровно как раньше (нота отпускается
+// сама через holdMs/интервал) — это состояние трогает только ветку "за
+// раз"/"по очереди" для нажатий с настоящей MIDI-клавиатуры.
+let midiKeyTriggerActive = false;
+let midiKeyTriggerNoteNum = null;
+// Аккорд, который сейчас звучит в DAW "удерживаемым" — потому что был
+// запущен реальным нажатием клавиши на MIDI-клавиатуре (режим "за раз") и
+// ждёт, пока та же физическая клавиша будет отжата.
+let dawMidiHeldChordNoteNum = null; // номер физической MIDI-ноты, которая держит аккорд
+let dawMidiHeldChordItems = [];     // [{channel, noteNum}] ноты, которые нужно отпустить
+
+// Вызывается при получении Note Off с MIDI-клавиатуры. Если отжатая
+// клавиша — та самая, что держит сейчас звучащий аккорд, отправляем в DAW
+// note-off для всех его нот и снимаем "удержание".
+function releaseMidiHeldChordIfMatches(noteNum){
+  if(dawMidiHeldChordNoteNum === null || dawMidiHeldChordNoteNum !== noteNum) return;
+  dawMidiHeldChordItems.forEach(it => dawSendNoteOff(it.noteNum, it.channel));
+  dawMidiHeldChordItems = [];
+  dawMidiHeldChordNoteNum = null;
+}
+
 let dawActiveTimers = [];
 // Ноты, на которые был отправлен Note On, но ещё не отправлен Note Off
 // (ждут своего отложенного note-off в dawActiveTimers). Нужно, чтобы при
@@ -6982,21 +7500,213 @@ function clearDawTimers(){
   dawActiveTimers = [];
   // не оставляем зависших нот — досылаем note-off сразу
   if(dawHeldNotes.size){
-    dawHeldNotes.forEach(n => dawSendNoteOff(n));
+    dawHeldNotes.forEach(key => {
+      const parts = key.split(':');
+      const ch = parseInt(parts[0], 10);
+      const n = parseInt(parts[1], 10);
+      dawSendNoteOff(n, ch);
+    });
     dawHeldNotes.clear();
   }
+  // новый выбор ячейки/аккорда (мышью, хоткеем или новой MIDI-нотой)
+  // всегда обрывает предыдущее MIDI-удержание — его ноты уже отпущены
+  // выше через dawHeldNotes, так что здесь только сбрасываем состояние
+  dawMidiHeldChordNoteNum = null;
+  dawMidiHeldChordItems = [];
 }
 
-function dawSendNoteOn(noteNum, velByte){
-  markDawEchoNote(noteNum & 0x7f);
-  dawHeldNotes.add(noteNum & 0x7f);
+// channel — 0..15 (0 = MIDI-канал 1), по умолчанию 0 — как и раньше
+// (одноканальный режим, без "Разделить сигнал на каналы").
+function dawSendNoteOn(noteNum, velByte, channel){
+  const n = noteNum & 0x7f;
+  const ch = (channel || 0) & 0x0f;
+  markDawEchoNote(n);
+  dawHeldNotes.add(ch + ':' + n);
   if(!dawMidiOutput) return;
-  try{ dawMidiOutput.send([0x90, noteNum & 0x7f, velByte]); }catch(e){}
+  try{ dawMidiOutput.send([0x90 | ch, n, velByte]); }catch(e){}
 }
-function dawSendNoteOff(noteNum){
-  dawHeldNotes.delete(noteNum & 0x7f);
+function dawSendNoteOff(noteNum, channel){
+  const n = noteNum & 0x7f;
+  const ch = (channel || 0) & 0x0f;
+  dawHeldNotes.delete(ch + ':' + n);
   if(!dawMidiOutput) return;
-  try{ dawMidiOutput.send([0x80, noteNum & 0x7f, 0]); }catch(e){}
+  try{ dawMidiOutput.send([0x80 | ch, n, 0]); }catch(e){}
+}
+// CC1 (modwheel) на заданный канал — используется режимом "Разделить
+// сигнал на каналы" (ручное значение и/или live-значение с клавиатуры).
+function clampDawCcValue(n){
+  if(!isFinite(n) || isNaN(n)) return 0;
+  return Math.max(0, Math.min(127, Math.round(n)));
+}
+function dawSendCC1(channel, value){
+  if(!dawMidiOutput) return;
+  const ch = (channel || 0) & 0x0f;
+  try{ dawMidiOutput.send([0xB0 | ch, 1, clampDawCcValue(value)]); }catch(e){}
+}
+
+/* =========================================================
+   "Разделить сигнал на каналы" — до 7 нот аккорда, каждая на своём
+   MIDI-канале, со своей октавой (для отправки в DAW) и своим значением
+   CC1 (modwheel): либо вручную заданное число 0-127, либо — если
+   включена галочка "С MIDI" — текущее живое значение modwheel,
+   считанное с подключённой MIDI-клавиатуры (форвардится в DAW сразу
+   же при каждом изменении, см. forwardLiveModwheelToDaw).
+   ========================================================= */
+const DAW_SPLIT_ENABLED_KEY = 'circleOfFifths_dawSplitEnabled_v1';
+const DAW_SPLIT_CONFIG_KEY = 'circleOfFifths_dawSplitConfig_v1';
+const DAW_SPLIT_MAX = 20;
+
+function defaultDawSplitConfig(){
+  const arr = [];
+  for(let i = 0; i < DAW_SPLIT_MAX; i++){
+    arr.push({ ch: (i % 16) + 1, oct: 4, cc: 90, live: false });
+  }
+  return arr;
+}
+
+let dawSplitEnabled = false;
+try{ dawSplitEnabled = localStorage.getItem(DAW_SPLIT_ENABLED_KEY) === '1'; }catch(e){}
+
+let dawSplitConfig = defaultDawSplitConfig();
+try{
+  const saved = localStorage.getItem(DAW_SPLIT_CONFIG_KEY);
+  if(saved){
+    const parsed = JSON.parse(saved);
+    if(Array.isArray(parsed) && parsed.length === DAW_SPLIT_MAX){
+      dawSplitConfig = parsed.map(c => ({
+        ch: clampDawChannel(c && c.ch),
+        oct: clampDawOctave(c && c.oct),
+        cc: clampDawCcValue(c && c.cc),
+        live: !!(c && c.live)
+      }));
+    }
+  }
+}catch(e){}
+
+function clampDawChannel(n){
+  n = parseInt(n, 10);
+  if(!isFinite(n) || isNaN(n) || n < 1 || n > 16) return 1;
+  return n;
+}
+function clampDawOctave(n){
+  n = parseInt(n, 10);
+  if(!isFinite(n) || isNaN(n) || n < 0 || n > 8) return 4;
+  return n;
+}
+
+function saveDawSplitConfig(){
+  try{ localStorage.setItem(DAW_SPLIT_CONFIG_KEY, JSON.stringify(dawSplitConfig)); }catch(e){}
+}
+
+// Живое значение modwheel (0-127) с MIDI-клавиатуры. НАРОЧНО хранится
+// только в обычной JS-переменной и НИКОГДА не пишется в localStorage —
+// это сиюминутное, постоянно меняющееся значение "здесь и сейчас", а не
+// настройка, которую нужно помнить между сессиями (в отличие от cfg.cc,
+// cfg.live и т.д., которые сохраняются через saveDawSplitConfig()).
+let dawLiveModwheelValue = 0;
+// Для каждого MIDI-канала (0-15) запоминаем последнее ОТПРАВЛЕННОЕ в DAW
+// значение CC1 — нужно, чтобы не слать одно и то же значение повторно,
+// если модуляционное колесо стоит на месте (некоторые MIDI-клавиатуры
+// шлют повторяющиеся CC-сообщения с тем же значением, пока колесо
+// физически не в нулевом положении/удерживается).
+let dawLastSentCc1ByChannel = new Map();
+// вызывается из onMidiMessage при получении CC1 (modwheel) с любого
+// подключённого MIDI-входа — форвардит значение в DAW на все каналы,
+// у которых включена галочка "С MIDI" (и только пока включён режим
+// "Разделить сигнал на каналы"), но ТОЛЬКО если значение реально
+// изменилось по сравнению с последним отправленным на этот канал —
+// никакой постоянной/повторной передачи одного и того же значения.
+function forwardLiveModwheelToDaw(value){
+  dawLiveModwheelValue = clampDawCcValue(value);
+  if(!dawSplitEnabled) return;
+  if(!dawMidiOutput) return;
+  dawSplitConfig.forEach(cfg => {
+    if(!cfg.live) return;
+    const ch = (cfg.ch - 1) & 0x0f;
+    if(dawLastSentCc1ByChannel.get(ch) === dawLiveModwheelValue) return; // без изменений — не шлём
+    dawLastSentCc1ByChannel.set(ch, dawLiveModwheelValue);
+    dawSendCC1(ch, dawLiveModwheelValue);
+  });
+}
+
+const dawSplitCheckbox = document.getElementById('dawSplitChannelsCheckbox');
+const dawSplitPanel = document.getElementById('dawSplitChannelsPanel');
+
+function buildDawSplitPanel(){
+  if(!dawSplitPanel) return;
+  dawSplitPanel.innerHTML = '';
+  for(let i = 0; i < DAW_SPLIT_MAX; i++){
+    const cfg = dawSplitConfig[i];
+    const row = document.createElement('div');
+    row.className = 'dawSplitRow';
+    row.innerHTML =
+      '<div class="dawSplitRowTitle">Нота ' + (i + 1) + '</div>' +
+      '<div class="dawSplitRowGrid">' +
+        '<label>Канал<select class="dawSplitCh" data-idx="' + i + '"></select></label>' +
+        '<label>Октава<select class="dawSplitOct" data-idx="' + i + '"></select></label>' +
+        '<label>CC1 (Modwheel)<input type="number" class="dawSplitCc" data-idx="' + i + '" min="0" max="127" value="' + cfg.cc + '"></label>' +
+        '<label class="dawSplitLiveLabel"><input type="checkbox" class="dawSplitLive" data-idx="' + i + '"' + (cfg.live ? ' checked' : '') + '> С MIDI</label>' +
+      '</div>';
+    dawSplitPanel.appendChild(row);
+
+    const chSel = row.querySelector('.dawSplitCh');
+    for(let c = 1; c <= 16; c++){
+      const opt = document.createElement('option');
+      opt.value = c; opt.textContent = c;
+      if(c === cfg.ch) opt.selected = true;
+      chSel.appendChild(opt);
+    }
+    const octSel = row.querySelector('.dawSplitOct');
+    for(let o = 0; o <= 8; o++){
+      const opt = document.createElement('option');
+      opt.value = o; opt.textContent = o;
+      if(o === cfg.oct) opt.selected = true;
+      octSel.appendChild(opt);
+    }
+    const ccInput = row.querySelector('.dawSplitCc');
+    const liveChk = row.querySelector('.dawSplitLive');
+    ccInput.disabled = cfg.live;
+    ccInput.style.opacity = cfg.live ? '0.4' : '1';
+
+    chSel.addEventListener('change', () => {
+      dawSplitConfig[i].ch = clampDawChannel(chSel.value);
+      saveDawSplitConfig();
+    });
+    octSel.addEventListener('change', () => {
+      dawSplitConfig[i].oct = clampDawOctave(octSel.value);
+      saveDawSplitConfig();
+    });
+    ccInput.addEventListener('change', () => {
+      dawSplitConfig[i].cc = clampDawCcValue(parseInt(ccInput.value, 10));
+      ccInput.value = dawSplitConfig[i].cc;
+      saveDawSplitConfig();
+    });
+    liveChk.addEventListener('change', () => {
+      dawSplitConfig[i].live = liveChk.checked;
+      ccInput.disabled = liveChk.checked;
+      ccInput.style.opacity = liveChk.checked ? '0.4' : '1';
+      // сбрасываем "последнее отправленное" значение для этого канала,
+      // чтобы включение галочки не блокировало ближайшую реальную
+      // передачу (дедупликация не должна помнить состояние с прошлого
+      // раза, когда галочка была выключена)
+      dawLastSentCc1ByChannel.delete((dawSplitConfig[i].ch - 1) & 0x0f);
+      saveDawSplitConfig();
+    });
+  }
+}
+buildDawSplitPanel();
+
+function applyDawSplitToggle(){
+  if(dawSplitCheckbox) dawSplitCheckbox.checked = dawSplitEnabled;
+  if(dawSplitPanel) dawSplitPanel.classList.toggle('open', dawSplitEnabled);
+}
+applyDawSplitToggle();
+if(dawSplitCheckbox){
+  dawSplitCheckbox.addEventListener('change', () => {
+    dawSplitEnabled = dawSplitCheckbox.checked;
+    try{ localStorage.setItem(DAW_SPLIT_ENABLED_KEY, dawSplitEnabled ? '1' : '0'); }catch(e){}
+    applyDawSplitToggle();
+  });
 }
 
 // проигрывает текущий выбранный аккорд обучения в DAW, если включена
@@ -7008,12 +7718,74 @@ function playCurrentTrainChordToDaw(){
   if(!notes || notes.length === 0) return;
   clearDawTimers();
   const velByte = computeDawVelocityByte();
-  const noteNums = notes.map(dawNoteNumberFor);
   const holdMs = 600; // длительность звучания одной ноты/аккорда перед note-off
+
+  // Режим "Разделить сигнал на каналы": каждая нота аккорда (до 7 штук,
+  // по порядку) идёт на свой MIDI-канал, со своей октавой и своим CC1.
+  if(dawSplitEnabled){
+    const items = notes.slice(0, DAW_SPLIT_MAX).map((note, i) => {
+      const cfg = dawSplitConfig[i];
+      const channel = (cfg.ch - 1) & 0x0f;
+      const noteNum = note.pc + (cfg.oct + 1) * 12;
+      const ccVal = cfg.live ? dawLiveModwheelValue : cfg.cc;
+      return { channel, noteNum, ccVal, live: cfg.live };
+    });
+
+    // Отправляем CC1 перед нотой ТОЛЬКО если значение реально отличается
+    // от последнего отправленного на этот канал — иначе (особенно для
+    // "живых" строк "С MIDI") при каждом нажатии аккорда/ноты в DAW
+    // повторно летел бы один и тот же modwheel, хотя колесо не двигалось.
+    function sendCcIfChanged(it){
+      if(dawLastSentCc1ByChannel.get(it.channel) === it.ccVal) return;
+      dawLastSentCc1ByChannel.set(it.channel, it.ccVal);
+      dawSendCC1(it.channel, it.ccVal);
+    }
+
+    if(dawOutMode === 'together'){
+      items.forEach(it => {
+        sendCcIfChanged(it);
+        dawSendNoteOn(it.noteNum, velByte, it.channel);
+      });
+      if(midiKeyTriggerActive){
+        // Реальное нажатие клавиши на MIDI-клавиатуре: не отпускаем ноту
+        // по таймеру — держим её звучащей, пока эта же клавиша не будет
+        // физически отжата (см. releaseMidiHeldChordIfMatches).
+        dawMidiHeldChordNoteNum = midiKeyTriggerNoteNum;
+        dawMidiHeldChordItems = items.map(it => ({ channel: it.channel, noteNum: it.noteNum }));
+      } else {
+        // Клик мышью по кругу — поведение как и раньше, без изменений.
+        dawActiveTimers.push(setTimeout(()=>{ items.forEach(it => dawSendNoteOff(it.noteNum, it.channel)); }, holdMs));
+      }
+      return;
+    }
+
+    // 'sequence' — ноты подряд, с интервалом между началами нот
+    const intervalSecSplit = parseDawInterval(dawIntervalInput.value);
+    const intervalMsSplit = Math.max(0, intervalSecSplit) * 1000;
+    items.forEach((it, i) => {
+      const startAt = i * intervalMsSplit;
+      dawActiveTimers.push(setTimeout(()=>{
+        sendCcIfChanged(it);
+        dawSendNoteOn(it.noteNum, velByte, it.channel);
+      }, startAt));
+      dawActiveTimers.push(setTimeout(()=>{ dawSendNoteOff(it.noteNum, it.channel); }, startAt + Math.min(holdMs, intervalMsSplit > 0 ? intervalMsSplit : holdMs)));
+    });
+    return;
+  }
+
+  const noteNums = notes.map(dawNoteNumberFor);
 
   if(dawOutMode === 'together'){
     noteNums.forEach(n => dawSendNoteOn(n, velByte));
-    dawActiveTimers.push(setTimeout(()=>{ noteNums.forEach(n => dawSendNoteOff(n)); }, holdMs));
+    if(midiKeyTriggerActive){
+      // Реальное нажатие клавиши на MIDI-клавиатуре: держим ноту(ы)
+      // звучащими, пока эта же клавиша не будет физически отжата.
+      dawMidiHeldChordNoteNum = midiKeyTriggerNoteNum;
+      dawMidiHeldChordItems = noteNums.map(n => ({ channel: 0, noteNum: n }));
+    } else {
+      // Клик мышью по кругу — поведение как и раньше, без изменений.
+      dawActiveTimers.push(setTimeout(()=>{ noteNums.forEach(n => dawSendNoteOff(n)); }, holdMs));
+    }
     return;
   }
 

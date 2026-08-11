@@ -8275,6 +8275,7 @@ document.addEventListener('touchend', (e) => {
    ========================================================= */
 const MF_TAP_MOVE_THRESHOLD = 30;   // px, максимальный сдвиг ОДНОГО пальца, чтобы это ещё считался тапом
 const MF_TAP_MAX_DURATION = 800;    // ms, максимальная длительность тапа (пальцы редко приземляются/уходят идеально синхронно)
+const MF_PINCH_THRESHOLD = 20;      // px, изменение расстояния между пальцами, после которого жест считается pinch-to-zoom, а не тапом
 /* Смещение считается ДЛЯ КАЖДОГО ПАЛЬЦА ОТДЕЛЬНО (по его touch.identifier),
    а не по общему центру касаний. Раньше отслеживался именно центр — и
    из-за этого 3 и 4 пальца не работали: пальцы физически не касаются
@@ -8284,7 +8285,7 @@ const MF_TAP_MAX_DURATION = 800;    // ms, максимальная длител
    "сдвинутый" (moved=true) и отбрасывался. Два пальца при этом работали,
    потому что после них центр больше не смещался — ровно то поведение,
    которое и наблюдалось. */
-let mfTapState = { active:false, maxTouches:0, startTime:0, moved:false, starts:new Map() };
+let mfTapState = { active:false, maxTouches:0, startTime:0, moved:false, starts:new Map(), last:new Map() };
 
 function mfTrackStarts(touchList){
   for(let i = 0; i < touchList.length; i++){
@@ -8292,6 +8293,7 @@ function mfTrackStarts(touchList){
     if(!mfTapState.starts.has(t.identifier)){
       mfTapState.starts.set(t.identifier, { x:t.clientX, y:t.clientY });
     }
+    mfTapState.last.set(t.identifier, { x:t.clientX, y:t.clientY });
   }
 }
 
@@ -8300,6 +8302,44 @@ function mfResetTapState(){
   mfTapState.maxTouches = 0;
   mfTapState.moved = false;
   mfTapState.starts.clear();
+  mfTapState.last.clear();
+}
+
+/* Максимальное расстояние между парой точек из переданной карты позиций.
+   Нужно для распознавания pinch: если «размах» пальцев на старте и в конце
+   заметно различается — пальцы сводили или разводили, это зум страницы. */
+function mfMaxSpread(map){
+  const pts = Array.from(map.values());
+  let max = 0;
+  for(let i = 0; i < pts.length; i++){
+    for(let j = i+1; j < pts.length; j++){
+      max = Math.max(max, Math.hypot(pts[i].x - pts[j].x, pts[i].y - pts[j].y));
+    }
+  }
+  return max;
+}
+
+/* Проверка «жест сдвинулся». Вызывается и на touchmove, и на touchend
+   (по changedTouches): во время системного pinch-to-zoom браузер может
+   вообще перестать присылать touchmove — тогда единственные достоверные
+   координаты приходят в момент отрыва пальцев. */
+function mfCheckMoved(touchList){
+  for(let i = 0; i < touchList.length; i++){
+    const t = touchList[i];
+    mfTapState.last.set(t.identifier, { x:t.clientX, y:t.clientY });
+    const s = mfTapState.starts.get(t.identifier);
+    if(!s) continue;
+    if(Math.hypot(t.clientX - s.x, t.clientY - s.y) > MF_TAP_MOVE_THRESHOLD){
+      mfTapState.moved = true;
+    }
+  }
+  // pinch in/out: расстояние между пальцами изменилось
+  if(mfTapState.starts.size >= 2 && mfTapState.last.size >= 2){
+    if(Math.abs(mfMaxSpread(mfTapState.last) - mfMaxSpread(mfTapState.starts)) > MF_PINCH_THRESHOLD){
+      mfTapState.moved = true;
+    }
+  }
+  return mfTapState.moved;
 }
 
 document.addEventListener('touchstart', (e) => {
@@ -8320,19 +8360,14 @@ document.addEventListener('touchstart', (e) => {
 document.addEventListener('touchmove', (e) => {
   if(!mfTapState.active || e.touches.length === 0) return;
   mfTrackStarts(e.touches);
-  for(let i = 0; i < e.touches.length; i++){
-    const t = e.touches[i];
-    const s = mfTapState.starts.get(t.identifier);
-    if(!s) continue;
-    if(Math.hypot(t.clientX - s.x, t.clientY - s.y) > MF_TAP_MOVE_THRESHOLD){
-      mfTapState.moved = true;
-      return;
-    }
-  }
+  mfCheckMoved(e.touches);
 }, { passive: true });
 
 document.addEventListener('touchend', (e) => {
   if(!mfTapState.active) return;
+  // координаты отрывающихся пальцев — последний достоверный замер,
+  // даже если touchmove браузер «съел» под свой pinch-to-zoom
+  mfCheckMoved(e.changedTouches);
   if(e.touches.length > 0) return; // ждём, пока поднимутся все пальцы
   const duration = Date.now() - mfTapState.startTime;
   const count = mfTapState.maxTouches;
@@ -8354,6 +8389,13 @@ document.addEventListener('touchend', (e) => {
 document.addEventListener('touchcancel', () => {
   mfResetTapState();
 }, { passive: true });
+
+/* Safari/iOS присылает собственные события масштабирования двумя пальцами.
+   Если они пришли — это точно pinch, а не тап: помечаем жест как сдвинутый,
+   чтобы по отрыву пальцев панель настроек не открылась. */
+['gesturestart','gesturechange','gestureend'].forEach(evt => {
+  document.addEventListener(evt, () => { mfTapState.moved = true; }, { passive: true });
+});
 
 /* =========================================================
    Масштабирование круга: клавиши +/-, Shift+"-" сброс до 100%

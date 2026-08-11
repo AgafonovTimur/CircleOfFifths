@@ -424,12 +424,16 @@
      остаётся обычной выезжающей снизу шторкой. */
   body.is-mobile #sidePanel.pinned{
     position:fixed;
-    left:0;
-    right:0;
+    left:50%;
+    right:auto;
     top:auto;
     bottom:0;
-    transform:translateY(100%);
+    width:520px;
+    max-width:520px;
+    margin-left:-260px;
     margin-right:0;
+    transform:translateY(100%) scale(var(--mp-scale,1));
+    transform-origin:50% 100%;
   }
   /* ===== Мобильная версия панели настроек: выезжающая снизу шторка
      (bottom-sheet), открывается свайпом вверх, закрывается свайпом
@@ -437,21 +441,33 @@
      позиционирование и способ открытия/закрытия — отдельные от
      десктопной версии и не пересекаются с ней (десктоп управляется
      колесом мыши и клавишей W, мобильная — свайпами и хендлом). ===== */
+  /* Ширина панели на мобильной раскладке НЕ растягивается под ширину
+     экрана (как раньше — width:100%, из-за чего кнопки внутри "плыли"
+     и становились непропорционально широкими). Вместо этого ширина
+     остаётся точно такой же, как на десктопе (520px — см. #sidePanel
+     выше), а вся панель целиком масштабируется через CSS transform:
+     scale() под ширину экрана (переменная --mp-scale считается и
+     обновляется в JS, см. updateMobilePanelScale()). Так все кнопки,
+     отступы и шрифты внутри увеличиваются СТРОГО пропорционально друг
+     другу — как физический зум экрана, а не "резиновая" вёрстка. */
   body.is-mobile #sidePanel{
-    left:0;
-    right:0;
+    left:50%;
+    right:auto;
     top:auto;
     bottom:0;
-    transform:translateY(100%);
-    max-width:100vw;
-    width:100%;
-    max-height:80vh;
+    width:520px;
+    max-width:520px;
+    margin-left:-260px;
+    --mp-scale:1;
+    transform:translateY(100%) scale(var(--mp-scale,1));
+    transform-origin:50% 100%;
+    max-height:calc(80vh / var(--mp-scale,1));
     border-radius:16px 16px 0 0;
     transition:transform 0.25s ease;
     touch-action:pan-y;
   }
   body.is-mobile #sidePanel.open{
-    transform:translateY(0);
+    transform:translateY(0) scale(var(--mp-scale,1));
   }
   body.is-mobile #sidePanelBackdrop{
     transition:opacity 0.25s ease;
@@ -1460,6 +1476,59 @@
         <div id="selectCircleWrap">
           <svg id="selectCircle" width="480" height="480" viewBox="0 0 480 480"></svg>
         </div>
+
+        <!-- ===== Копия MIDI-настроек из "Обучения" (см. #midiPanel там же) —
+             только количество MIDI входов / выбор входов / MIDI выход /
+             кнопка подключения, БЕЗ блока "Сыграть в DAW" (он нужен только
+             обучению). ВАЖНО: лежит ВНУТРИ #level1Panel/#level2Panel (а не
+             сибл-элементом после них), сразу после круга выбора нот —
+             раньше эта панель была снаружи обоих level-панелей и потому
+             оказывалась НИЖЕ невидимого "растяжного" min-height, который
+             syncTrainingPanelHeight() выставляет на #level1Panel/
+             #level2Panel/#level3Panel/#trainingPanel, чтобы высота панели
+             настроек не "прыгала" при переключении вкладок (см. эту
+             функцию в <script> ниже) — из-за этого MIDI-настройки в
+             "Нотах" визуально уезжали в самый низ, с большим пустым
+             промежутком после чекбокса "Настройки сбоку от круга". Теперь
+             элемент — обычный ребёнок level1Panel/level2Panel, попадает в
+             измеряемую "естественную" высоту наравне с остальным
+             содержимым и располагается сразу после круга/чекбокса — как и
+             #l3MidiPanel в "Аккордах/Ладах" (см. #l3MidiPanel после
+             #level3ExtraSettings), с тем же отступом (тот же класс
+             .midiPanel/.midiPanelMini). Между level1Panel/level2Panel этот
+             ЕДИНЫЙ элемент физически переносится через
+             updateNotesMidiPanelPosition() (см. <script>) — так же, как и
+             чекбокс #sidePanelPinRow переносится через
+             updateSidePanelPinRowPosition(). Управляющие элементы помечены
+             теми же общими классами (.midiInputCountSelect/
+             .midiInputSelectsContainer/.dawOutputSelect/.midiStatusLine/
+             .midiReconnectBtn), что и в #midiPanel — JS (см.
+             populateMidiSelect/populateDawOutputSelect и т.д. в <script>)
+             синхронизирует ВСЕ копии между собой, так что выбор
+             MIDI-устройства в любом месте сразу отражается везде. -->
+        <div id="notesMidiPanel" class="midiPanel midiPanelMini">
+          <div class="midiPanelRow">
+            <label for="notesMidiInputCountSelect" data-i18n="midiInputLabel">Количество MIDI входов:</label>
+            <select id="notesMidiInputCountSelect" class="midiInputCountSelect">
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+              <option value="6">6</option>
+              <option value="7">7</option>
+            </select>
+          </div>
+          <div id="notesMidiInputSelectsContainer" class="midiInputSelectsContainer">
+            <div class="midiPanelRow"><select class="midiInputPortSelect" id="notesMidiInputSelect"><option>—</option></select></div>
+          </div>
+          <div class="midiPanelRow">
+            <label for="notesDawOutputSelect" data-i18n="midiOutputLabel">MIDI выход:</label>
+            <select id="notesDawOutputSelect" class="dawOutputSelect"><option>—</option></select>
+          </div>
+          <div id="notesMidiStatusLine" class="midiStatusLine" data-i18n="midiStatusDefault">MIDI-клавиатура не подключена. Нажмите кнопку ниже, чтобы подключить.</div>
+          <button type="button" class="noteBtn midiReconnectBtn" id="notesMidiReconnectBtn" data-i18n="midiReconnectBtn">Подключить MIDI клавиатуру</button>
+        </div>
       </div>
 
       <div id="level2Panel" style="display:none">
@@ -1473,43 +1542,6 @@
           <svg id="selectCircle2" width="480" height="480" viewBox="0 0 480 480"></svg>
         </div>
       </div>
-
-      <!-- ===== Копия MIDI-настроек из "Обучения" (см. #midiPanel там же) —
-           только количество MIDI входов / выбор входов / MIDI выход /
-           кнопка подключения, БЕЗ блока "Сыграть в DAW" (он нужен только
-           обучению). Стоит В КОНЦЕ вкладки "Ноты" — тем же местом (после
-           всех остальных настроек), что и копия в "Аккорды/Лады" (см.
-           #l3MidiPanel после #level3ExtraSettings), чтобы вид был
-           единообразным между вкладками. Управляющие элементы помечены
-           теми же общими классами (.midiInputCountSelect/
-           .midiInputSelectsContainer/.dawOutputSelect/.midiStatusLine/
-           .midiReconnectBtn), что и в #midiPanel — JS (см.
-           populateMidiSelect/populateDawOutputSelect и т.д. в <script>)
-           синхронизирует ВСЕ копии между собой, так что выбор
-           MIDI-устройства в любом месте сразу отражается везде. -->
-      <div id="notesMidiPanel" class="midiPanel midiPanelMini">
-        <div class="midiPanelRow">
-          <label for="notesMidiInputCountSelect" data-i18n="midiInputLabel">Количество MIDI входов:</label>
-          <select id="notesMidiInputCountSelect" class="midiInputCountSelect">
-            <option value="1">1</option>
-            <option value="2">2</option>
-            <option value="3">3</option>
-            <option value="4">4</option>
-            <option value="5">5</option>
-            <option value="6">6</option>
-            <option value="7">7</option>
-          </select>
-        </div>
-        <div id="notesMidiInputSelectsContainer" class="midiInputSelectsContainer">
-          <div class="midiPanelRow"><select class="midiInputPortSelect" id="notesMidiInputSelect"><option>—</option></select></div>
-        </div>
-        <div class="midiPanelRow">
-          <label for="notesDawOutputSelect" data-i18n="midiOutputLabel">MIDI выход:</label>
-          <select id="notesDawOutputSelect" class="dawOutputSelect"><option>—</option></select>
-        </div>
-        <div id="notesMidiStatusLine" class="midiStatusLine" data-i18n="midiStatusDefault">MIDI-клавиатура не подключена. Нажмите кнопку ниже, чтобы подключить.</div>
-        <button type="button" class="noteBtn midiReconnectBtn" id="notesMidiReconnectBtn" data-i18n="midiReconnectBtn">Подключить MIDI клавиатуру</button>
-      </div>
     </div>
 
     <div id="level3Panel" style="display:none">
@@ -1517,91 +1549,91 @@
       <div id="level2TypeButtons">
         <div class="ringBtnRow">
           <button class="ringBtn active" id="level2MajorMinorBtn" type="button" data-chordtype="triad" data-i18n="majMinChord">Мажор/Минор</button>
-          <span class="infoIcon" data-tip="Обычные трезвучия: мажор или минор — в зависимости от того, по какому кольцу круга кликнули.">i</span>
+          <span class="infoIcon" data-tip="Обычные трезвучия: мажор или минор — в зависимости от того, по какому кольцу круга кликнули." data-i18n-tip="tipTriad">i</span>
         </div>
         <div class="ringBtnRow">
           <button class="ringBtn" id="level3Sus2Btn" type="button" data-chordtype="sus2">Sus2</button>
-          <span class="infoIcon" data-tip="Режим Sus2: при клике по ноте показывается sus2-аккорд (тоника, секунда, квинта).">i</span>
+          <span class="infoIcon" data-tip="Режим Sus2: при клике по ноте показывается sus2-аккорд (тоника, секунда, квинта)." data-i18n-tip="tipSus2">i</span>
         </div>
         <div class="ringBtnRow">
           <button class="ringBtn" id="level3Sus4Btn" type="button" data-chordtype="sus4">Sus4</button>
-          <span class="infoIcon" data-tip="Режим Sus4: при клике по ноте показывается sus4-аккорд (тоника, кварта, квинта).">i</span>
+          <span class="infoIcon" data-tip="Режим Sus4: при клике по ноте показывается sus4-аккорд (тоника, кварта, квинта)." data-i18n-tip="tipSus4">i</span>
         </div>
         <div class="ringBtnRow">
           <button class="ringBtn" id="level3Dom7Btn" type="button" data-chordtype="dom7">7</button>
-          <span class="infoIcon" data-tip="7 (Dominant 7) = Мажор + малая 7-я ступень - 1 3 5 b7.">i</span>
+          <span class="infoIcon" data-tip="7 (Dominant 7) = Мажор + малая 7-я ступень - 1 3 5 b7." data-i18n-tip="tip7">i</span>
         </div>
         <div class="ringBtnRow">
           <button class="ringBtn" id="level3Maj7Btn" type="button" data-chordtype="maj7">maj7</button>
-          <span class="infoIcon" data-tip="maj7 (Major 7) = Мажор + большая 7-я ступень - 1 3 5 7.">i</span>
+          <span class="infoIcon" data-tip="maj7 (Major 7) = Мажор + большая 7-я ступень - 1 3 5 7." data-i18n-tip="tipMaj7">i</span>
         </div>
         <div class="ringBtnRow">
           <button class="ringBtn" id="level3Min7Btn" type="button" data-chordtype="min7">m7</button>
-          <span class="infoIcon" data-tip="m7 (Minor 7) = Минор + малая 7-я ступень - 1 b3 5 b7.">i</span>
+          <span class="infoIcon" data-tip="m7 (Minor 7) = Минор + малая 7-я ступень - 1 b3 5 b7." data-i18n-tip="tipM7">i</span>
         </div>
         <div class="ringBtnRow">
           <button class="ringBtn" id="level3MMaj7Btn" type="button" data-chordtype="mmaj7">m(Maj7)</button>
-          <span class="infoIcon" data-tip="m(Maj7) = Минор + большая 7-я ступень - 1 b3 5 7.">i</span>
+          <span class="infoIcon" data-tip="m(Maj7) = Минор + большая 7-я ступень - 1 b3 5 7." data-i18n-tip="tipMMaj7">i</span>
         </div>
         <div class="ringBtnRow">
           <button class="ringBtn" id="level3Add9Btn" type="button" data-chordtype="add9">add9</button>
-          <span class="infoIcon" data-tip="add9 = Мажор + большая 9-я ступень - 1 3 5 9(2).">i</span>
+          <span class="infoIcon" data-tip="add9 = Мажор + большая 9-я ступень - 1 3 5 9(2)." data-i18n-tip="tipAdd9">i</span>
         </div>
         <div class="ringBtnRow">
           <button class="ringBtn" id="level3MAdd9Btn" type="button" data-chordtype="madd9">m(add9)</button>
-          <span class="infoIcon" data-tip="m(add9) = Минор + большая 9-я ступень - 1 b3 5 9(2).">i</span>
+          <span class="infoIcon" data-tip="m(add9) = Минор + большая 9-я ступень - 1 b3 5 9(2)." data-i18n-tip="tipMAdd9">i</span>
         </div>
         <div class="ringBtnRow">
           <button class="ringBtn" id="level3Dom9Btn" type="button" data-chordtype="dom9">9</button>
-          <span class="infoIcon" data-tip="9 (Dominant 9) = Мажор + малая 7-я ступень + большая 9-я ступень - 1 3 5 b7 9(2).">i</span>
+          <span class="infoIcon" data-tip="9 (Dominant 9) = Мажор + малая 7-я ступень + большая 9-я ступень - 1 3 5 b7 9(2)." data-i18n-tip="tip9">i</span>
         </div>
         <div class="ringBtnRow">
           <button class="ringBtn" id="level3Maj9Btn" type="button" data-chordtype="maj9">maj9</button>
-          <span class="infoIcon" data-tip="maj9 (Major 9) = Мажор + большая 7-я ступень + большая 9-я ступень - 1 3 5 7 9(2).">i</span>
+          <span class="infoIcon" data-tip="maj9 (Major 9) = Мажор + большая 7-я ступень + большая 9-я ступень - 1 3 5 7 9(2)." data-i18n-tip="tipMaj9">i</span>
         </div>
         <div class="ringBtnRow">
           <button class="ringBtn" id="level3M9Btn" type="button" data-chordtype="m9">m9</button>
-          <span class="infoIcon" data-tip="m9 (Minor 9) = Минор + малая 7-я ступень + большая 9-я ступень - 1 b3 5 b7 9(2).">i</span>
+          <span class="infoIcon" data-tip="m9 (Minor 9) = Минор + малая 7-я ступень + большая 9-я ступень - 1 b3 5 b7 9(2)." data-i18n-tip="tipM9">i</span>
         </div>
         <div class="ringBtnRow">
           <button class="ringBtn" id="level3MMaj9Btn" type="button" data-chordtype="mmaj9">m(Maj9)</button>
-          <span class="infoIcon" data-tip="m(Maj9) = Минор + большая 7-я ступень + большая 9-я ступень - 1 b3 5 7 9(2).">i</span>
+          <span class="infoIcon" data-tip="m(Maj9) = Минор + большая 7-я ступень + большая 9-я ступень - 1 b3 5 7 9(2)." data-i18n-tip="tipMMaj9">i</span>
         </div>
         <div class="ringBtnRow">
           <button class="ringBtn" id="level3Add11Btn" type="button" data-chordtype="add11">add11</button>
-          <span class="infoIcon" data-tip="add11 = Мажор + чистая 11-я ступень - 1 3 5 11(4).">i</span>
+          <span class="infoIcon" data-tip="add11 = Мажор + чистая 11-я ступень - 1 3 5 11(4)." data-i18n-tip="tipAdd11">i</span>
         </div>
         <div class="ringBtnRow">
           <button class="ringBtn" id="level3MAdd11Btn" type="button" data-chordtype="madd11">m(add11)</button>
-          <span class="infoIcon" data-tip="m(add11) = Минор + чистая 11-я ступень - 1 b3 5 11(4).">i</span>
+          <span class="infoIcon" data-tip="m(add11) = Минор + чистая 11-я ступень - 1 b3 5 11(4)." data-i18n-tip="tipMAdd11">i</span>
         </div>
         <div class="ringBtnRow">
           <button class="ringBtn" id="level3Dom11Btn" type="button" data-chordtype="dom11">11</button>
-          <span class="infoIcon" data-tip="11 (Dominant 11) = Мажор + малая 7-я ступень + большая 9-я ступень + чистая 11-я ступень - 1 3 5 b7 9(2) 11(4).">i</span>
+          <span class="infoIcon" data-tip="11 (Dominant 11) = Мажор + малая 7-я ступень + большая 9-я ступень + чистая 11-я ступень - 1 3 5 b7 9(2) 11(4)." data-i18n-tip="tip11">i</span>
         </div>
         <div class="ringBtnRow">
           <button class="ringBtn" id="level3Maj11Btn" type="button" data-chordtype="maj11">maj11</button>
-          <span class="infoIcon" data-tip="maj11 (Major 11) = Мажор + большая 7-я ступень + большая 9-я ступень + чистая 11-я ступень - 1 3 5 7 9(2) 11(4).">i</span>
+          <span class="infoIcon" data-tip="maj11 (Major 11) = Мажор + большая 7-я ступень + большая 9-я ступень + чистая 11-я ступень - 1 3 5 7 9(2) 11(4)." data-i18n-tip="tipMaj11">i</span>
         </div>
         <div class="ringBtnRow">
           <button class="ringBtn" id="level3M11Btn" type="button" data-chordtype="m11">m11</button>
-          <span class="infoIcon" data-tip="m11 (Minor 11) = Минор + малая 7-я ступень + большая 9-я ступень + чистая 11-я ступень - 1 b3 5 b7 9(2) 11(4).">i</span>
+          <span class="infoIcon" data-tip="m11 (Minor 11) = Минор + малая 7-я ступень + большая 9-я ступень + чистая 11-я ступень - 1 b3 5 b7 9(2) 11(4)." data-i18n-tip="tipM11">i</span>
         </div>
         <div class="ringBtnRow">
           <button class="ringBtn" id="level3Dom13Btn" type="button" data-chordtype="dom13">13</button>
-          <span class="infoIcon" data-tip="13 (Dominant 13) = Мажор + малая 7-я ступень + большая 9-я ступень + чистая 11-я ступень + большая 13-я ступень - 1 3 5 b7 9(2) 11(4) 13(6).">i</span>
+          <span class="infoIcon" data-tip="13 (Dominant 13) = Мажор + малая 7-я ступень + большая 9-я ступень + чистая 11-я ступень + большая 13-я ступень - 1 3 5 b7 9(2) 11(4) 13(6)." data-i18n-tip="tip13">i</span>
         </div>
         <div class="ringBtnRow">
           <button class="ringBtn" id="level3Maj13Btn" type="button" data-chordtype="maj13">maj13</button>
-          <span class="infoIcon" data-tip="maj13 (Major 13) = Мажор + большая 7-я ступень + большая 9-я ступень + чистая 11-я ступень + большая 13-я ступень - 1 3 5 7 9(2) 11(4) 13(6).">i</span>
+          <span class="infoIcon" data-tip="maj13 (Major 13) = Мажор + большая 7-я ступень + большая 9-я ступень + чистая 11-я ступень + большая 13-я ступень - 1 3 5 7 9(2) 11(4) 13(6)." data-i18n-tip="tipMaj13">i</span>
         </div>
         <div class="ringBtnRow">
           <button class="ringBtn" id="level3M13Btn" type="button" data-chordtype="m13">m13</button>
-          <span class="infoIcon" data-tip="m13 (Minor 13) = Минор + малая 7-я ступень + большая 9-я ступень + чистая 11-я ступень + большая 13-я ступень - 1 b3 5 b7 9(2) 11(4) 13(6).">i</span>
+          <span class="infoIcon" data-tip="m13 (Minor 13) = Минор + малая 7-я ступень + большая 9-я ступень + чистая 11-я ступень + большая 13-я ступень - 1 b3 5 b7 9(2) 11(4) 13(6)." data-i18n-tip="tipM13">i</span>
         </div>
         <div class="ringBtnRow">
           <button class="ringBtn" id="level3MMaj13Btn" type="button" data-chordtype="mmaj13">m(Maj13)</button>
-          <span class="infoIcon" data-tip="m(Maj13) = Минор + большая 7-я ступень + большая 9-я ступень + чистая 11-я ступень + большая 13-я ступень - 1 b3 5 7 9(2) 11(4) 13(6).">i</span>
+          <span class="infoIcon" data-tip="m(Maj13) = Минор + большая 7-я ступень + большая 9-я ступень + чистая 11-я ступень + большая 13-я ступень - 1 b3 5 7 9(2) 11(4) 13(6)." data-i18n-tip="tipMMaj13">i</span>
         </div>
       </div>
 
@@ -1614,31 +1646,31 @@
       <div id="level3ModeHeader" data-i18n="modeTypeHeader">Выберите лады</div>
       <div id="level3ModeButtons" class="chordGridCard cols3">
         <div class="ringBtnRow">
-          <button class="ringBtn" id="level3ModeLydianBtn" type="button" data-mode="lydian">Лидийский</button>
+          <button class="ringBtn" id="level3ModeLydianBtn" type="button" data-mode="lydian" data-i18n="modeLydian">Лидийский</button>
           <span class="infoIcon" data-tip="0-6">i</span>
         </div>
         <div class="ringBtnRow">
-          <button class="ringBtn" id="level3ModeMajorBtn" type="button" data-mode="major">Мажор</button>
+          <button class="ringBtn" id="level3ModeMajorBtn" type="button" data-mode="major" data-i18n="modeMajor">Мажор</button>
           <span class="infoIcon" data-tip="1-5">i</span>
         </div>
         <div class="ringBtnRow">
-          <button class="ringBtn" id="level3ModeMixolydianBtn" type="button" data-mode="mixolydian">Миксолидийский</button>
+          <button class="ringBtn" id="level3ModeMixolydianBtn" type="button" data-mode="mixolydian" data-i18n="modeMixolydian">Миксолидийский</button>
           <span class="infoIcon" data-tip="2-4">i</span>
         </div>
         <div class="ringBtnRow">
-          <button class="ringBtn" id="level3ModeDorianBtn" type="button" data-mode="dorian">Дорийский</button>
+          <button class="ringBtn" id="level3ModeDorianBtn" type="button" data-mode="dorian" data-i18n="modeDorian">Дорийский</button>
           <span class="infoIcon" data-tip="3-3">i</span>
         </div>
         <div class="ringBtnRow">
-          <button class="ringBtn" id="level3ModeMinorBtn" type="button" data-mode="minor">Минор</button>
+          <button class="ringBtn" id="level3ModeMinorBtn" type="button" data-mode="minor" data-i18n="modeMinor">Минор</button>
           <span class="infoIcon" data-tip="4-2">i</span>
         </div>
         <div class="ringBtnRow">
-          <button class="ringBtn" id="level3ModePhrygianBtn" type="button" data-mode="phrygian">Фригийский</button>
+          <button class="ringBtn" id="level3ModePhrygianBtn" type="button" data-mode="phrygian" data-i18n="modePhrygian">Фригийский</button>
           <span class="infoIcon" data-tip="5-1">i</span>
         </div>
         <div class="ringBtnRow">
-          <button class="ringBtn" id="level3ModeLocrianBtn" type="button" data-mode="locrian">Локрийский</button>
+          <button class="ringBtn" id="level3ModeLocrianBtn" type="button" data-mode="locrian" data-i18n="modeLocrian">Локрийский</button>
           <span class="infoIcon" data-tip="6-0">i</span>
         </div>
       </div>
@@ -1691,7 +1723,7 @@
         <div class="variantCardsRow">
           <div class="variantGroup">
             <div class="variantGroupLabel"><span data-i18n="variant1">Вариант 1</span>
-              <span class="infoIcon" data-tip="Стрелки показываются прямо на круге. Берутся максиально близко расположенные друг к другу ноты. Цветом покрашены те же самые ноты на которые указывают стрелки.">i</span>
+              <span class="infoIcon" data-tip="Стрелки показываются прямо на круге. Берутся максиально близко расположенные друг к другу ноты. Цветом покрашены те же самые ноты на которые указывают стрелки." data-i18n-tip="tipArrowVariant1">i</span>
             </div>
             <div class="variantGroupRow">
               <button class="ringBtn" id="trainV1ArrowsBtn" data-variant="2" data-style="arrows" data-i18n="byArrows">Стрелками</button>
@@ -1700,7 +1732,7 @@
           </div>
           <div class="variantGroup">
             <div class="variantGroupLabel"><span data-i18n="variant2">Вариант 2</span>
-              <span class="infoIcon" data-tip="Стрелки показываются над или внутри круга. Альтернатива варианту 1, но есть не для всех аккордов. Цветом покрашены те же самые ноты на которые указывают стрелки.">i</span>
+              <span class="infoIcon" data-tip="Стрелки показываются над или внутри круга. Альтернатива варианту 1, но есть не для всех аккордов. Цветом покрашены те же самые ноты на которые указывают стрелки." data-i18n-tip="tipArrowVariant2">i</span>
             </div>
             <div class="variantGroupRow">
               <button class="ringBtn active" id="trainV2ArrowsBtn" data-variant="1" data-style="arrows" data-i18n="byArrows">Стрелками</button>
@@ -1712,98 +1744,98 @@
         <div id="trainChordGroups" class="chordGridCard cols3">
           <div class="ringBtnRow">
             <button class="ringBtn active" id="trainMajorMinorBtn" data-chord="triad" data-i18n="majMinChord">Мажор/Минор</button>
-            <span class="infoIcon" data-tip="Обычные трезвучия: мажор или минор — в зависимости от того, по какому кольцу круга кликнули.">i</span>
+            <span class="infoIcon" data-tip="Обычные трезвучия: мажор или минор — в зависимости от того, по какому кольцу круга кликнули." data-i18n-tip="tipTriad">i</span>
           </div>
           <div class="ringBtnRow">
             <button class="ringBtn" id="trainSus2Btn" data-chord="sus2">Sus2</button>
-            <span class="infoIcon" data-tip="Режим Sus2: при клике по ноте показывается sus2-аккорд (тоника, секунда, квинта).">i</span>
+            <span class="infoIcon" data-tip="Режим Sus2: при клике по ноте показывается sus2-аккорд (тоника, секунда, квинта)." data-i18n-tip="tipSus2">i</span>
           </div>
           <div class="ringBtnRow">
             <button class="ringBtn" id="trainSus4Btn" data-chord="sus4">Sus4</button>
-            <span class="infoIcon" data-tip="Режим Sus4: при клике по ноте показывается sus4-аккорд (тоника, кварта, квинта).">i</span>
+            <span class="infoIcon" data-tip="Режим Sus4: при клике по ноте показывается sus4-аккорд (тоника, кварта, квинта)." data-i18n-tip="tipSus4">i</span>
           </div>
 
           <div class="ringBtnRow">
             <button class="ringBtn" id="trainDom7Btn" data-chord="dom7">7</button>
-            <span class="infoIcon" data-tip="7 (Dominant 7) = Мажор + малая 7-я ступень - 1 3 5 b7.">i</span>
+            <span class="infoIcon" data-tip="7 (Dominant 7) = Мажор + малая 7-я ступень - 1 3 5 b7." data-i18n-tip="tip7">i</span>
           </div>
           <div class="ringBtnRow">
             <button class="ringBtn" id="trainMaj7Btn" data-chord="maj7">maj7</button>
-            <span class="infoIcon" data-tip="maj7 (Major 7) = Мажор + большая 7-я ступень - 1 3 5 7.">i</span>
+            <span class="infoIcon" data-tip="maj7 (Major 7) = Мажор + большая 7-я ступень - 1 3 5 7." data-i18n-tip="tipMaj7">i</span>
           </div>
           <div class="ringBtnRow">
             <button class="ringBtn" id="trainMin7Btn" data-chord="min7">m7</button>
-            <span class="infoIcon" data-tip="m7 (Minor 7) = Минор + малая 7-я ступень - 1 b3 5 b7.">i</span>
+            <span class="infoIcon" data-tip="m7 (Minor 7) = Минор + малая 7-я ступень - 1 b3 5 b7." data-i18n-tip="tipM7">i</span>
           </div>
 
           <div class="ringBtnRow">
             <button class="ringBtn" id="trainMMaj7Btn" data-chord="mmaj7">m(Maj7)</button>
-            <span class="infoIcon" data-tip="m(Maj7) = Минор + большая 7-я ступень - 1 b3 5 7.">i</span>
+            <span class="infoIcon" data-tip="m(Maj7) = Минор + большая 7-я ступень - 1 b3 5 7." data-i18n-tip="tipMMaj7">i</span>
           </div>
           <div class="ringBtnRow">
             <button class="ringBtn" id="trainAdd9Btn" data-chord="add9">add9</button>
-            <span class="infoIcon" data-tip="add9 = Мажор + большая 9-я ступень - 1 3 5 9(2).">i</span>
+            <span class="infoIcon" data-tip="add9 = Мажор + большая 9-я ступень - 1 3 5 9(2)." data-i18n-tip="tipAdd9">i</span>
           </div>
           <div class="ringBtnRow">
             <button class="ringBtn" id="trainMAdd9Btn" data-chord="madd9">m(add9)</button>
-            <span class="infoIcon" data-tip="m(add9) = Минор + большая 9-я ступень - 1 b3 5 9(2).">i</span>
+            <span class="infoIcon" data-tip="m(add9) = Минор + большая 9-я ступень - 1 b3 5 9(2)." data-i18n-tip="tipMAdd9">i</span>
           </div>
 
           <div class="ringBtnRow">
             <button class="ringBtn" id="trainDom9Btn" data-chord="dom9">9</button>
-            <span class="infoIcon" data-tip="9 (Dominant 9) = Мажор + малая 7-я ступень + большая 9-я ступень - 1 3 5 b7 9(2).">i</span>
+            <span class="infoIcon" data-tip="9 (Dominant 9) = Мажор + малая 7-я ступень + большая 9-я ступень - 1 3 5 b7 9(2)." data-i18n-tip="tip9">i</span>
           </div>
           <div class="ringBtnRow">
             <button class="ringBtn" id="trainMaj9Btn" data-chord="maj9">maj9</button>
-            <span class="infoIcon" data-tip="maj9 (Major 9) = Мажор + большая 7-я ступень + большая 9-я ступень - 1 3 5 7 9(2).">i</span>
+            <span class="infoIcon" data-tip="maj9 (Major 9) = Мажор + большая 7-я ступень + большая 9-я ступень - 1 3 5 7 9(2)." data-i18n-tip="tipMaj9">i</span>
           </div>
           <div class="ringBtnRow">
             <button class="ringBtn" id="trainM9Btn" data-chord="m9">m9</button>
-            <span class="infoIcon" data-tip="m9 (Minor 9) = Минор + малая 7-я ступень + большая 9-я ступень - 1 b3 5 b7 9(2).">i</span>
+            <span class="infoIcon" data-tip="m9 (Minor 9) = Минор + малая 7-я ступень + большая 9-я ступень - 1 b3 5 b7 9(2)." data-i18n-tip="tipM9">i</span>
           </div>
 
           <div class="ringBtnRow">
             <button class="ringBtn" id="trainMMaj9Btn" data-chord="mmaj9">m(Maj9)</button>
-            <span class="infoIcon" data-tip="m(Maj9) = Минор + большая 7-я ступень + большая 9-я ступень - 1 b3 5 7 9(2).">i</span>
+            <span class="infoIcon" data-tip="m(Maj9) = Минор + большая 7-я ступень + большая 9-я ступень - 1 b3 5 7 9(2)." data-i18n-tip="tipMMaj9">i</span>
           </div>
           <div class="ringBtnRow">
             <button class="ringBtn" id="trainAdd11Btn" data-chord="add11">add11</button>
-            <span class="infoIcon" data-tip="add11 = Мажор + чистая 11-я ступень - 1 3 5 11(4).">i</span>
+            <span class="infoIcon" data-tip="add11 = Мажор + чистая 11-я ступень - 1 3 5 11(4)." data-i18n-tip="tipAdd11">i</span>
           </div>
           <div class="ringBtnRow">
             <button class="ringBtn" id="trainMAdd11Btn" data-chord="madd11">m(add11)</button>
-            <span class="infoIcon" data-tip="m(add11) = Минор + чистая 11-я ступень - 1 b3 5 11(4).">i</span>
+            <span class="infoIcon" data-tip="m(add11) = Минор + чистая 11-я ступень - 1 b3 5 11(4)." data-i18n-tip="tipMAdd11">i</span>
           </div>
 
           <div class="ringBtnRow">
             <button class="ringBtn" id="trainDom11Btn" data-chord="dom11">11</button>
-            <span class="infoIcon" data-tip="11 (Dominant 11) = Мажор + малая 7-я ступень + большая 9-я ступень + чистая 11-я ступень - 1 3 5 b7 9(2) 11(4).">i</span>
+            <span class="infoIcon" data-tip="11 (Dominant 11) = Мажор + малая 7-я ступень + большая 9-я ступень + чистая 11-я ступень - 1 3 5 b7 9(2) 11(4)." data-i18n-tip="tip11">i</span>
           </div>
           <div class="ringBtnRow">
             <button class="ringBtn" id="trainMaj11Btn" data-chord="maj11">maj11</button>
-            <span class="infoIcon" data-tip="maj11 (Major 11) = Мажор + большая 7-я ступень + большая 9-я ступень + чистая 11-я ступень - 1 3 5 7 9(2) 11(4).">i</span>
+            <span class="infoIcon" data-tip="maj11 (Major 11) = Мажор + большая 7-я ступень + большая 9-я ступень + чистая 11-я ступень - 1 3 5 7 9(2) 11(4)." data-i18n-tip="tipMaj11">i</span>
           </div>
           <div class="ringBtnRow">
             <button class="ringBtn" id="trainM11Btn" data-chord="m11">m11</button>
-            <span class="infoIcon" data-tip="m11 (Minor 11) = Минор + малая 7-я ступень + большая 9-я ступень + чистая 11-я ступень - 1 b3 5 b7 9(2) 11(4).">i</span>
+            <span class="infoIcon" data-tip="m11 (Minor 11) = Минор + малая 7-я ступень + большая 9-я ступень + чистая 11-я ступень - 1 b3 5 b7 9(2) 11(4)." data-i18n-tip="tipM11">i</span>
           </div>
 
           <div class="ringBtnRow">
             <button class="ringBtn" id="trainDom13Btn" data-chord="dom13">13</button>
-            <span class="infoIcon" data-tip="13 (Dominant 13) = Мажор + малая 7-я ступень + большая 9-я ступень + чистая 11-я ступень + большая 13-я ступень - 1 3 5 b7 9(2) 11(4) 13(6).">i</span>
+            <span class="infoIcon" data-tip="13 (Dominant 13) = Мажор + малая 7-я ступень + большая 9-я ступень + чистая 11-я ступень + большая 13-я ступень - 1 3 5 b7 9(2) 11(4) 13(6)." data-i18n-tip="tip13">i</span>
           </div>
           <div class="ringBtnRow">
             <button class="ringBtn" id="trainMaj13Btn" data-chord="maj13">maj13</button>
-            <span class="infoIcon" data-tip="maj13 (Major 13) = Мажор + большая 7-я ступень + большая 9-я ступень + чистая 11-я ступень + большая 13-я ступень - 1 3 5 7 9(2) 11(4) 13(6).">i</span>
+            <span class="infoIcon" data-tip="maj13 (Major 13) = Мажор + большая 7-я ступень + большая 9-я ступень + чистая 11-я ступень + большая 13-я ступень - 1 3 5 7 9(2) 11(4) 13(6)." data-i18n-tip="tipMaj13">i</span>
           </div>
           <div class="ringBtnRow">
             <button class="ringBtn" id="trainM13Btn" data-chord="m13">m13</button>
-            <span class="infoIcon" data-tip="m13 (Minor 13) = Минор + малая 7-я ступень + большая 9-я ступень + чистая 11-я ступень + большая 13-я ступень - 1 b3 5 b7 9(2) 11(4) 13(6).">i</span>
+            <span class="infoIcon" data-tip="m13 (Minor 13) = Минор + малая 7-я ступень + большая 9-я ступень + чистая 11-я ступень + большая 13-я ступень - 1 b3 5 b7 9(2) 11(4) 13(6)." data-i18n-tip="tipM13">i</span>
           </div>
 
           <div class="ringBtnRow">
             <button class="ringBtn" id="trainMMaj13Btn" data-chord="mmaj13">m(Maj13)</button>
-            <span class="infoIcon" data-tip="m(Maj13) = Минор + большая 7-я ступень + большая 9-я ступень + чистая 11-я ступень + большая 13-я ступень - 1 b3 5 7 9(2) 11(4) 13(6).">i</span>
+            <span class="infoIcon" data-tip="m(Maj13) = Минор + большая 7-я ступень + большая 9-я ступень + чистая 11-я ступень + большая 13-я ступень - 1 b3 5 7 9(2) 11(4) 13(6)." data-i18n-tip="tipMMaj13">i</span>
           </div>
         </div>
 
@@ -1815,31 +1847,31 @@
              квинт" (0-6 .. 6-0), подсказка (i) показывает эту формулу. ===== -->
         <div id="trainModeGroups" class="chordGridCard cols3">
           <div class="ringBtnRow">
-            <button class="ringBtn" id="trainModeLydianBtn" data-mode="lydian">Лидийский</button>
+            <button class="ringBtn" id="trainModeLydianBtn" data-mode="lydian" data-i18n="modeLydian">Лидийский</button>
             <span class="infoIcon" data-tip="0-6">i</span>
           </div>
           <div class="ringBtnRow">
-            <button class="ringBtn" id="trainModeMajorBtn" data-mode="major">Мажор</button>
+            <button class="ringBtn" id="trainModeMajorBtn" data-mode="major" data-i18n="modeMajor">Мажор</button>
             <span class="infoIcon" data-tip="1-5">i</span>
           </div>
           <div class="ringBtnRow">
-            <button class="ringBtn" id="trainModeMixolydianBtn" data-mode="mixolydian">Миксолидийский</button>
+            <button class="ringBtn" id="trainModeMixolydianBtn" data-mode="mixolydian" data-i18n="modeMixolydian">Миксолидийский</button>
             <span class="infoIcon" data-tip="2-4">i</span>
           </div>
           <div class="ringBtnRow">
-            <button class="ringBtn" id="trainModeDorianBtn" data-mode="dorian">Дорийский</button>
+            <button class="ringBtn" id="trainModeDorianBtn" data-mode="dorian" data-i18n="modeDorian">Дорийский</button>
             <span class="infoIcon" data-tip="3-3">i</span>
           </div>
           <div class="ringBtnRow">
-            <button class="ringBtn" id="trainModeMinorBtn" data-mode="minor">Минор</button>
+            <button class="ringBtn" id="trainModeMinorBtn" data-mode="minor" data-i18n="modeMinor">Минор</button>
             <span class="infoIcon" data-tip="4-2">i</span>
           </div>
           <div class="ringBtnRow">
-            <button class="ringBtn" id="trainModePhrygianBtn" data-mode="phrygian">Фригийский</button>
+            <button class="ringBtn" id="trainModePhrygianBtn" data-mode="phrygian" data-i18n="modePhrygian">Фригийский</button>
             <span class="infoIcon" data-tip="5-1">i</span>
           </div>
           <div class="ringBtnRow">
-            <button class="ringBtn" id="trainModeLocrianBtn" data-mode="locrian">Локрийский</button>
+            <button class="ringBtn" id="trainModeLocrianBtn" data-mode="locrian" data-i18n="modeLocrian">Локрийский</button>
             <span class="infoIcon" data-tip="6-0">i</span>
           </div>
         </div>
@@ -1883,7 +1915,7 @@
         <div class="trainAltNoteGroupTitle" data-i18n="noteNamingTitle">Название нот</div>
         <div class="noteNamingSwitchRow" id="noteNamingSwitchRow">
           <button type="button" class="noteNamingBtn active" id="noteNamingAbcBtn" data-system="abc">ABC</button>
-          <button type="button" class="noteNamingBtn" id="noteNamingSolfegeBtn" data-system="solfege">до ре ми</button>
+          <button type="button" class="noteNamingBtn" id="noteNamingSolfegeBtn" data-system="solfege" data-i18n="noteNamingSolfege">до ре ми</button>
         </div>
       </div>
 
@@ -1914,8 +1946,8 @@
 
         <div class="dawOutTitle" data-i18n="dawOutTitle">Сыграть аккорд в DAW (при нажатии на ячейку аккорда):</div>
         <div class="dawOutBtnRow">
-          <button type="button" class="noteBtn" id="dawPlayTogetherBtn" data-tip="Сыграть в DAW" data-i18n="dawPlayTogetherBtn">Сыграть в DAW (за раз)</button>
-          <button type="button" class="noteBtn" id="dawPlaySequenceBtn" data-tip="Сыграть в DAW" data-i18n="dawPlaySequenceBtn">Сыграть в DAW (по очереди)</button>
+          <button type="button" class="noteBtn" id="dawPlayTogetherBtn" data-tip="Сыграть в DAW" data-i18n-tip="tipPlayInDaw" data-i18n="dawPlayTogetherBtn">Сыграть в DAW (за раз)</button>
+          <button type="button" class="noteBtn" id="dawPlaySequenceBtn" data-tip="Сыграть в DAW" data-i18n-tip="tipPlayInDaw" data-i18n="dawPlaySequenceBtn">Сыграть в DAW (по очереди)</button>
         </div>
         <div class="dawOutFieldRow">
           <label for="dawIntervalInput" data-i18n="dawIntervalLabel">Интервал между нотами (сек):</label>
@@ -2135,7 +2167,46 @@ const I18N = {
   dawPlaySequenceBtn:  { ru:'Сыграть в DAW (по очереди)', en:'Play in DAW (in sequence)', zh:'在DAW中播放（依次）' },
   dawIntervalLabel:    { ru:'Интервал между нотами (сек):', en:'Interval between notes (sec):', zh:'音符间隔（秒）：' },
   dawFormatTitle:      { ru:'Формат выхода:', en:'Output format:', zh:'输出格式：' },
-  splitChannels:       { ru:'Разделить сигнал на каналы', en:'Split signal into channels', zh:'将信号分配到不同通道' }
+  splitChannels:       { ru:'Разделить сигнал на каналы', en:'Split signal into channels', zh:'将信号分配到不同通道' },
+  noteNamingSolfege:   { ru:'до ре ми', en:'do re mi', zh:'do re mi' },
+  modeLydian:          { ru:'Лидийский', en:'Lydian', zh:'利底亚调式' },
+  modeMajor:           { ru:'Мажор', en:'Major', zh:'大调' },
+  modeMixolydian:      { ru:'Миксолидийский', en:'Mixolydian', zh:'混合利底亚调式' },
+  modeDorian:          { ru:'Дорийский', en:'Dorian', zh:'多利亚调式' },
+  modeMinor:           { ru:'Минор', en:'Minor', zh:'小调' },
+  modePhrygian:        { ru:'Фригийский', en:'Phrygian', zh:'弗里几亚调式' },
+  modeLocrian:         { ru:'Локрийский', en:'Locrian', zh:'洛克利亚调式' },
+  noInputsOption:      { ru:'Нет входов', en:'No inputs', zh:'无输入设备' },
+  noOutputsOption:     { ru:'Нет выходов', en:'No outputs', zh:'无输出设备' },
+  dawSplitNoteLabel:   { ru:'Нота', en:'Note', zh:'音符' },
+  dawSplitChannel:     { ru:'Канал', en:'Channel', zh:'通道' },
+  dawSplitOctave:      { ru:'Октава', en:'Octave', zh:'八度' },
+  dawSplitLiveLabel:   { ru:'С MIDI', en:'From MIDI', zh:'来自MIDI' },
+  tipTriad: { ru:'Обычные трезвучия: мажор или минор — в зависимости от того, по какому кольцу круга кликнули.', en:'Regular triads: major or minor — depending on which ring of the circle you click.', zh:'普通三和弦：大调或小调 — 取决于您点击的是圆圈的哪个音环。' },
+  tipSus2: { ru:'Режим Sus2: при клике по ноте показывается sus2-аккорд (тоника, секунда, квинта).', en:'Sus2 mode: clicking a note shows a sus2 chord (root, second, fifth).', zh:'Sus2 模式：点击音符会显示 sus2 和弦（根音、二度、五度）。' },
+  tipSus4: { ru:'Режим Sus4: при клике по ноте показывается sus4-аккорд (тоника, кварта, квинта).', en:'Sus4 mode: clicking a note shows a sus4 chord (root, fourth, fifth).', zh:'Sus4 模式：点击音符会显示 sus4 和弦（根音、四度、五度）。' },
+  tip7: { ru:'7 (Dominant 7) = Мажор + малая 7-я ступень - 1 3 5 b7.', en:'7 (Dominant 7) = Major + minor 7th degree - 1 3 5 b7.', zh:'7（属七和弦）= 大调 + 小七度 - 1 3 5 b7。' },
+  tipMaj7: { ru:'maj7 (Major 7) = Мажор + большая 7-я ступень - 1 3 5 7.', en:'maj7 (Major 7) = Major + major 7th degree - 1 3 5 7.', zh:'maj7（大七和弦）= 大调 + 大七度 - 1 3 5 7。' },
+  tipM7: { ru:'m7 (Minor 7) = Минор + малая 7-я ступень - 1 b3 5 b7.', en:'m7 (Minor 7) = Minor + minor 7th degree - 1 b3 5 b7.', zh:'m7（小七和弦）= 小调 + 小七度 - 1 b3 5 b7。' },
+  tipMMaj7: { ru:'m(Maj7) = Минор + большая 7-я ступень - 1 b3 5 7.', en:'m(Maj7) = Minor + major 7th degree - 1 b3 5 7.', zh:'m(Maj7) = 小调 + 大七度 - 1 b3 5 7。' },
+  tipAdd9: { ru:'add9 = Мажор + большая 9-я ступень - 1 3 5 9(2).', en:'add9 = Major + major 9th degree - 1 3 5 9(2).', zh:'add9 = 大调 + 大九度 - 1 3 5 9(2)。' },
+  tipMAdd9: { ru:'m(add9) = Минор + большая 9-я ступень - 1 b3 5 9(2).', en:'m(add9) = Minor + major 9th degree - 1 b3 5 9(2).', zh:'m(add9) = 小调 + 大九度 - 1 b3 5 9(2)。' },
+  tip9: { ru:'9 (Dominant 9) = Мажор + малая 7-я ступень + большая 9-я ступень - 1 3 5 b7 9(2).', en:'9 (Dominant 9) = Major + minor 7th degree + major 9th degree - 1 3 5 b7 9(2).', zh:'9（属九和弦）= 大调 + 小七度 + 大九度 - 1 3 5 b7 9(2)。' },
+  tipMaj9: { ru:'maj9 (Major 9) = Мажор + большая 7-я ступень + большая 9-я ступень - 1 3 5 7 9(2).', en:'maj9 (Major 9) = Major + major 7th degree + major 9th degree - 1 3 5 7 9(2).', zh:'maj9（大九和弦）= 大调 + 大七度 + 大九度 - 1 3 5 7 9(2)。' },
+  tipM9: { ru:'m9 (Minor 9) = Минор + малая 7-я ступень + большая 9-я ступень - 1 b3 5 b7 9(2).', en:'m9 (Minor 9) = Minor + minor 7th degree + major 9th degree - 1 b3 5 b7 9(2).', zh:'m9（小九和弦）= 小调 + 小七度 + 大九度 - 1 b3 5 b7 9(2)。' },
+  tipMMaj9: { ru:'m(Maj9) = Минор + большая 7-я ступень + большая 9-я ступень - 1 b3 5 7 9(2).', en:'m(Maj9) = Minor + major 7th degree + major 9th degree - 1 b3 5 7 9(2).', zh:'m(Maj9) = 小调 + 大七度 + 大九度 - 1 b3 5 7 9(2)。' },
+  tipAdd11: { ru:'add11 = Мажор + чистая 11-я ступень - 1 3 5 11(4).', en:'add11 = Major + perfect 11th degree - 1 3 5 11(4).', zh:'add11 = 大调 + 纯十一度 - 1 3 5 11(4)。' },
+  tipMAdd11: { ru:'m(add11) = Минор + чистая 11-я ступень - 1 b3 5 11(4).', en:'m(add11) = Minor + perfect 11th degree - 1 b3 5 11(4).', zh:'m(add11) = 小调 + 纯十一度 - 1 b3 5 11(4)。' },
+  tip11: { ru:'11 (Dominant 11) = Мажор + малая 7-я ступень + большая 9-я ступень + чистая 11-я ступень - 1 3 5 b7 9(2) 11(4).', en:'11 (Dominant 11) = Major + minor 7th degree + major 9th degree + perfect 11th degree - 1 3 5 b7 9(2) 11(4).', zh:'11（属十一和弦）= 大调 + 小七度 + 大九度 + 纯十一度 - 1 3 5 b7 9(2) 11(4)。' },
+  tipMaj11: { ru:'maj11 (Major 11) = Мажор + большая 7-я ступень + большая 9-я ступень + чистая 11-я ступень - 1 3 5 7 9(2) 11(4).', en:'maj11 (Major 11) = Major + major 7th degree + major 9th degree + perfect 11th degree - 1 3 5 7 9(2) 11(4).', zh:'maj11（大十一和弦）= 大调 + 大七度 + 大九度 + 纯十一度 - 1 3 5 7 9(2) 11(4)。' },
+  tipM11: { ru:'m11 (Minor 11) = Минор + малая 7-я ступень + большая 9-я ступень + чистая 11-я ступень - 1 b3 5 b7 9(2) 11(4).', en:'m11 (Minor 11) = Minor + minor 7th degree + major 9th degree + perfect 11th degree - 1 b3 5 b7 9(2) 11(4).', zh:'m11（小十一和弦）= 小调 + 小七度 + 大九度 + 纯十一度 - 1 b3 5 b7 9(2) 11(4)。' },
+  tip13: { ru:'13 (Dominant 13) = Мажор + малая 7-я ступень + большая 9-я ступень + чистая 11-я ступень + большая 13-я ступень - 1 3 5 b7 9(2) 11(4) 13(6).', en:'13 (Dominant 13) = Major + minor 7th degree + major 9th degree + perfect 11th degree + major 13th degree - 1 3 5 b7 9(2) 11(4) 13(6).', zh:'13（属十三和弦）= 大调 + 小七度 + 大九度 + 纯十一度 + 大十三度 - 1 3 5 b7 9(2) 11(4) 13(6)。' },
+  tipMaj13: { ru:'maj13 (Major 13) = Мажор + большая 7-я ступень + большая 9-я ступень + чистая 11-я ступень + большая 13-я ступень - 1 3 5 7 9(2) 11(4) 13(6).', en:'maj13 (Major 13) = Major + major 7th degree + major 9th degree + perfect 11th degree + major 13th degree - 1 3 5 7 9(2) 11(4) 13(6).', zh:'maj13（大十三和弦）= 大调 + 大七度 + 大九度 + 纯十一度 + 大十三度 - 1 3 5 7 9(2) 11(4) 13(6)。' },
+  tipM13: { ru:'m13 (Minor 13) = Минор + малая 7-я ступень + большая 9-я ступень + чистая 11-я ступень + большая 13-я ступень - 1 b3 5 b7 9(2) 11(4) 13(6).', en:'m13 (Minor 13) = Minor + minor 7th degree + major 9th degree + perfect 11th degree + major 13th degree - 1 b3 5 b7 9(2) 11(4) 13(6).', zh:'m13（小十三和弦）= 小调 + 小七度 + 大九度 + 纯十一度 + 大十三度 - 1 b3 5 b7 9(2) 11(4) 13(6)。' },
+  tipMMaj13: { ru:'m(Maj13) = Минор + большая 7-я ступень + большая 9-я ступень + чистая 11-я ступень + большая 13-я ступень - 1 b3 5 7 9(2) 11(4) 13(6).', en:'m(Maj13) = Minor + major 7th degree + major 9th degree + perfect 11th degree + major 13th degree - 1 b3 5 7 9(2) 11(4) 13(6).', zh:'m(Maj13) = 小调 + 大七度 + 大九度 + 纯十一度 + 大十三度 - 1 b3 5 7 9(2) 11(4) 13(6)。' },
+  tipArrowVariant1: { ru:'Стрелки показываются прямо на круге. Берутся максиально близко расположенные друг к другу ноты. Цветом покрашены те же самые ноты на которые указывают стрелки.', en:'Arrows are shown directly on the circle. The closest neighboring notes are used. The same notes the arrows point to are highlighted in color.', zh:'箭头直接显示在圆圈上。选取彼此距离最近的音符。箭头所指向的音符会以相同颜色标出。' },
+  tipArrowVariant2: { ru:'Стрелки показываются над или внутри круга. Альтернатива варианту 1, но есть не для всех аккордов. Цветом покрашены те же самые ноты на которые указывают стрелки.', en:'Arrows are shown above or inside the circle. An alternative to variant 1, but not available for every chord. The same notes the arrows point to are highlighted in color.', zh:'箭头显示在圆圈上方或内部。是方案 1 的替代方式，但并非所有和弦都支持。箭头所指向的音符会以相同颜色标出。' },
+  tipPlayInDaw: { ru:'Сыграть в DAW', en:'Play in DAW', zh:'在DAW中播放' },
 };
 
 const DEGREE_LABEL_I18N = {
@@ -2160,6 +2231,12 @@ function degreeLegendText(degree){
   return `${label} — ${degree}я ступень`;
 }
 
+function t(key){
+  const entry = I18N[key];
+  if(!entry) return '';
+  return entry[appLang] || entry.ru;
+}
+
 function applyLanguage(lang){
   appLang = (lang === 'en' || lang === 'zh') ? lang : 'ru';
   localStorage.setItem(APP_LANG_KEY, appLang);
@@ -2167,6 +2244,11 @@ function applyLanguage(lang){
     const key = el.getAttribute('data-i18n');
     const entry = I18N[key];
     if(entry) el.textContent = entry[appLang] || entry.ru;
+  });
+  document.querySelectorAll('[data-i18n-tip]').forEach(el=>{
+    const key = el.getAttribute('data-i18n-tip');
+    const entry = I18N[key];
+    if(entry) el.setAttribute('data-tip', entry[appLang] || entry.ru);
   });
   const ruBtn = document.getElementById('langRuBtn');
   const enBtn = document.getElementById('langEnBtn');
@@ -2183,6 +2265,15 @@ function applyLanguage(lang){
   // когда откроется вкладка "Обучение" (см. applyMode()/renderTrainLegend()).
   try{
     if(typeof renderTrainLegend === 'function') renderTrainLegend();
+  }catch(e){}
+  try{
+    if(typeof buildDawSplitPanel === 'function') buildDawSplitPanel();
+  }catch(e){}
+  try{
+    if(typeof populateMidiSelect === 'function') populateMidiSelect();
+  }catch(e){}
+  try{
+    if(typeof populateDawOutputSelect === 'function') populateDawOutputSelect();
   }catch(e){}
 }
 
@@ -6636,7 +6727,7 @@ function highlightTriadForTonic(ring, tonicIndex){
     const targetIndex = ((tonicIndex + cfg.degreeSteps) % 12 + 12) % 12;
     const item = trainWedgeMap[(cfg.ring||'major')+'-'+targetIndex];
     if(item){
-      setWedgeInstant(item, keyBlendColor(cfg.color), null);
+      setWedgeInstant(item, solidArrowColor(cfg.color), 0.5);
       highlightedTrainWedges.push(item);
     }
   });
@@ -6731,7 +6822,7 @@ function highlightSusForTonic(chordType, ring, tonicIndex){
     const useRing = cfg.ring || defaultRing;
     const item = trainWedgeMap[useRing+'-'+targetIndex];
     if(item){
-      setWedgeInstant(item, keyBlendColor(cfg.color), null);
+      setWedgeInstant(item, solidArrowColor(cfg.color), 0.5);
       highlightedTrainWedges.push(item);
     }
   });
@@ -6748,7 +6839,7 @@ function highlightExtendedLetterCells(chordType, ring, tonicIndex){
   const paint = (useRing, idx, cfgKey) => {
     const item = trainWedgeMap[useRing + '-' + idx];
     if(item){
-      setWedgeInstant(item, keyBlendColor(arrowsCfg[cfgKey].color), null);
+      setWedgeInstant(item, solidArrowColor(arrowsCfg[cfgKey].color), 0.5);
       highlightedTrainWedges.push(item);
     }
   };
@@ -7497,6 +7588,7 @@ function applyMode(){
   // объявлен (TDZ), поэтому вызывать updateSidePanelPinRowPosition() на
   // самом первом запуске applyMode() (при загрузке страницы) нельзя.
   if(typeof __sidePanelPinReady !== 'undefined' && __sidePanelPinReady && typeof updateSidePanelPinRowPosition === 'function') updateSidePanelPinRowPosition();
+  if(typeof __sidePanelPinReady !== 'undefined' && __sidePanelPinReady && typeof updateNotesMidiPanelPosition === 'function') updateNotesMidiPanelPosition();
   if(typeof syncTrainingPanelHeight === 'function') syncTrainingPanelHeight();
   if(typeof updateTrainPiano === 'function') updateTrainPiano();
   if(typeof updateL3Piano === 'function') updateL3Piano();
@@ -7663,10 +7755,36 @@ function syncTrainingPanelHeight(){
   });
 
   const maxH = Math.max(h1, h2, h3, h4);
-  level1Panel.style.minHeight = maxH + 'px';
-  level2Panel.style.minHeight = maxH + 'px';
-  level3Panel.style.minHeight = maxH + 'px';
-  trainingPanel.style.minHeight = maxH + 'px';
+
+  // ВАЖНО: раньше min-height ВСЕГДА выставлялась равной maxH (высоте
+  // самой высокой вкладки, обычно "Аккорды/Лады"), даже если реальный
+  // видимый вьюпорт меньше. Из-за этого в короткой вкладке (например,
+  // "Ноты") появлялось пустое пространство внизу, в которое можно было
+  // прокрутить мышью (#sidePanel сам скроллится — overflow:auto,
+  // max-height:90vh — см. CSS) — прокручивалось в буквально пустой
+  // прямоугольник, за которым ничего нет. Чтобы вкладки были ОДНОГО
+  // размера (без "прыжков" при переключении), но не тянулись длиннее,
+  // чем реально влезает на экран, ограничиваем целевую высоту тем, что
+  // помещается в #sidePanel при его max-height:90vh (за вычетом шапки
+  // вкладок #topTabBar, отступов панели и gap между ними). min-height —
+  // это только НИЖНЯЯ граница: у самой высокой вкладки реальный контент
+  // всё равно больше этого предела и вкладка отрисуется по своей
+  // естественной высоте (с прокруткой — это ожидаемо, там правда есть,
+  // что скроллить), а короткие вкладки просто перестанут раздуваться
+  // пустотой сверх того, что видно на экране.
+  const topTabBarEl = document.getElementById('topTabBar');
+  const sidePanelCs = getComputedStyle(sidePanelElForMeasure);
+  const rowGapPx = parseFloat(sidePanelCs.rowGap || sidePanelCs.gap) || 0;
+  const paddingPx = (parseFloat(sidePanelCs.paddingTop) || 0) + (parseFloat(sidePanelCs.paddingBottom) || 0);
+  const borderPx = (parseFloat(sidePanelCs.borderTopWidth) || 0) + (parseFloat(sidePanelCs.borderBottomWidth) || 0);
+  const chromeHeight = (topTabBarEl ? topTabBarEl.offsetHeight : 0) + rowGapPx + paddingPx + borderPx;
+  const viewportBudget = Math.max(300, Math.round(window.innerHeight * 0.9) - chromeHeight);
+  const targetH = Math.min(maxH, viewportBudget);
+
+  level1Panel.style.minHeight = targetH + 'px';
+  level2Panel.style.minHeight = targetH + 'px';
+  level3Panel.style.minHeight = targetH + 'px';
+  trainingPanel.style.minHeight = targetH + 'px';
 }
 
 /* =========================================================
@@ -7808,6 +7926,27 @@ function isMobileLayout(){
 let isMobile = isMobileLayout();
 document.body.classList.toggle('is-mobile', isMobile);
 
+/* ===== Масштаб панели настроек на мобильной раскладке =====
+   Базовая ширина панели (MOBILE_PANEL_BASE_WIDTH) должна совпадать с
+   шириной #sidePanel в CSS (width:520px), это та же ширина, что и на
+   десктопе. Вместо того чтобы растягивать саму вёрстку под экран
+   (из-за чего кнопки становились непропорционально широкими), панель
+   масштабируется целиком через CSS-переменную --mp-scale и
+   transform:scale() — визуально это выглядит как зум, но раскладка
+   (соотношение ширины кнопок и отступов) внутри остаётся точно такой
+   же, как на десктопе. */
+const MOBILE_PANEL_BASE_WIDTH = 520;   // px — должно совпадать с шириной #sidePanel в CSS
+const MOBILE_PANEL_SIDE_MARGIN = 0.94; // небольшой отступ по краям экрана (как max-width:92vw на десктопе)
+const MOBILE_PANEL_MAX_SCALE = 2.5;    // защита от чрезмерного увеличения на широких планшетах (pointer:coarse)
+
+function updateMobilePanelScale(){
+  if(!isMobile || !sidePanel) return;
+  const available = window.innerWidth * MOBILE_PANEL_SIDE_MARGIN;
+  const scale = Math.min(available / MOBILE_PANEL_BASE_WIDTH, MOBILE_PANEL_MAX_SCALE);
+  sidePanel.style.setProperty('--mp-scale', scale);
+}
+updateMobilePanelScale();
+
 function setSidePanelOpen(open){
   if(sidePanel.classList.contains('pinned')){
     // Закреплена сбоку от круга: показываем/скрываем саму панель по
@@ -7922,12 +8061,37 @@ function updateSidePanelPinRowPosition(){
   }
 }
 
+/* ===== Расположение MIDI-настроек вкладки "Ноты" (#notesMidiPanel):
+   элемент физически переносится между #level1Panel/#level2Panel — в ту
+   из них, которая сейчас видна (тем же приёмом, что и
+   #sidePanelPinRow выше) — и ВСЕГДА кладётся ПОСЛЕДНИМ ребёнком, т.е.
+   ПОСЛЕ чекбокса "Настройки сбоку от круга" (после того как
+   updateSidePanelPinRowPosition() уже переставил его в ту же
+   панель). Это даёт тот же порядок и тот же отступ "чекбокс → MIDI",
+   что и в "Аккордах/Ладах" (#level3ExtraSettings → #l3MidiPanel), и
+   заодно избавляет от пустого места внизу "Нот" — см. подробный
+   комментарий у #notesMidiPanel в HTML. Вызывать нужно ПОСЛЕ
+   updateSidePanelPinRowPosition() и, как и она, ДО замера высот в
+   syncTrainingPanelHeight(). ===== */
+const notesMidiPanelEl = document.getElementById('notesMidiPanel');
+function updateNotesMidiPanelPosition(){
+  if(!notesMidiPanelEl) return;
+  const tab = currentTopTab();
+  if(tab !== 'p1') return;
+  const target = practiceLevel === 2 ? level2Panel : level1Panel;
+  if(!target) return;
+  if(notesMidiPanelEl.parentElement !== target || target.lastElementChild !== notesMidiPanelEl){
+    target.appendChild(notesMidiPanelEl);
+  }
+}
+
 function updateSidePanelLayout(){
   const tab = currentTopTab();
   const pinned = !isMobile && isSidePanelPinnedFor(tab);
 
   if(sidePanelPinCheckbox) sidePanelPinCheckbox.checked = isSidePanelPinnedFor(tab);
   updateSidePanelPinRowPosition();
+  updateNotesMidiPanelPosition();
 
   if(pinned){
     const target = tab === 'training' ? trainCircleInnerEl : circleInnerEl;
@@ -7980,6 +8144,11 @@ window.addEventListener('resize', ()=>{
     if(__sidePanelPinReady) updateSidePanelLayout();
     setSidePanelOpen(isSidePanelOpen());
   }
+  // Пересчитываем масштаб панели и при смене desktop/mobile, и просто
+  // при изменении ширины экрана в пределах мобильной раскладки (например,
+  // при повороте телефона) — иначе панель останется "зазумленной" под
+  // старую ширину экрана.
+  updateMobilePanelScale();
 });
 
 // Клик/тап по затемнению фона — закрыть настройки (общее для десктопа
@@ -8022,6 +8191,66 @@ document.addEventListener('touchend', (e) => {
     setSidePanelOpen(false);
   }
   sidePanelTouchStartY = null;
+}, { passive: true });
+
+/* =========================================================
+   Мультитач-тапы: 3 пальца — увеличить круг, 4 пальца — уменьшить
+   круг (используют те же zoomIn()/zoomOut(), что и клавиши +/- на
+   клавиатуре ПК — масштабируется только сам круг, не меню/панель
+   настроек), 2 пальца — открыть/закрыть панель настроек.
+   Срабатывает только на короткий ТАП (без заметного сдвига пальцев
+   и без долгого удержания) — иначе это может быть жест прокрутки/
+   изменения масштаба страницы браузером, а не наш жест.
+   ========================================================= */
+const MF_TAP_MOVE_THRESHOLD = 24;   // px, максимальный сдвиг центра касаний, чтобы это ещё считался тапом
+const MF_TAP_MAX_DURATION = 500;    // ms, максимальная длительность тапа
+let mfTapState = { active:false, maxTouches:0, startTime:0, startX:0, startY:0, moved:false };
+
+function mfTouchesCenter(touchList){
+  let x = 0, y = 0;
+  for(let i = 0; i < touchList.length; i++){ x += touchList[i].clientX; y += touchList[i].clientY; }
+  return { x: x / touchList.length, y: y / touchList.length };
+}
+
+document.addEventListener('touchstart', (e) => {
+  if(e.touches.length >= 2){
+    if(!mfTapState.active){
+      mfTapState.active = true;
+      mfTapState.startTime = Date.now();
+      mfTapState.moved = false;
+      const c = mfTouchesCenter(e.touches);
+      mfTapState.startX = c.x; mfTapState.startY = c.y;
+    }
+    mfTapState.maxTouches = Math.max(mfTapState.maxTouches, e.touches.length);
+  } else if(e.touches.length === 0){
+    mfTapState.active = false;
+    mfTapState.maxTouches = 0;
+  }
+}, { passive: true });
+
+document.addEventListener('touchmove', (e) => {
+  if(!mfTapState.active || e.touches.length === 0) return;
+  const c = mfTouchesCenter(e.touches);
+  const dx = c.x - mfTapState.startX, dy = c.y - mfTapState.startY;
+  if(Math.hypot(dx, dy) > MF_TAP_MOVE_THRESHOLD) mfTapState.moved = true;
+}, { passive: true });
+
+document.addEventListener('touchend', (e) => {
+  if(!mfTapState.active) return;
+  if(e.touches.length > 0) return; // ждём, пока поднимутся все пальцы
+  const duration = Date.now() - mfTapState.startTime;
+  const count = mfTapState.maxTouches;
+  const wasMoved = mfTapState.moved;
+  mfTapState.active = false;
+  mfTapState.maxTouches = 0;
+  if(wasMoved || duration > MF_TAP_MAX_DURATION) return;
+  if(count === 3){
+    zoomIn();
+  } else if(count === 4){
+    zoomOut();
+  } else if(count === 2){
+    setSidePanelOpen(!isSidePanelOpen());
+  }
 }, { passive: true });
 
 /* =========================================================
@@ -8688,7 +8917,7 @@ function populateMidiSelect(){
     selects.forEach((sel, idx) => {
       sel.innerHTML = '';
       if(inputs.length === 0){
-        sel.innerHTML = '<option>Нет входов</option>';
+        sel.innerHTML = '<option>' + t('noInputsOption') + '</option>';
       } else {
         inputs.forEach(inp => {
           const opt = document.createElement('option');
@@ -8912,7 +9141,7 @@ function populateDawOutputSelect(){
   }
   const outputs = [...midiAccess.outputs.values()];
   if(outputs.length === 0){
-    selects.forEach(sel => { sel.innerHTML = '<option value="">Нет выходов</option>'; });
+    selects.forEach(sel => { sel.innerHTML = '<option value="">' + t('noOutputsOption') + '</option>'; });
     dawMidiOutput = null;
     return;
   }
@@ -9155,12 +9384,12 @@ function buildDawSplitPanel(){
     const row = document.createElement('div');
     row.className = 'dawSplitRow';
     row.innerHTML =
-      '<div class="dawSplitRowTitle">Нота ' + (i + 1) + '</div>' +
+      '<div class="dawSplitRowTitle">' + t('dawSplitNoteLabel') + ' ' + (i + 1) + '</div>' +
       '<div class="dawSplitRowGrid">' +
-        '<label>Канал<select class="dawSplitCh" data-idx="' + i + '"></select></label>' +
-        '<label>Октава<select class="dawSplitOct" data-idx="' + i + '"></select></label>' +
+        '<label>' + t('dawSplitChannel') + '<select class="dawSplitCh" data-idx="' + i + '"></select></label>' +
+        '<label>' + t('dawSplitOctave') + '<select class="dawSplitOct" data-idx="' + i + '"></select></label>' +
         '<label>CC1 (Modwheel)<input type="number" class="dawSplitCc" data-idx="' + i + '" min="0" max="127" value="' + cfg.cc + '"></label>' +
-        '<label class="dawSplitLiveLabel"><input type="checkbox" class="dawSplitLive" data-idx="' + i + '"' + (cfg.live ? ' checked' : '') + '> С MIDI</label>' +
+        '<label class="dawSplitLiveLabel"><input type="checkbox" class="dawSplitLive" data-idx="' + i + '"' + (cfg.live ? ' checked' : '') + '> ' + t('dawSplitLiveLabel') + '</label>' +
       '</div>';
     dawSplitPanel.appendChild(row);
 

@@ -2,7 +2,11 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<!-- user-scalable НЕ запрещаем: встроенный pinch-to-zoom браузера должен
+     работать как раньше. Собственные жесты приложения (2/3/4 пальца)
+     сделаны короткими ТАПАМИ без сдвига, поэтому они не конфликтуют с
+     нативным двупальцевым "щипком" (там пальцы заметно двигаются). -->
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Circle of Fifths</title>
 <style>
 
@@ -187,13 +191,10 @@
     overflow:hidden;
     font-family:var(--font);
     color:var(--text);
-    /* Отключаем нативные жесты браузера (pinch-zoom, двойной тап-зум,
-       оттягивание страницы) по всему приложению, чтобы 2/3/4-пальцевые
-       жесты (открытие настроек, зум круга) обрабатывались ТОЛЬКО нашим
-       JS и не перехватывались браузером как жест масштабирования
-       страницы. Внутренние элементы (например, #sidePanel), которым
-       нужен собственный скролл, переопределяют touch-action локально. */
-    touch-action:none;
+    /* touch-action НЕ ограничиваем: встроенный pinch-to-zoom браузера
+       должен продолжать работать. Наши мультитач-жесты — короткие тапы
+       без сдвига пальцев, они распознаются отдельно (см. mfTapState в JS)
+       и нативному "щипку" не мешают. */
   }
   /* Убираем стандартную синюю/серую подсветку тапа на мобильных
      браузерах (WebKit/Blink) — именно она давала синий многоугольник
@@ -8222,10 +8223,14 @@ document.addEventListener('touchend', (e) => {
   if(e.touches.length > 0){ sidePanelTouchStartY = null; return; } // остался ещё палец — это не одиночный свайп
   const endY = (e.changedTouches && e.changedTouches[0]) ? e.changedTouches[0].clientY : sidePanelTouchStartY;
   const dy = sidePanelTouchStartY - endY; // положительное — свайп вверх, отрицательное — вниз
+  /* Свайп ВВЕРХ открывает панель. Свайп ВНИЗ панель НЕ закрывает:
+     раньше любой скролл вниз (в том числе прокрутка самих настроек до
+     нижних строк) засчитывался как "закрыть" и панель схлопывалась.
+     Закрытие теперь только тапом за пределами окна настроек — по
+     затемнению фона (см. sidePanelBackdrop click ниже) или двумя
+     пальцами. */
   if (dy > SWIPE_THRESHOLD) {
     setSidePanelOpen(true);
-  } else if (dy < -SWIPE_THRESHOLD) {
-    setSidePanelOpen(false);
   }
   sidePanelTouchStartY = null;
 }, { passive: true });
@@ -8239,14 +8244,33 @@ document.addEventListener('touchend', (e) => {
    и без долгого удержания) — иначе это может быть жест прокрутки/
    изменения масштаба страницы браузером, а не наш жест.
    ========================================================= */
-const MF_TAP_MOVE_THRESHOLD = 24;   // px, максимальный сдвиг центра касаний, чтобы это ещё считался тапом
-const MF_TAP_MAX_DURATION = 500;    // ms, максимальная длительность тапа
-let mfTapState = { active:false, maxTouches:0, startTime:0, startX:0, startY:0, moved:false };
+const MF_TAP_MOVE_THRESHOLD = 30;   // px, максимальный сдвиг ОДНОГО пальца, чтобы это ещё считался тапом
+const MF_TAP_MAX_DURATION = 800;    // ms, максимальная длительность тапа (пальцы редко приземляются/уходят идеально синхронно)
+/* Смещение считается ДЛЯ КАЖДОГО ПАЛЬЦА ОТДЕЛЬНО (по его touch.identifier),
+   а не по общему центру касаний. Раньше отслеживался именно центр — и
+   из-за этого 3 и 4 пальца не работали: пальцы физически не касаются
+   экрана в одну и ту же миллисекунду, поэтому центр сначала считался по
+   двум пальцам, а когда приземлялся третий/четвёртый (в стороне от них),
+   центр РЕЗКО прыгал на десятки пикселей. Жест тут же помечался как
+   "сдвинутый" (moved=true) и отбрасывался. Два пальца при этом работали,
+   потому что после них центр больше не смещался — ровно то поведение,
+   которое и наблюдалось. */
+let mfTapState = { active:false, maxTouches:0, startTime:0, moved:false, starts:new Map() };
 
-function mfTouchesCenter(touchList){
-  let x = 0, y = 0;
-  for(let i = 0; i < touchList.length; i++){ x += touchList[i].clientX; y += touchList[i].clientY; }
-  return { x: x / touchList.length, y: y / touchList.length };
+function mfTrackStarts(touchList){
+  for(let i = 0; i < touchList.length; i++){
+    const t = touchList[i];
+    if(!mfTapState.starts.has(t.identifier)){
+      mfTapState.starts.set(t.identifier, { x:t.clientX, y:t.clientY });
+    }
+  }
+}
+
+function mfResetTapState(){
+  mfTapState.active = false;
+  mfTapState.maxTouches = 0;
+  mfTapState.moved = false;
+  mfTapState.starts.clear();
 }
 
 document.addEventListener('touchstart', (e) => {
@@ -8255,21 +8279,27 @@ document.addEventListener('touchstart', (e) => {
       mfTapState.active = true;
       mfTapState.startTime = Date.now();
       mfTapState.moved = false;
-      const c = mfTouchesCenter(e.touches);
-      mfTapState.startX = c.x; mfTapState.startY = c.y;
+      mfTapState.starts.clear();
     }
+    // запоминаем стартовую точку каждого нового пальца — в том числе
+    // третьего и четвёртого, приземлившихся позже первых двух.
+    mfTrackStarts(e.touches);
     mfTapState.maxTouches = Math.max(mfTapState.maxTouches, e.touches.length);
-  } else if(e.touches.length === 0){
-    mfTapState.active = false;
-    mfTapState.maxTouches = 0;
   }
 }, { passive: true });
 
 document.addEventListener('touchmove', (e) => {
   if(!mfTapState.active || e.touches.length === 0) return;
-  const c = mfTouchesCenter(e.touches);
-  const dx = c.x - mfTapState.startX, dy = c.y - mfTapState.startY;
-  if(Math.hypot(dx, dy) > MF_TAP_MOVE_THRESHOLD) mfTapState.moved = true;
+  mfTrackStarts(e.touches);
+  for(let i = 0; i < e.touches.length; i++){
+    const t = e.touches[i];
+    const s = mfTapState.starts.get(t.identifier);
+    if(!s) continue;
+    if(Math.hypot(t.clientX - s.x, t.clientY - s.y) > MF_TAP_MOVE_THRESHOLD){
+      mfTapState.moved = true;
+      return;
+    }
+  }
 }, { passive: true });
 
 document.addEventListener('touchend', (e) => {
@@ -8278,8 +8308,7 @@ document.addEventListener('touchend', (e) => {
   const duration = Date.now() - mfTapState.startTime;
   const count = mfTapState.maxTouches;
   const wasMoved = mfTapState.moved;
-  mfTapState.active = false;
-  mfTapState.maxTouches = 0;
+  mfResetTapState();
   if(wasMoved || duration > MF_TAP_MAX_DURATION) return;
   if(count === 3){
     zoomIn();
@@ -8288,6 +8317,13 @@ document.addEventListener('touchend', (e) => {
   } else if(count === 2){
     setSidePanelOpen(!isSidePanelOpen());
   }
+}, { passive: true });
+
+/* Браузер может отменить касания (например, начав собственный жест
+   pinch-to-zoom) — тогда наш жест считается несостоявшимся, чтобы
+   "остатки" предыдущего касания не сработали позже. */
+document.addEventListener('touchcancel', () => {
+  mfResetTapState();
 }, { passive: true });
 
 /* =========================================================

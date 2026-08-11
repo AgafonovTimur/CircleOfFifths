@@ -1422,6 +1422,32 @@
     color:var(--tip-formula-red);
   }
 
+  /* ===== Вписывание круга в экран на мобильной раскладке =====
+     Круг свёрстан фиксированным квадратом 480x480 (#circleInner /
+     #trainCircleInner). На телефоне ширина экрана обычно меньше 480px,
+     поэтому layout-бокс круга не помещался: круг вылезал за правый край
+     и выглядел сдвинутым вбок, а уменьшить его было нельзя (ZOOM_MIN
+     = 100%). Теперь на мобильной раскладке layout-бокс сжимается до
+     --circle-box (считается в JS: circleFitScale() * 480, чтобы круг на
+     минимальном зуме ровно вписывался в экран), а сам svg абсолютно
+     центрируется внутри этого бокса (left/top:50% + translate(-50%,-50%)
+     в transform, см. applyZoom()) и масштабируется тем же коэффициентом.
+     Правьте отступ от краёв экрана в MOBILE_CIRCLE_MARGIN в JS. */
+  body.is-mobile #circleInner,
+  body.is-mobile #trainCircleInner{
+    width:var(--circle-box, 480px);
+    height:var(--circle-box, 480px);
+  }
+  body.is-mobile #circle,
+  body.is-mobile #trainCircle{
+    position:absolute;
+    left:50%;
+    top:50%;
+  }
+  body.is-mobile #app{
+    padding:6px;
+    gap:0;
+  }
 </style>
 </head>
 <body>
@@ -8178,6 +8204,9 @@ window.addEventListener('resize', ()=>{
   // при повороте телефона) — иначе панель останется "зазумленной" под
   // старую ширину экрана.
   updateMobilePanelScale();
+  // Пересчитываем «вписывание» круга в экран (поворот телефона, смена
+  // desktop/mobile) — см. circleFitScale()/applyZoom().
+  if(typeof applyZoom === 'function') applyZoom();
 });
 
 // Клик/тап по затемнению фона — закрыть настройки (общее для десктопа
@@ -8332,14 +8361,39 @@ document.addEventListener('touchcancel', () => {
    раньше, см. комментарий у блока "Масштабирование круга" перед
    разделом панели настроек)
    ========================================================= */
+/* ===== Базовый масштаб круга под экран (только мобильная раскладка) =====
+   Круг нарисован в фиксированном квадрате 480x480. Если экран уже 480px,
+   круг физически не помещался (минимальный зум ZOOM_MIN = 100%), вылезал
+   вправо и казался сдвинутым. circleFitScale() возвращает коэффициент
+   «вписывания» — на него домножается пользовательский зум, поэтому зум
+   100% на телефоне = круг ровно по ширине экрана и строго по центру.
+   Ограничиваем ещё и по высоте, чтобы круг не обрезался сверху/снизу в
+   альбомной ориентации. MOBILE_CIRCLE_MARGIN — отступ от краёв экрана. */
+const MOBILE_CIRCLE_MARGIN = 6; // px с каждой стороны
+function circleFitScale(){
+  if(!isMobile) return 1;
+  const avail = Math.min(window.innerWidth, window.innerHeight) - MOBILE_CIRCLE_MARGIN*2;
+  return Math.max(0.2, Math.min(1, avail / 480));
+}
+function updateCircleFitBox(){
+  const s = circleFitScale();
+  document.documentElement.style.setProperty('--circle-box', (480*s) + 'px');
+  return s;
+}
+
 function applyZoom(){
   zoomPractice = Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, zoomPractice));
   zoomTraining = Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, zoomTraining));
 
-  svg.style.transform = `scale(${zoomPractice/100})`;
+  const fit = updateCircleFitBox();
+  // на мобильной раскладке svg спозиционирован абсолютно (left/top:50%),
+  // поэтому его нужно сдвинуть на половину собственного размера
+  const pre = isMobile ? 'translate(-50%,-50%) ' : '';
+
+  svg.style.transform = pre + `scale(${fit*zoomPractice/100})`;
   svg.style.transformOrigin = 'center center';
 
-  trainSvg.style.transform = `scale(${zoomTraining/100})`;
+  trainSvg.style.transform = pre + `scale(${fit*zoomTraining/100})`;
   trainSvg.style.transformOrigin = 'center center';
 
   if(typeof updateTrainPianoOffset === 'function') updateTrainPianoOffset();

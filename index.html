@@ -32,13 +32,6 @@
     --app-text-color:#D0D0D0;
     --text:var(--app-text-color);
 
-    /* цвета круга — взяты с серых сегментов картинки (область D / Bm / C#°) */
-    --ring-major:#2F2F2F;   /* внешнее кольцо (мажор), как у "D" */
-    --ring-minor:#2F2F2F;   /* среднее кольцо (минор), как у "Bm" */
-    --ring-note:#404040;    /* кольцо названий нот (обучение) */
-    --ring-major-hover:#474747;
-    --ring-minor-hover:#3c3c3c;
-
     --green:#689461;
     --red:#ffcccc;
     --green-flash:#689461;
@@ -58,6 +51,21 @@
     --orange:rgba(255,217,179,0.5);
     --purple:rgba(217,179,255,0.5);
     --lime:rgba(220,255,179,0.5);
+
+    /* цвета ладов на КРУГУ — взяты с серых сегментов картинки (область
+       D / Bm / C#°). Правьте здесь, чтобы поменять цвет колец. */
+    --ring-major:#2F2F2F;   /* внешнее кольцо (мажор), как у "D" */
+    --ring-minor:#2F2F2F;   /* среднее кольцо (минор), как у "Bm" */
+    --ring-note:#404040;    /* кольцо названий нот (обучение) */
+    --ring-major-hover:#474747;
+    --ring-minor-hover:#3c3c3c;
+
+    /* цвета клавиш на КЛАВИАТУРЕ-подсказке справа от круга (вкладка
+       "Обучение"). Правьте здесь, чтобы поменять цвет клавиш. */
+    --piano-white-key:#6b6b6b;
+    --piano-black-key:#161616;
+    --piano-key-label-on-white:#141414;
+    --piano-key-label-on-black:#fff;
 
     /* сплошные (непрозрачные) версии тех же цветов — только для стрелок
        круга Обучения (палка стрелки + треугольник-наконечник красятся
@@ -84,12 +92,6 @@
     --key-pressed: var(--btn-active-bg);
     --header-text:var(--app-text-color);
     --section-label:var(--app-text-color);
-
-    /* клавиатура-подсказка вкладки "Обучение" (справа от круга) */
-    --piano-white-key:#6b6b6b;
-    --piano-black-key:#161616;
-    --piano-key-label-on-white:#141414;
-    --piano-key-label-on-black:#fff;
 
     /* доп. переменные, вынесенные из точечных цветов ниже по файлу —
        нужны, чтобы светлая тема (см. body.theme-light) могла их
@@ -126,11 +128,11 @@
     --text:var(--app-text-color);
     --btn-text:var(--app-text-color);
 
-    --ring-major:#ffffff;
-    --ring-minor:#ffffff;
-    --ring-note:#d3d2cc;
-    --ring-major-hover:#eceae4;
-    --ring-minor-hover:#eceae4;
+    --ring-major:#eae9e4;
+    --ring-minor:#eae9e4;
+    --ring-note:#eae9e4;
+    --ring-major-hover:#dcdbd4;
+    --ring-minor-hover:#dcdbd4;
 
     --green:#4c8a49;
     --red:#e8746b;
@@ -163,10 +165,10 @@
     --header-text:#1b1b1b;
     --section-label:#1b1b1b;
 
-    /* клавиатура-подсказка: белые клавиши — чистый белый с тёмной обводкой
-       (задаётся отдельно в разметке клавиатуры), чёрные остаются тёмными
-       для контраста */
-    --piano-white-key:#ffffff;
+    /* клавиатура-подсказка: белые клавиши в светлой теме — тот же цвет,
+       что у кнопок и ячеек круга (--btn-bg/--ring-major), чёрные остаются
+       тёмными для контраста */
+    --piano-white-key:#eae9e4;
     --piano-black-key:#2a2a2a;
     --piano-key-label-on-white:#1b1b1b;
     --piano-key-label-on-black:#fff;
@@ -226,6 +228,14 @@
     fill:var(--bg);
   }
   #centerNote, #trainCenterNote{
+    font-weight:bold;
+    text-anchor:middle;
+    dominant-baseline:middle;
+    pointer-events:none;
+    user-select:none;
+    font-family:var(--font);
+  }
+  #centerModeLabel{
     font-weight:bold;
     text-anchor:middle;
     dominant-baseline:middle;
@@ -930,13 +940,20 @@
   #level3ExtraSettings input[type="checkbox"]{
     cursor:pointer;
   }
-  #midiPanel{
+  #midiPanel, .midiPanel{
     margin:10px 0 4px;
     display:flex;
     flex-direction:column;
     align-self:stretch;
     gap:8px;
     padding-top:10px;
+    border-top:1px solid var(--panel-border, rgba(255,255,255,0.15));
+  }
+  /* Упрощённая копия MIDI-настроек (счётчик входов / выбор входов /
+     MIDI выход / кнопка подключения — БЕЗ блока "Сыграть в DAW") для
+     вкладок "Ноты" и "Аккорды/Лады" — см. .midiPanelMini ниже и общий
+     комментарий у #notesMidiPanel / #l3MidiPanel в HTML. */
+  .midiPanelMini{
     border-top:1px solid var(--panel-border, rgba(255,255,255,0.15));
   }
   .midiPanelRow{
@@ -960,17 +977,17 @@
     font-size:15px;
     cursor:pointer;
   }
-  #midiInputCountSelect{
+  #midiInputCountSelect, .midiInputCountSelect{
     flex:0 0 auto;
     width:auto;
     margin-left:auto;
   }
-  #midiStatusLine{
+  #midiStatusLine, .midiStatusLine{
     font-family:var(--font);
     font-size:14px;
     color:var(--status-ok, #8f8);
   }
-  #midiStatusLine.midiStatusError{
+  #midiStatusLine.midiStatusError, .midiStatusLine.midiStatusError{
     color:var(--status-error, #f88);
   }
   #dawOutPanel{
@@ -1012,14 +1029,14 @@
     flex:1;
   }
   .dawOutFormatBlock{
-    display:flex;
-    flex-direction:row;
     align-items:center;
-    justify-content:space-between;
-    gap:8px;
   }
   .dawOutFormatBlock .dawOutTitle{
-    flex:1;
+    flex:1 1 0;
+    opacity:0.85;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
   }
   .dawOutFieldRow input[type="text"],
   .dawOutFieldRow input[type="number"]{
@@ -1456,6 +1473,43 @@
           <svg id="selectCircle2" width="480" height="480" viewBox="0 0 480 480"></svg>
         </div>
       </div>
+
+      <!-- ===== Копия MIDI-настроек из "Обучения" (см. #midiPanel там же) —
+           только количество MIDI входов / выбор входов / MIDI выход /
+           кнопка подключения, БЕЗ блока "Сыграть в DAW" (он нужен только
+           обучению). Стоит В КОНЦЕ вкладки "Ноты" — тем же местом (после
+           всех остальных настроек), что и копия в "Аккорды/Лады" (см.
+           #l3MidiPanel после #level3ExtraSettings), чтобы вид был
+           единообразным между вкладками. Управляющие элементы помечены
+           теми же общими классами (.midiInputCountSelect/
+           .midiInputSelectsContainer/.dawOutputSelect/.midiStatusLine/
+           .midiReconnectBtn), что и в #midiPanel — JS (см.
+           populateMidiSelect/populateDawOutputSelect и т.д. в <script>)
+           синхронизирует ВСЕ копии между собой, так что выбор
+           MIDI-устройства в любом месте сразу отражается везде. -->
+      <div id="notesMidiPanel" class="midiPanel midiPanelMini">
+        <div class="midiPanelRow">
+          <label for="notesMidiInputCountSelect" data-i18n="midiInputLabel">Количество MIDI входов:</label>
+          <select id="notesMidiInputCountSelect" class="midiInputCountSelect">
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+          </select>
+        </div>
+        <div id="notesMidiInputSelectsContainer" class="midiInputSelectsContainer">
+          <div class="midiPanelRow"><select class="midiInputPortSelect" id="notesMidiInputSelect"><option>—</option></select></div>
+        </div>
+        <div class="midiPanelRow">
+          <label for="notesDawOutputSelect" data-i18n="midiOutputLabel">MIDI выход:</label>
+          <select id="notesDawOutputSelect" class="dawOutputSelect"><option>—</option></select>
+        </div>
+        <div id="notesMidiStatusLine" class="midiStatusLine" data-i18n="midiStatusDefault">MIDI-клавиатура не подключена. Нажмите кнопку ниже, чтобы подключить.</div>
+        <button type="button" class="noteBtn midiReconnectBtn" id="notesMidiReconnectBtn" data-i18n="midiReconnectBtn">Подключить MIDI клавиатуру</button>
+      </div>
     </div>
 
     <div id="level3Panel" style="display:none">
@@ -1600,6 +1654,33 @@
       </div>
       <div id="level3ExtraSettings">
         <label><input type="checkbox" id="level3ShowPianoCheckbox"><span data-i18n="showKeyboard">Показывать клавиатуру</span></label>
+      </div>
+
+      <!-- ===== Копия MIDI-настроек из "Обучения" — см. подробный
+           комментарий у #notesMidiPanel выше, здесь та же логика,
+           только для вкладки "Аккорды/Лады". ===== -->
+      <div id="l3MidiPanel" class="midiPanel midiPanelMini">
+        <div class="midiPanelRow">
+          <label for="l3MidiInputCountSelect" data-i18n="midiInputLabel">Количество MIDI входов:</label>
+          <select id="l3MidiInputCountSelect" class="midiInputCountSelect">
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+          </select>
+        </div>
+        <div id="l3MidiInputSelectsContainer" class="midiInputSelectsContainer">
+          <div class="midiPanelRow"><select class="midiInputPortSelect" id="l3MidiInputSelect"><option>—</option></select></div>
+        </div>
+        <div class="midiPanelRow">
+          <label for="l3DawOutputSelect" data-i18n="midiOutputLabel">MIDI выход:</label>
+          <select id="l3DawOutputSelect" class="dawOutputSelect"><option>—</option></select>
+        </div>
+        <div id="l3MidiStatusLine" class="midiStatusLine" data-i18n="midiStatusDefault">MIDI-клавиатура не подключена. Нажмите кнопку ниже, чтобы подключить.</div>
+        <button type="button" class="noteBtn midiReconnectBtn" id="l3MidiReconnectBtn" data-i18n="midiReconnectBtn">Подключить MIDI клавиатуру</button>
       </div>
     </div>
 
@@ -1806,10 +1887,10 @@
         </div>
       </div>
 
-      <div id="midiPanel">
+      <div id="midiPanel" class="midiPanel">
         <div class="midiPanelRow">
           <label for="midiInputCountSelect" data-i18n="midiInputLabel">Количество MIDI входов:</label>
-          <select id="midiInputCountSelect">
+          <select id="midiInputCountSelect" class="midiInputCountSelect">
             <option value="1">1</option>
             <option value="2">2</option>
             <option value="3">3</option>
@@ -1819,17 +1900,17 @@
             <option value="7">7</option>
           </select>
         </div>
-        <div id="midiInputSelectsContainer">
+        <div id="midiInputSelectsContainer" class="midiInputSelectsContainer">
           <div class="midiPanelRow"><select class="midiInputPortSelect" id="midiInputSelect"><option>—</option></select></div>
         </div>
         <div id="dawOutPanel">
           <div class="midiPanelRow">
             <label for="dawOutputSelect" data-i18n="midiOutputLabel">MIDI выход:</label>
-            <select id="dawOutputSelect"><option>—</option></select>
+            <select id="dawOutputSelect" class="dawOutputSelect"><option>—</option></select>
           </div>
         </div>
-        <div id="midiStatusLine" data-i18n="midiStatusDefault">MIDI-клавиатура не подключена. Нажмите кнопку ниже, чтобы подключить.</div>
-        <button type="button" class="noteBtn" id="midiReconnectBtn" data-i18n="midiReconnectBtn">Подключить MIDI клавиатуру</button>
+        <div id="midiStatusLine" class="midiStatusLine" data-i18n="midiStatusDefault">MIDI-клавиатура не подключена. Нажмите кнопку ниже, чтобы подключить.</div>
+        <button type="button" class="noteBtn midiReconnectBtn" id="midiReconnectBtn" data-i18n="midiReconnectBtn">Подключить MIDI клавиатуру</button>
 
         <div class="dawOutTitle" data-i18n="dawOutTitle">Сыграть аккорд в DAW (при нажатии на ячейку аккорда):</div>
         <div class="dawOutBtnRow">
@@ -1844,12 +1925,10 @@
           <label for="dawVelocityInput">Velocity:</label>
           <input type="text" id="dawVelocityInput" inputmode="numeric" value="100">
         </div>
-        <div class="dawOutFormatBlock">
+        <div class="dawOutFormatBlock noteNamingSwitchRow" id="dawVelocityFormatSwitchRow">
           <div class="dawOutTitle" data-i18n="dawFormatTitle">Формат выхода:</div>
-          <div class="noteNamingSwitchRow" id="dawVelocityFormatSwitchRow">
-            <button type="button" class="noteNamingBtn active" id="dawFormatMidi1Btn" data-format="127">midi 1 (1-127)</button>
-            <button type="button" class="noteNamingBtn" id="dawFormatMidi2Btn" data-format="65536">midi 2(1-65536)</button>
-          </div>
+          <button type="button" class="noteNamingBtn active" id="dawFormatMidi1Btn" data-format="127">midi 1 (1-127)</button>
+          <button type="button" class="noteNamingBtn" id="dawFormatMidi2Btn" data-format="65536">midi 2(1-65536)</button>
         </div>
 
         <label class="dawOutFieldRow dawSplitToggleRow" for="dawSplitChannelsCheckbox">
@@ -1877,6 +1956,29 @@ const CENTER_NOTE_CONFIG = {
   color: 'var(--app-text-color)',
   fontFamily: "'PT Sans Bold Embedded'",
   verticalOffset: 0.07
+};
+
+/* =========================================================
+   НАСТРОЙКИ подписи лада под нотой в центре круга (Практика 3:
+   Аккорды/Лады). Показывается только когда выбран лад (а не тип
+   аккорда) — см. updateL3CenterModeLabel() ниже. Название берётся
+   прямо из текста кнопки лада (#level3Mode...Btn), поэтому всегда
+   совпадает с подписью на кнопке — но размер шрифта ЗАДАЁТСЯ ТУТ,
+   отдельно от кнопки (fontSize ниже), а не берётся из неё. Если
+   строка не помещается в круг (см. maxWidth), используется
+   сокращённый вариант из CENTER_MODE_LABEL_SHORT (сейчас нужен
+   только для "Миксолидийский"). */
+const CENTER_MODE_LABEL_CONFIG = {
+  fontSize: 20,          // размер шрифта названия лада (было 15, +30%)
+  color: 'var(--app-text-color)',
+  fontFamily: "'PT Sans Bold Embedded'",
+  gapBelowNote: 7,      // РАССТОЯНИЕ (в пикселях) между нотой и ладом —
+                          // увеличивайте/уменьшайте это число, чтобы
+                          // раздвинуть/сблизить ноту и подпись лада
+  maxWidth: 160          // максимальная ширина строки, чтобы не заезжать на круг
+};
+const CENTER_MODE_LABEL_SHORT = {
+  mixolydian: 'Миксолид.'
 };
 /* ========================================================= */
 
@@ -2220,6 +2322,26 @@ const centerText = el('text', {
 });
 svg.appendChild(centerText);
 
+// Подпись лада под нотой в центре круга (см. CENTER_MODE_LABEL_CONFIG выше
+// и updateL3CenterModeLabel() ниже, определённую рядом с pickNewChordL3/
+// pickNewModeL3). Пустая по умолчанию — заполняется только когда в
+// Практике 3 выбран лад, а не тип аккорда.
+// Позиция по вертикали считается в пикселях (не в em), чтобы
+// CENTER_MODE_LABEL_CONFIG.gapBelowNote было буквальным расстоянием между
+// нотой и ладом: центр ноты (CY) + половина высоты ноты + зазор +
+// половина высоты подписи лада.
+const CENTER_MODE_LABEL_Y = CY
+  + CENTER_NOTE_CONFIG.fontSize / 2
+  + CENTER_MODE_LABEL_CONFIG.gapBelowNote
+  + CENTER_MODE_LABEL_CONFIG.fontSize / 2;
+const centerModeLabelText = el('text', {
+  x:CX, y:CENTER_MODE_LABEL_Y, id:'centerModeLabel',
+  'font-size': CENTER_MODE_LABEL_CONFIG.fontSize,
+  fill: CENTER_MODE_LABEL_CONFIG.color,
+  'font-family': CENTER_MODE_LABEL_CONFIG.fontFamily
+});
+svg.appendChild(centerModeLabelText);
+
 let current = null;
 
 const SELECTED_NOTES_KEY = 'circleSelectedNotes';
@@ -2346,6 +2468,12 @@ function flashWedge(ringName, index, color, duration){
 
 function onWedgeClick(e){
   if(practiceLevel === 2){
+    // Режим "На MIDI/ПК клавиатуре" (уровень 2): реальный клик мышью
+    // (e.isTrusted === true) не должен отвечать на вопрос. Но клавиши
+    // ПК/MIDI отвечают через тот же клик — они шлют его программно
+    // (clickWedgeByRing -> dispatchEvent(new Event('click'))), такое
+    // событие НЕ trusted, поэтому его по-прежнему обрабатываем.
+    if(e.isTrusted) return;
     onWedgeClickLevel2New(e);
     return;
   }
@@ -3347,7 +3475,7 @@ function computeTrainPianoNotes(){
       prevPcM = p.pc;
       // Цвет ладовых нот на клавиатуре — тот же var(--purple), что и
       // подсветка лада на круге (см. highlightModeForTonic() выше).
-      notesMode.push({ letter:p.letter, offset:p.offset, pc:p.pc, rank:rankM, degree:(i===0?'root':'second'), color:(i===0?'var(--green)':'rgba(121,237,255,0.5)') });
+      notesMode.push({ letter:p.letter, offset:p.offset, pc:p.pc, rank:rankM, degree:(i===0?'root':'second'), color:(i===0?'var(--green)':'rgba(59,109,145,0.9)') });
     });
     return notesMode;
   }
@@ -3429,14 +3557,17 @@ function renderTrainPiano(notes){
   if(!notes || !notes.length) return;
 
   // Для ладов (trainModeType задан) стрелки на клавиатуре-подсказке не
-  // рисуем — только подсвеченные клавиши гаммы, поэтому верхнюю зону
-  // под стрелки не резервируем.
+  // рисуем — только подсвеченные клавиши гаммы. Зону под стрелки при
+  // этом всё равно РЕЗЕРВИРУЕМ (не рисуем в ней ничего), чтобы высота
+  // SVG была одинаковой и для аккорда, и для лада — иначе клавиатура,
+  // центрированная через translateY(-50%), визуально «прыгает» при
+  // переключении между аккордом и ладом.
   const showArrows = !trainModeType;
 
   const maxRank = notes.reduce((m,n)=>Math.max(m,n.rank), 0);
   const layout = buildTrainPianoLayout(maxRank+1);
   const width = TRAIN_PIANO_MARGIN_X*2 + layout.totalWhite*TRAIN_PIANO_WHITE_W;
-  const arrowZoneH = showArrows ? TRAIN_PIANO_ARROW_ZONE_H : 0;
+  const arrowZoneH = TRAIN_PIANO_ARROW_ZONE_H;
   const keysTopY = arrowZoneH;
   const height = arrowZoneH + TRAIN_PIANO_WHITE_H;
   svg.setAttribute('width', width);
@@ -3600,7 +3731,7 @@ function computeL3PianoNotes(){
       prevPcM = p.pc;
       // Цвет ладовых нот на клавиатуре — тот же var(--purple), что и
       // подсветка лада на круге (см. highlightModeForTonic() выше).
-      notesMode.push({ letter:p.letter, offset:p.offset, pc:p.pc, rank:rankM, degree:(i===0?'root':'second'), color:(i===0?'var(--green)':'rgba(121,237,255,0.5)') });
+      notesMode.push({ letter:p.letter, offset:p.offset, pc:p.pc, rank:rankM, degree:(i===0?'root':'second'), color:(i===0?'var(--green)':'rgba(59,109,145,0.9)') });
     });
     return notesMode;
   }
@@ -3662,13 +3793,16 @@ function renderL3Piano(notes, foundPcSet){
 
   // Лад выбран (currentL3.modeType) — как и в "Обучении" (см.
   // renderTrainPiano/showArrows выше), стрелки к найденным ступеням на
-  // клавиатуре-подсказке не рисуем и не резервируем под них верхнюю зону.
+  // клавиатуре-подсказке не рисуем, НО зону под них всё равно
+  // резервируем — та же высота SVG для аккорда и для лада, иначе
+  // клавиатура (центрирована через translateY(-50%)) прыгает при
+  // переключении между аккордом и ладом.
   const showArrows = !(currentL3 && currentL3.modeType);
 
   const maxRank = notes.reduce((m,n)=>Math.max(m,n.rank), 0);
   const layout = buildTrainPianoLayout(maxRank+1);
   const width = TRAIN_PIANO_MARGIN_X*2 + layout.totalWhite*TRAIN_PIANO_WHITE_W;
-  const arrowZoneH = showArrows ? TRAIN_PIANO_ARROW_ZONE_H : 0;
+  const arrowZoneH = TRAIN_PIANO_ARROW_ZONE_H;
   const keysTopY = arrowZoneH;
   const height = arrowZoneH + TRAIN_PIANO_WHITE_H;
   svg.setAttribute('width', width);
@@ -5586,6 +5720,54 @@ function resolveColor(ref){
   return `var(${entry.varName})`;
 }
 
+/* ===== Приведение цвета ячейки круга к виду "как на клавиатуре" =====
+   Цвета нот (--blue/--yellow/... и т.п.) полупрозрачны (alpha ~0.5), и
+   на клавиатуре-подсказке справа они рисуются прямо поверх белой клавиши
+   (--piano-white-key) — БЕЗ дополнительного затемнения. На круге же те
+   же самые цвета раньше рисовались через fill-opacity:0.5 ПОВЕРХ этого
+   уже полупрозрачного цвета (двойное затухание, итоговая непрозрачность
+   ~0.25) и поверх другого фона (--ring-major/--ring-minor/--ring-note),
+   поэтому визуально цвет на круге не совпадал с цветом на клавиатуре,
+   даже когда это "один и тот же" CSS-цвет по названию/номеру.
+   keyBlendColor() решает это иначе: реально смешивает (через canvas)
+   цвет ноты с фоном белой клавиши — точно так же, как это увидит
+   пользователь на клавиатуре — и возвращает получившийся ИТОГОВЫЙ
+   непрозрачный цвет. Этот непрозрачный цвет затем красится на ячейку
+   круга СПЛОШНОЙ заливкой (fill-opacity не задаётся/=1) — раз он уже
+   непрозрачен, фон самой ячейки круга (тёмный/светлый, разный у колец)
+   больше ни на что не влияет, и итоговый пиксель на круге совпадает с
+   итоговым пикселем на клавиатуре в любой теме. Результат кэшируется по
+   паре (строка цвета, тема), кэш сбрасывается при смене темы. */
+const _keyBlendCache = new Map();
+let _keyBlendThemeTag = null;
+const _keyBlendCanvas = document.createElement('canvas');
+_keyBlendCanvas.width = 1; _keyBlendCanvas.height = 1;
+const _keyBlendCtx = _keyBlendCanvas.getContext('2d', { willReadFrequently:true });
+function keyBlendColor(colorCss){
+  const themeTag = document.body.classList.contains('theme-light') ? 'light' : 'dark';
+  if(themeTag !== _keyBlendThemeTag){ _keyBlendCache.clear(); _keyBlendThemeTag = themeTag; }
+  const cacheKey = colorCss;
+  if(_keyBlendCache.has(cacheKey)) return _keyBlendCache.get(cacheKey);
+  const bg = getComputedStyle(document.body).getPropertyValue('--piano-white-key').trim() || '#6b6b6b';
+  // canvas.fillStyle не умеет сам резолвить var(--x) (канвас не участвует
+  // в каскаде вне DOM) — резолвим переменную вручную через computed style.
+  let resolvedColor = colorCss.trim();
+  const varMatch = resolvedColor.match(/^var\((--[a-zA-Z0-9-]+)\)$/);
+  if(varMatch){
+    resolvedColor = getComputedStyle(document.body).getPropertyValue(varMatch[1]).trim() || resolvedColor;
+  }
+  _keyBlendCtx.clearRect(0,0,1,1);
+  _keyBlendCtx.globalAlpha = 1;
+  _keyBlendCtx.fillStyle = bg;
+  _keyBlendCtx.fillRect(0,0,1,1);
+  _keyBlendCtx.fillStyle = resolvedColor;
+  _keyBlendCtx.fillRect(0,0,1,1);
+  const d = _keyBlendCtx.getImageData(0,0,1,1).data;
+  const result = `rgb(${d[0]},${d[1]},${d[2]})`;
+  _keyBlendCache.set(cacheKey, result);
+  return result;
+}
+
 /* ===== Подсветка ступеней трезвучия на круге обучения =====
    Вместо стрелок — просто красим всю ячейку нужной ступени, с
    прозрачностью 50%. degreeSteps — смещение по кругу квинт (в шагах
@@ -5764,16 +5946,16 @@ function pickNewChordL3(){
     if(majorOnly.length > 0) pool = majorOnly;
   }
 
-  const selCount = new Set(pool.map(c => rootOf(c.name))).size;
-  let excludeCount = 0;
-  if(selCount >= 12) excludeCount = 3;
-  else if(selCount >= 8) excludeCount = 2;
-  else if(selCount >= 4) excludeCount = 1;
-
-  if(excludeCount > 0 && rootHistoryL3.length > 0){
-    const excludeRoots = new Set(rootHistoryL3.slice(-excludeCount));
-    const filtered = pool.filter(c => !excludeRoots.has(rootOf(c.name)));
-    if(filtered.length > 0) pool = filtered;
+  // Порог здесь считается не по количеству выбранных нот на круге, а
+  // по количеству выбранных вариантов в меню аккорды/лады — каждый
+  // выбранный тип аккорда и каждый выбранный лад (level3ChordTypes +
+  // level3ModeTypes) считается за один вариант. При достижении порога
+  // (4/8/12 и более вариантов) из следующего выбора исключается только
+  // нынешний аккорд/лад — без истории из нескольких предыдущих, в
+  // отличие от меню нот.
+  const variantCountL3 = level3ChordTypes.size + level3ModeTypes.size;
+  if(variantCountL3 >= 4 && currentL3 && pool.length > 1){
+    pool = pool.filter(c => !(c.ring === currentL3.ring && c.index === currentL3.index));
   } else if(currentL3 && pool.length > 1){
     pool = pool.filter(c => !(c.ring === currentL3.ring && c.index === currentL3.index));
   }
@@ -5804,6 +5986,7 @@ function pickNewChordL3(){
     found: new Set()
   };
   if(practiceLevel === 3) centerText.textContent = noteDisplay(currentL3.name);
+  updateL3CenterModeLabel();
   renderLevel3Hint();
   if(typeof updateL3Piano === 'function') updateL3Piano();
 
@@ -5829,6 +6012,31 @@ const LEVEL3_MODE_BTN_IDS = {
   dorian:'level3ModeDorianBtn', minor:'level3ModeMinorBtn', phrygian:'level3ModePhrygianBtn',
   locrian:'level3ModeLocrianBtn'
 };
+
+// Подпись лада под нотой в центре круга (см. CENTER_MODE_LABEL_CONFIG /
+// centerModeLabelText выше). Если выбран лад (currentL3.modeType) — под
+// нотой появляется его название (берётся из текста кнопки лада, чтобы
+// всегда совпадать с подписью в списке). Если строка не помещается в
+// круг — подставляется сокращённый вариант из CENTER_MODE_LABEL_SHORT.
+// Если выбран тип аккорда (не лад) — подпись пустая, в центре остаётся
+// только аккорд, как и раньше.
+function updateL3CenterModeLabel(){
+  if(!currentL3 || !currentL3.modeType){
+    centerModeLabelText.textContent = '';
+    return;
+  }
+  const btn = document.getElementById(LEVEL3_MODE_BTN_IDS[currentL3.modeType]);
+  const fullLabel = btn ? btn.textContent.trim() : '';
+  centerModeLabelText.textContent = fullLabel;
+  if(fullLabel && typeof centerModeLabelText.getComputedTextLength === 'function'){
+    try{
+      if(centerModeLabelText.getComputedTextLength() > CENTER_MODE_LABEL_CONFIG.maxWidth){
+        const shortLabel = CENTER_MODE_LABEL_SHORT[currentL3.modeType];
+        if(shortLabel) centerModeLabelText.textContent = shortLabel;
+      }
+    }catch(e){ /* getComputedTextLength недоступен (напр. элемент не в DOM) — оставляем полное название */ }
+  }
+}
 
 // то же самое, что getChordNoteLettersL3, но для лада — считает буквы по
 // тем же фиксированным позициям круга (полутона от тоники % 12), что и
@@ -5881,16 +6089,13 @@ function pickNewModeL3(){
   const majorOnly = pool.filter(c => c.ring === 'major');
   if(majorOnly.length > 0) pool = majorOnly;
 
-  const selCount = new Set(pool.map(c => rootOf(c.name))).size;
-  let excludeCount = 0;
-  if(selCount >= 12) excludeCount = 3;
-  else if(selCount >= 8) excludeCount = 2;
-  else if(selCount >= 4) excludeCount = 1;
-
-  if(excludeCount > 0 && rootHistoryL3.length > 0){
-    const excludeRoots = new Set(rootHistoryL3.slice(-excludeCount));
-    const filtered = pool.filter(c => !excludeRoots.has(rootOf(c.name)));
-    if(filtered.length > 0) pool = filtered;
+  // Тот же принцип, что и в pickNewChordL3: порог считается по
+  // количеству выбранных вариантов в меню аккорды/лады (типы аккордов +
+  // лады), а не по количеству выбранных нот; исключается только
+  // нынешний лад, без истории предыдущих.
+  const variantCountL3 = level3ChordTypes.size + level3ModeTypes.size;
+  if(variantCountL3 >= 4 && currentL3 && pool.length > 1){
+    pool = pool.filter(c => !(c.ring === currentL3.ring && c.index === currentL3.index));
   } else if(currentL3 && pool.length > 1){
     pool = pool.filter(c => !(c.ring === currentL3.ring && c.index === currentL3.index));
   }
@@ -5918,6 +6123,7 @@ function pickNewModeL3(){
     found: new Set()
   };
   if(practiceLevel === 3) centerText.textContent = noteDisplay(currentL3.name);
+  updateL3CenterModeLabel();
   renderLevel3Hint();
   if(typeof updateL3Piano === 'function') updateL3Piano();
 
@@ -6430,7 +6636,7 @@ function highlightTriadForTonic(ring, tonicIndex){
     const targetIndex = ((tonicIndex + cfg.degreeSteps) % 12 + 12) % 12;
     const item = trainWedgeMap[(cfg.ring||'major')+'-'+targetIndex];
     if(item){
-      setWedgeInstant(item, cfg.color, TRIAD_DEGREE_HIGHLIGHT_OPACITY);
+      setWedgeInstant(item, keyBlendColor(cfg.color), null);
       highlightedTrainWedges.push(item);
     }
   });
@@ -6456,12 +6662,12 @@ function highlightModeForTonic(ring, tonicIndex){
   // не-тоникальных нот лада используется тот же 'var(--purple)').
   // Чтобы поменять на другой цвет — замените 'var(--purple)' в обоих
   // циклах ниже на нужную CSS-переменную (--yellow/--blue/--cyan/...,
-  // см. их объявления в начале файла в блоках :root и [data-theme]).
+  // см. их объявления в начале файла в блоках :root и [data-theme]). 121,237,255
   for(let k = 1; k <= cfg.L; k++){
     const idx = ((tonicIndex - k) % 12 + 12) % 12;
     const item = trainWedgeMap[ring + '-' + idx];
     if(item){
-      setWedgeInstant(item, 'rgba(121,237,255,0.3)', 1);
+      setWedgeInstant(item, keyBlendColor('rgba(59,109,145,0.8)'), null);
       highlightedTrainWedges.push(item);
     }
   }
@@ -6469,7 +6675,7 @@ function highlightModeForTonic(ring, tonicIndex){
     const idx = ((tonicIndex + k) % 12 + 12) % 12;
     const item = trainWedgeMap[ring + '-' + idx];
     if(item){
-      setWedgeInstant(item, 'rgba(121,237,255,0.3)', 1);
+      setWedgeInstant(item, keyBlendColor('rgba(59,109,145,0.8)'), null);
       highlightedTrainWedges.push(item);
     }
   }
@@ -6525,7 +6731,7 @@ function highlightSusForTonic(chordType, ring, tonicIndex){
     const useRing = cfg.ring || defaultRing;
     const item = trainWedgeMap[useRing+'-'+targetIndex];
     if(item){
-      setWedgeInstant(item, cfg.color, TRIAD_DEGREE_HIGHLIGHT_OPACITY);
+      setWedgeInstant(item, keyBlendColor(cfg.color), null);
       highlightedTrainWedges.push(item);
     }
   });
@@ -6542,7 +6748,7 @@ function highlightExtendedLetterCells(chordType, ring, tonicIndex){
   const paint = (useRing, idx, cfgKey) => {
     const item = trainWedgeMap[useRing + '-' + idx];
     if(item){
-      setWedgeInstant(item, arrowsCfg[cfgKey].color, TRIAD_DEGREE_HIGHLIGHT_OPACITY);
+      setWedgeInstant(item, keyBlendColor(arrowsCfg[cfgKey].color), null);
       highlightedTrainWedges.push(item);
     }
   };
@@ -7195,6 +7401,21 @@ function applyTrainVariantLockForMode(){
   [trainV1ArrowsBtn, trainV1ColorBtn, trainV2ArrowsBtn, trainV2ColorBtn].forEach(btn=>{
     if(btn) btn.classList.toggle('disabled', locked);
   });
+  if(locked){
+    // Пока выбран лад, эти 4 кнопки ни на что не влияют (см. комментарий
+    // выше) — сняв с них 'active', делаем так, чтобы та кнопка, что была
+    // активна ДО выбора лада, не выделялась цветом среди остальных
+    // задизейбленных кнопок (иначе она выглядела иначе: активный цвет +
+    // затемнение вместо обычного серого затемнения, как у остальных).
+    [trainV1ArrowsBtn, trainV1ColorBtn, trainV2ArrowsBtn, trainV2ColorBtn].forEach(btn=>{
+      if(btn) btn.classList.remove('active');
+    });
+  } else {
+    // Лад снят — возвращаем 'active' на ту кнопку, что соответствует
+    // текущим trainVariant/trainDisplayMode (значения не менялись, пока
+    // был выбран лад, см. setTrainModeType/setTrainVariantStyle).
+    applyTrainDisplayMode();
+  }
 }
 
 function setTrainModeType(modeId){
@@ -7293,6 +7514,7 @@ let practiceLevel = (savedLevelRaw === '2' || savedLevelRaw === '3') ? parseInt(
 const level1Panel = document.getElementById('level1Panel');
 const level2Panel = document.getElementById('level2Panel');
 const level3Panel = document.getElementById('level3Panel');
+const notesPanel = document.getElementById('notesPanel');
 const level2MajorMinorBtn = document.getElementById('level2MajorMinorBtn');
 
 // пока единственная кнопка в группе типа аккорда для Уровня 3 —
@@ -7303,6 +7525,13 @@ function applyPracticeLevel(){
   level1Panel.style.display = practiceLevel === 1 ? 'flex' : 'none';
   level2Panel.style.display = practiceLevel === 2 ? 'flex' : 'none';
   level3Panel.style.display = practiceLevel === 3 ? 'flex' : 'none';
+  // #notesPanel (шапка "Отвечать с помощью" + кнопки + копия MIDI-
+  // настроек) относится только к вкладке "Ноты" (уровни 1 и 2) — раньше
+  // не скрывался явно и оставался виден поверх #level3Panel на вкладке
+  // "Аккорды/Лады", из-за чего там было видно сразу ДВЕ копии
+  // MIDI-панели (эта — сверху, и #l3MidiPanel внутри level3Panel —
+  // снизу). Теперь скрываем целиком на уровне 3.
+  notesPanel.style.display = practiceLevel === 3 ? 'none' : 'flex';
   localStorage.setItem(LEVEL_KEY, String(practiceLevel));
 
   if(practiceLevel === 1 && !current) pickNewChord();
@@ -7326,6 +7555,7 @@ function applyPracticeLevel(){
   } else {
     centerText.textContent = '';
   }
+  if(typeof updateL3CenterModeLabel === 'function') updateL3CenterModeLabel();
 }
 
 /* =========================================================
@@ -7397,7 +7627,7 @@ function syncTrainingPanelHeight(){
   // обращение к нему через TDZ кинуло бы ReferenceError, поэтому берём
   // элемент напрямую по id, а не через внешнюю переменную.
   const sidePanelElForMeasure = document.getElementById('sidePanel');
-  const wrapEls = [circleWrap, trainCircleWrap, sidePanelElForMeasure].filter(Boolean);
+  const wrapEls = [circleWrap, trainCircleWrap, sidePanelElForMeasure, notesPanel].filter(Boolean);
   const prevWrapStyles = wrapEls.map(el => ({
     display: el.style.display,
     visibility: el.style.visibility,
@@ -8353,6 +8583,22 @@ function onMidiMessage(event){
   }
 }
 
+/* =========================================================
+   MIDI-настройки продублированы в трёх местах интерфейса — в
+   "Обучении" (#midiPanel), во вкладке "Ноты" (#notesMidiPanel) и во
+   вкладке "Аккорды/Лады" (#l3MidiPanel). Разметка каждой копии
+   использует одни и те же ОБЩИЕ классы (.midiInputCountSelect,
+   .midiInputSelectsContainer, .midiInputPortSelect, .dawOutputSelect,
+   .midiStatusLine, .midiReconnectBtn) — вместо одного элемента по id
+   весь код ниже работает через document.querySelectorAll(...) и
+   применяет изменения СРАЗУ ко всем копиям, так что выбор/подключение
+   MIDI-устройства в любой из трёх панелей мгновенно отражается в
+   двух других. */
+function allMidiInputCountSelects(){ return document.querySelectorAll('.midiInputCountSelect'); }
+function allMidiInputContainers(){ return document.querySelectorAll('.midiInputSelectsContainer'); }
+function allMidiStatusLines(){ return document.querySelectorAll('.midiStatusLine'); }
+function allMidiReconnectBtns(){ return document.querySelectorAll('.midiReconnectBtn'); }
+
 function bindAllMidiInputs(){
   if(!midiAccess) return;
   // Раньше слушались ВСЕ входы сразу, независимо от выбора в
@@ -8364,9 +8610,10 @@ function bindAllMidiInputs(){
   // одновременно. Теперь слушаем ТОЛЬКО те порты, что реально выбраны
   // в строке(-ах) "MIDI вход" — остальные явно отключаем (onmidimessage
   // = null), чтобы дублирующий/служебный порт не мог ничего прислать.
-  const selects = midiInputSelectsContainer
-    ? midiInputSelectsContainer.querySelectorAll('.midiInputPortSelect')
-    : [];
+  // Собираем выбор со ВСЕХ копий панели сразу (они синхронизированы
+  // между собой, см. propagateMidiInputSelection ниже, но на всякий
+  // случай объединяем — так надёжнее).
+  const selects = document.querySelectorAll('.midiInputPortSelect');
   const selectedIds = new Set(
     [...selects].map(sel => sel.value).filter(v => v)
   );
@@ -8378,7 +8625,8 @@ function bindAllMidiInputs(){
 // Сколько строк выбора MIDI-входа показывать (1..7). Значение — только
 // отображение/информация: сигналы в любом случае принимаются СРАЗУ со
 // ВСЕХ подключённых входов (см. bindAllMidiInputs), независимо от того,
-// сколько строк выбора отрисовано и что в них выбрано.
+// сколько строк выбора отрисовано и что в них выбрано. Одно значение —
+// общее для всех трёх копий панели.
 const MIDI_INPUT_COUNT_KEY = 'circleOfFifths_midiInputCount_v1';
 function loadMidiInputCount(){
   let saved = null;
@@ -8391,82 +8639,112 @@ function saveMidiInputCount(n){
 }
 let midiInputRowCount = loadMidiInputCount();
 
-const midiInputCountSelect = document.getElementById('midiInputCountSelect');
-const midiInputSelectsContainer = document.getElementById('midiInputSelectsContainer');
-midiInputCountSelect.value = String(midiInputRowCount);
+allMidiInputCountSelects().forEach(sel => { sel.value = String(midiInputRowCount); });
 
 function ensureMidiInputRows(count){
-  const rows = midiInputSelectsContainer.querySelectorAll('.midiPanelRow');
-  // первая строка/select уже есть в разметке (id="midiInputSelect"),
-  // остальные создаём/удаляем динамически
-  for(let i = rows.length; i < count; i++){
-    const row = document.createElement('div');
-    row.className = 'midiPanelRow';
-    const sel = document.createElement('select');
-    sel.className = 'midiInputPortSelect';
-    sel.innerHTML = '<option>—</option>';
-    row.appendChild(sel);
-    midiInputSelectsContainer.appendChild(row);
-  }
-  for(let i = rows.length - 1; i >= count; i--){
-    rows[i].remove();
-  }
+  allMidiInputContainers().forEach(container => {
+    const rows = container.querySelectorAll('.midiPanelRow');
+    // первая строка/select уже есть в разметке, остальные создаём/
+    // удаляем динамически — в каждой из трёх копий отдельно.
+    for(let i = rows.length; i < count; i++){
+      const row = document.createElement('div');
+      row.className = 'midiPanelRow';
+      const sel = document.createElement('select');
+      sel.className = 'midiInputPortSelect';
+      sel.innerHTML = '<option>—</option>';
+      row.appendChild(sel);
+      container.appendChild(row);
+    }
+    for(let i = rows.length - 1; i >= count; i--){
+      rows[i].remove();
+    }
+  });
 }
 
-midiInputCountSelect.addEventListener('change', ()=>{
-  midiInputRowCount = parseInt(midiInputCountSelect.value, 10) || 1;
-  saveMidiInputCount(midiInputRowCount);
-  ensureMidiInputRows(midiInputRowCount);
-  populateMidiSelect();
+allMidiInputCountSelects().forEach(sel => {
+  sel.addEventListener('change', ()=>{
+    midiInputRowCount = parseInt(sel.value, 10) || 1;
+    saveMidiInputCount(midiInputRowCount);
+    // синхронизируем значение во всех остальных копиях счётчика
+    allMidiInputCountSelects().forEach(other => { other.value = String(midiInputRowCount); });
+    ensureMidiInputRows(midiInputRowCount);
+    populateMidiSelect();
+  });
 });
 
 function populateMidiSelect(){
   ensureMidiInputRows(midiInputRowCount);
-  const selects = midiInputSelectsContainer.querySelectorAll('.midiInputPortSelect');
-  const statusLine = document.getElementById('midiStatusLine');
+  const statusLines = allMidiStatusLines();
   const inputs = [...midiAccess.inputs.values()];
-  selects.forEach((sel, idx) => {
-    sel.innerHTML = '';
+  // Текущий выбор (по индексу строки) берём из ПЕРВОЙ копии панели,
+  // где он уже стоит (например, если panel только что синхронизирована
+  // после ручного выбора) — иначе используем вход по порядку.
+  const firstContainer = document.querySelector('.midiInputSelectsContainer');
+  const existingSelects = firstContainer ? firstContainer.querySelectorAll('.midiInputPortSelect') : [];
+  const desiredIds = [...existingSelects].map(sel => sel.value).filter(v => v);
+
+  allMidiInputContainers().forEach(container => {
+    const selects = container.querySelectorAll('.midiInputPortSelect');
+    selects.forEach((sel, idx) => {
+      sel.innerHTML = '';
+      if(inputs.length === 0){
+        sel.innerHTML = '<option>Нет входов</option>';
+      } else {
+        inputs.forEach(inp => {
+          const opt = document.createElement('option');
+          opt.value = inp.id;
+          opt.textContent = inp.name + (inp.state !== 'connected' ? ' (не подключено)' : '');
+          sel.appendChild(opt);
+        });
+        // если для этой строки есть сохранённый выбор (совпадающий с
+        // одним из текущих входов) — используем его, иначе вход по
+        // порядку (просто для наглядности, на приём сигналов не
+        // влияет — см. bindAllMidiInputs)
+        const desired = desiredIds[idx] && inputs.some(i => i.id === desiredIds[idx])
+          ? desiredIds[idx]
+          : (inputs[idx] ? inputs[idx].id : null);
+        if(desired) sel.value = desired;
+      }
+    });
+  });
+  statusLines.forEach(statusLine => {
     if(inputs.length === 0){
-      sel.innerHTML = '<option>Нет входов</option>';
+      statusLine.textContent = 'MIDI входы не найдены';
+      statusLine.classList.add('midiStatusError');
     } else {
-      inputs.forEach(inp => {
-        const opt = document.createElement('option');
-        opt.value = inp.id;
-        opt.textContent = inp.name + (inp.state !== 'connected' ? ' (не подключено)' : '');
-        sel.appendChild(opt);
-      });
-      // если для этой строки есть отдельный вход по порядку — выбираем
-      // его по умолчанию (просто для наглядности, на приём сигналов не
-      // влияет — см. bindAllMidiInputs)
-      if(inputs[idx]) sel.value = inputs[idx].id;
+      statusLine.textContent = `Входы: ${inputs.map(i => i.name).join(', ')}`;
+      statusLine.classList.remove('midiStatusError');
     }
   });
-  if(inputs.length === 0){
-    statusLine.textContent = 'MIDI входы не найдены';
-    statusLine.classList.add('midiStatusError');
-  } else {
-    statusLine.textContent = `Входы: ${inputs.map(i => i.name).join(', ')}`;
-    statusLine.classList.remove('midiStatusError');
-  }
   // слушаем ТОЛЬКО выбранные в строках порты (см. bindAllMidiInputs)
   bindAllMidiInputs();
 }
 
-// Пере-привязка входов при ручном изменении выбора в любой из строк
-// "MIDI вход" (делегирование, чтобы работало и для строк, добавленных
+// При ручном изменении выбора в любой из строк "MIDI вход" (в любой из
+// трёх копий панели) — переносим то же значение в строку с тем же
+// индексом во ВСЕХ остальных копиях, чтобы выбор всегда совпадал везде
+// (делегирование на document, чтобы работало и для строк, добавленных
 // позже динамически при увеличении количества входов).
-midiInputSelectsContainer.addEventListener('change', (e)=>{
-  if(e.target && e.target.classList.contains('midiInputPortSelect')){
-    bindAllMidiInputs();
+document.addEventListener('change', (e)=>{
+  if(!(e.target && e.target.classList.contains('midiInputPortSelect'))) return;
+  const container = e.target.closest('.midiInputSelectsContainer');
+  if(!container) { bindAllMidiInputs(); return; }
+  const rows = [...container.querySelectorAll('.midiPanelRow')];
+  const idx = rows.indexOf(e.target.closest('.midiPanelRow'));
+  if(idx !== -1){
+    allMidiInputContainers().forEach(other => {
+      if(other === container) return;
+      const otherSelects = other.querySelectorAll('.midiInputPortSelect');
+      if(otherSelects[idx]) otherSelects[idx].value = e.target.value;
+    });
   }
+  bindAllMidiInputs();
 });
 
 function requestMidiAccess(){
-  const statusLine = document.getElementById('midiStatusLine');
+  const statusLines = allMidiStatusLines();
   if(!navigator.requestMIDIAccess){
-    statusLine.textContent = 'Браузер не поддерживает Web MIDI (нужен Chrome/Edge)';
-    statusLine.classList.add('midiStatusError');
+    statusLines.forEach(s => { s.textContent = 'Браузер не поддерживает Web MIDI (нужен Chrome/Edge)'; s.classList.add('midiStatusError'); });
     return;
   }
   navigator.requestMIDIAccess({ sysex: false })
@@ -8477,9 +8755,9 @@ function requestMidiAccess(){
       access.onstatechange = () => { populateMidiSelect(); populateDawOutputSelect(); };
     })
     .catch(err => {
-      statusLine.textContent = 'Ошибка доступа к MIDI: ' + err +
+      const msg = 'Ошибка доступа к MIDI: ' + err +
         '. Если файл открыт напрямую (file://), запустите его через локальный сервер (http://localhost).';
-      statusLine.classList.add('midiStatusError');
+      allMidiStatusLines().forEach(s => { s.textContent = msg; s.classList.add('midiStatusError'); });
     });
 }
 
@@ -8489,7 +8767,8 @@ function requestMidiAccess(){
    навешивает onmidimessage на все порты (переоткрывает их). Если же
    доступ ещё ни разу не был получен (midiAccess === null, например
    requestMIDIAccess() ранее не поддерживался/провалился), тогда уже
-   пробуем запросить доступ заново. */
+   пробуем запросить доступ заново. Кнопка продублирована в трёх местах
+   (см. .midiReconnectBtn) — любая из них делает то же самое. */
 function refreshMidiInputs(){
   if(midiAccess){
     populateMidiSelect();
@@ -8506,7 +8785,7 @@ function refreshMidiInputs(){
    только по нажатию на кнопку "Подключить MIDI клавиатуру" (см. ниже),
    которая сама вызывает requestMidiAccess() (через refreshMidiInputs). */
 
-document.getElementById('midiReconnectBtn').addEventListener('click', refreshMidiInputs);
+allMidiReconnectBtns().forEach(btn => btn.addEventListener('click', refreshMidiInputs));
 
 /* =========================================================
    "Сыграть в DAW" — отправка аккорда обучения как MIDI-нот на
@@ -8619,36 +8898,48 @@ function computeDawVelocityByte(){
 
 let dawMidiOutput = null; // выбранный MIDIOutput
 
+// MIDI-выход тоже продублирован в трёх копиях панели (.dawOutputSelect,
+// см. #midiPanel/#notesMidiPanel/#l3MidiPanel) — заполняем и
+// синхронизируем ВСЕ разом, так же как и входы выше.
+function allDawOutputSelects(){ return document.querySelectorAll('.dawOutputSelect'); }
+
 function populateDawOutputSelect(){
-  dawOutputSelect.innerHTML = '';
+  const selects = allDawOutputSelects();
   if(!midiAccess){
-    dawOutputSelect.innerHTML = '<option value="">—</option>';
+    selects.forEach(sel => { sel.innerHTML = '<option value="">—</option>'; });
     dawMidiOutput = null;
     return;
   }
   const outputs = [...midiAccess.outputs.values()];
   if(outputs.length === 0){
-    dawOutputSelect.innerHTML = '<option value="">Нет выходов</option>';
+    selects.forEach(sel => { sel.innerHTML = '<option value="">Нет выходов</option>'; });
     dawMidiOutput = null;
     return;
   }
   let savedName = null;
   try{ savedName = localStorage.getItem(DAW_OUT_PORT_KEY); }catch(e){}
-  outputs.forEach(out => {
-    const opt = document.createElement('option');
-    opt.value = out.id;
-    opt.textContent = out.name + (out.state !== 'connected' ? ' (не подключено)' : '');
-    dawOutputSelect.appendChild(opt);
-  });
   const matchByName = savedName ? outputs.find(o => o.name === savedName) : null;
-  dawOutputSelect.value = matchByName ? matchByName.id : outputs[0].id;
-  dawMidiOutput = outputs.find(o => o.id === dawOutputSelect.value) || outputs[0];
+  const chosenId = matchByName ? matchByName.id : outputs[0].id;
+  selects.forEach(sel => {
+    sel.innerHTML = '';
+    outputs.forEach(out => {
+      const opt = document.createElement('option');
+      opt.value = out.id;
+      opt.textContent = out.name + (out.state !== 'connected' ? ' (не подключено)' : '');
+      sel.appendChild(opt);
+    });
+    sel.value = chosenId;
+  });
+  dawMidiOutput = outputs.find(o => o.id === chosenId) || outputs[0];
 }
-dawOutputSelect.addEventListener('change', ()=>{
+document.addEventListener('change', (e)=>{
+  if(!(e.target && e.target.classList.contains('dawOutputSelect'))) return;
   if(!midiAccess) return;
-  const out = [...midiAccess.outputs.values()].find(o => o.id === dawOutputSelect.value);
+  const out = [...midiAccess.outputs.values()].find(o => o.id === e.target.value);
   dawMidiOutput = out || null;
-  try{ if(out) localStorage.setItem(DAW_OUT_PORT_KEY, out.name); }catch(e){}
+  // синхронизируем выбор во всех остальных копиях
+  allDawOutputSelects().forEach(other => { if(other !== e.target) other.value = e.target.value; });
+  try{ if(out) localStorage.setItem(DAW_OUT_PORT_KEY, out.name); }catch(e2){}
 });
 
 function applyDawOutModeButtons(){

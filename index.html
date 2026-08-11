@@ -2,6 +2,7 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>Circle of Fifths</title>
 <style>
 
@@ -186,6 +187,13 @@
     overflow:hidden;
     font-family:var(--font);
     color:var(--text);
+    /* Отключаем нативные жесты браузера (pinch-zoom, двойной тап-зум,
+       оттягивание страницы) по всему приложению, чтобы 2/3/4-пальцевые
+       жесты (открытие настроек, зум круга) обрабатывались ТОЛЬКО нашим
+       JS и не перехватывались браузером как жест масштабирования
+       страницы. Внутренние элементы (например, #sidePanel), которым
+       нужен собственный скролл, переопределяют touch-action локально. */
+    touch-action:none;
   }
   /* Убираем стандартную синюю/серую подсветку тапа на мобильных
      браузерах (WebKit/Blink) — именно она давала синий многоугольник
@@ -461,7 +469,16 @@
     --mp-scale:1;
     transform:translateY(100%) scale(var(--mp-scale,1));
     transform-origin:50% 100%;
-    max-height:calc(80vh / var(--mp-scale,1));
+    /* Панель должна открываться СРАЗУ на 70% высоты экрана (а не
+       вырастать под контент и требовать докрутки до неё) — поэтому
+       задаём фиксированную height, а не только max-height. Внутри
+       панель прокручивается (overflow:auto унаследовано от базового
+       #sidePanel) до последней строки, если контента больше, чем
+       помещается в эти 70vh. Делим на --mp-scale по той же причине,
+       что и раньше (масштаб экрана компенсируется CSS-scale, поэтому
+       "физическая" высота до scale должна быть больше на 1/scale). */
+    height:calc(70vh / var(--mp-scale,1));
+    max-height:calc(70vh / var(--mp-scale,1));
     border-radius:16px 16px 0 0;
     transition:transform 0.25s ease;
     touch-action:pan-y;
@@ -7947,7 +7964,18 @@ function updateMobilePanelScale(){
 }
 updateMobilePanelScale();
 
+/* Логическое состояние "открыта/закрыта" хранится ОТДЕЛЬНО от
+   sidePanel.style.display. На мобильной раскладке display у панели
+   всегда остаётся 'flex' (видимость там управляется исключительно
+   классом .open / CSS-transform, см. ниже) — раньше isSidePanelOpen()
+   проверял именно style.display и из-за этого на мобильной раскладке
+   ВСЕГДА возвращал true, что ломало переключение (2 пальца, свайп):
+   панель либо не открывалась заново, либо казалось, что она "не
+   закрывается вообще". Теперь состояние — простая переменная. */
+let sidePanelOpenState = false;
+
 function setSidePanelOpen(open){
+  sidePanelOpenState = !!open;
   if(sidePanel.classList.contains('pinned')){
     // Закреплена сбоку от круга: показываем/скрываем саму панель по
     // тому же событию (колесо мыши / клавиша), что и в обычном режиме,
@@ -7980,7 +8008,7 @@ function setSidePanelOpen(open){
 }
 
 function isSidePanelOpen(){
-  return sidePanel.style.display !== 'none';
+  return sidePanelOpenState;
 }
 
 function toggleSidePanel(){
@@ -8176,13 +8204,22 @@ document.addEventListener('wheel', (e) => {
 const SWIPE_THRESHOLD = 40; // px, минимальное перемещение для срабатывания свайпа
 let sidePanelTouchStartY = null;
 
+/* ВАЖНО: этот свайп должен реагировать ТОЛЬКО на жест ОДНИМ пальцем.
+   Раньше touchstart брал координату e.touches[0] независимо от того,
+   сколько пальцев на экране, поэтому при 2/3/4-пальцевых жестах
+   (открытие настроек / зум круга, см. ниже) этот же обработчик мог
+   ОДНОВРЕМЕННО и параллельно засчитать "свайп" и вызвать
+   setSidePanelOpen() в противоречии с результатом мультитач-тапа —
+   из-за этого казалось, что панель "не закрывается вообще". Теперь
+   при появлении второго пальца слежение за свайпом отменяется. */
 document.addEventListener('touchstart', (e) => {
   if(!isMobile) return;
-  sidePanelTouchStartY = e.touches[0].clientY;
+  sidePanelTouchStartY = (e.touches.length === 1) ? e.touches[0].clientY : null;
 }, { passive: true });
 
 document.addEventListener('touchend', (e) => {
   if(!isMobile || sidePanelTouchStartY === null) return;
+  if(e.touches.length > 0){ sidePanelTouchStartY = null; return; } // остался ещё палец — это не одиночный свайп
   const endY = (e.changedTouches && e.changedTouches[0]) ? e.changedTouches[0].clientY : sidePanelTouchStartY;
   const dy = sidePanelTouchStartY - endY; // положительное — свайп вверх, отрицательное — вниз
   if (dy > SWIPE_THRESHOLD) {

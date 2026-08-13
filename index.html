@@ -412,9 +412,23 @@
     left:auto;
     top:50%;
     right:100%;
-    transform:translateY(-50%);
+    transform:translate(-24px,-50%);
     margin-right:32px;
     max-height:90vh;
+    opacity:0;
+    visibility:hidden;
+    pointer-events:none;
+    transition:opacity 0.3s ease, transform 0.3s ease, visibility 0.3s ease;
+  }
+  /* Класс pin-visible добавляется/убирается в JS (setSidePanelOpen) —
+     именно он запускает анимацию выезжания панели слева направо при
+     открытии и обратно при закрытии (когда включена галочка "Настройки
+     сбоку от круга"). */
+  #sidePanel.pinned.pin-visible{
+    opacity:1;
+    visibility:visible;
+    pointer-events:auto;
+    transform:translate(0,-50%);
   }
   /* На мобильной раскладке места слева от круга нет — режим "сбоку"
      там не применяется (см. isMobile-проверку в JS), панель всегда
@@ -1369,9 +1383,9 @@
     padding:var(--legend-padding, 20px);      /* было: 16px */
     box-sizing:border-box;
 
-    /* расстояние от кнопки "Гармонический минор" до легенды и от
-       легенды до кнопок выбора языка уменьшено на 10px относительно
-       общего gap:10px у родителя #sidePanel */
+    /* отступы легенды от соседних блоков уменьшены на 10px относительно
+       общего gap:10px у родителя #sidePanel (легенда стоит между
+       аккордами и ладами) */
     margin-top:-10px;
     margin-bottom:-10px;
   }
@@ -1690,41 +1704,41 @@
       <div id="level3ModeButtons" class="chordGridCard cols3">
         <div class="ringBtnRow">
           <button class="ringBtn" id="level3ModeLydianBtn" type="button" data-mode="lydian" data-i18n="modeLydian">Лидийский</button>
-          <span class="infoIcon" data-tip="0-6">i</span>
+          <span class="infoIcon" data-tip="@@0-6@@">i</span>
         </div>
         <div class="ringBtnRow">
           <button class="ringBtn" id="level3ModeMajorBtn" type="button" data-mode="major" data-i18n="modeMajor">Мажор</button>
-          <span class="infoIcon" data-tip="1-5">i</span>
+          <span class="infoIcon" data-tip="@@1-5@@">i</span>
         </div>
         <div class="ringBtnRow">
           <button class="ringBtn" id="level3ModeMixolydianBtn" type="button" data-mode="mixolydian" data-i18n="modeMixolydian">Миксолидийский</button>
-          <span class="infoIcon" data-tip="2-4">i</span>
+          <span class="infoIcon" data-tip="@@2-4@@">i</span>
         </div>
         <div class="ringBtnRow">
           <button class="ringBtn" id="level3ModeDorianBtn" type="button" data-mode="dorian" data-i18n="modeDorian">Дорийский</button>
-          <span class="infoIcon" data-tip="3-3">i</span>
+          <span class="infoIcon" data-tip="@@3-3@@">i</span>
         </div>
         <div class="ringBtnRow">
           <button class="ringBtn" id="level3ModeMinorBtn" type="button" data-mode="minor" data-i18n="modeMinor">Минор</button>
-          <span class="infoIcon" data-tip="4-2">i</span>
+          <span class="infoIcon" data-tip="@@4-2@@">i</span>
         </div>
         <div class="ringBtnRow">
           <button class="ringBtn" id="level3ModePhrygianBtn" type="button" data-mode="phrygian" data-i18n="modePhrygian">Фригийский</button>
-          <span class="infoIcon" data-tip="5-1">i</span>
+          <span class="infoIcon" data-tip="@@5-1@@">i</span>
         </div>
         <div class="ringBtnRow">
           <button class="ringBtn" id="level3ModeLocrianBtn" type="button" data-mode="locrian" data-i18n="modeLocrian">Локрийский</button>
-          <span class="infoIcon" data-tip="6-0">i</span>
+          <span class="infoIcon" data-tip="@@6-0@@">i</span>
         </div>
       </div>
       <div id="level3ModeButtonsExtra" class="chordGridCard cols2">
         <div class="ringBtnRow">
           <button class="ringBtn" id="level3ModeHarmMinorBtn" type="button" data-mode="harmMinor" data-i18n="modeHarmMinor">Гармонический минор</button>
-          <span class="infoIcon" data-tip="4-2">i</span>
+          <span class="infoIcon" data-tip="@@4-2@@ (4 слева от тоники-2 справа) формула, но на схеме @@Bb заменена на B@@ на круге для удобства запоминания и она выделена цветом, чтобы не забыть при изучении - @@C D Eb F G Ab Bb@@">i</span>
         </div>
         <div class="ringBtnRow">
           <button class="ringBtn" id="level3ModeMelMinorBtn" type="button" data-mode="melMinor" data-i18n="modeMelMinor">Мелодический минор</button>
-          <span class="infoIcon" data-tip="4-2">i</span>
+          <span class="infoIcon" data-tip="@@4-2@@ (4 слева от тоники-2 справа) формула, но на схеме @@Bb заменена на B, Ab заменена на A@@ и не сдвинута на +1 по часовой стрелке на круге для удобства запоминания и она выделена цветом, чтобы не забыть при изучении - @@C D Eb F G A Bb@@">i</span>
         </div>
       </div>
 
@@ -1892,6 +1906,8 @@
           </div>
         </div>
 
+        <div id="trainLegend" style="display:none"></div>
+
         <!-- ===== Лады: 7 кнопок под аккордами, того же размера/стиля
              (.chordGridCard), но в 7 колонок. Одновременно можно выбрать
              либо аккорд, либо лад (см. setTrainModeType/setTrainChordType
@@ -1901,46 +1917,44 @@
         <div id="trainModeGroups" class="chordGridCard cols3">
           <div class="ringBtnRow">
             <button class="ringBtn" id="trainModeLydianBtn" data-mode="lydian" data-i18n="modeLydian">Лидийский</button>
-            <span class="infoIcon" data-tip="0-6">i</span>
+            <span class="infoIcon" data-tip="@@0-6@@">i</span>
           </div>
           <div class="ringBtnRow">
             <button class="ringBtn" id="trainModeMajorBtn" data-mode="major" data-i18n="modeMajor">Мажор</button>
-            <span class="infoIcon" data-tip="1-5">i</span>
+            <span class="infoIcon" data-tip="@@1-5@@">i</span>
           </div>
           <div class="ringBtnRow">
             <button class="ringBtn" id="trainModeMixolydianBtn" data-mode="mixolydian" data-i18n="modeMixolydian">Миксолидийский</button>
-            <span class="infoIcon" data-tip="2-4">i</span>
+            <span class="infoIcon" data-tip="@@2-4@@">i</span>
           </div>
           <div class="ringBtnRow">
             <button class="ringBtn" id="trainModeDorianBtn" data-mode="dorian" data-i18n="modeDorian">Дорийский</button>
-            <span class="infoIcon" data-tip="3-3">i</span>
+            <span class="infoIcon" data-tip="@@3-3@@">i</span>
           </div>
           <div class="ringBtnRow">
             <button class="ringBtn" id="trainModeMinorBtn" data-mode="minor" data-i18n="modeMinor">Минор</button>
-            <span class="infoIcon" data-tip="4-2">i</span>
+            <span class="infoIcon" data-tip="@@4-2@@">i</span>
           </div>
           <div class="ringBtnRow">
             <button class="ringBtn" id="trainModePhrygianBtn" data-mode="phrygian" data-i18n="modePhrygian">Фригийский</button>
-            <span class="infoIcon" data-tip="5-1">i</span>
+            <span class="infoIcon" data-tip="@@5-1@@">i</span>
           </div>
           <div class="ringBtnRow">
             <button class="ringBtn" id="trainModeLocrianBtn" data-mode="locrian" data-i18n="modeLocrian">Локрийский</button>
-            <span class="infoIcon" data-tip="6-0">i</span>
+            <span class="infoIcon" data-tip="@@6-0@@">i</span>
           </div>
         </div>
         <div id="trainModeGroupsExtra" class="chordGridCard cols2">
           <div class="ringBtnRow">
             <button class="ringBtn" id="trainModeHarmMinorBtn" data-mode="harmMinor" data-i18n="modeHarmMinor">Гармонический минор</button>
-            <span class="infoIcon" data-tip="4-2">i</span>
+            <span class="infoIcon" data-tip="@@4-2@@ (4 слева от тоники-2 справа) формула, но на схеме @@Bb заменена на B@@ на круге - @@C D Eb F G Ab Bb@@. Засчитываются оба варианта на мажорном кольце : Bb и B(второй вариант под формулу 4-2)">i</span>
           </div>
           <div class="ringBtnRow">
             <button class="ringBtn" id="trainModeMelMinorBtn" data-mode="melMinor" data-i18n="modeMelMinor">Мелодический минор</button>
-            <span class="infoIcon" data-tip="4-2">i</span>
+            <span class="infoIcon" data-tip="@@4-2@@ (4 слева от тоники-2 справа) формула, но на схеме @@Bb заменена на B, Ab заменена на A@@ на круге - @@C D Eb F G Ab Bb@@. Засчитываются оба варианта на мажорном кольце : Bb и B(второй вариант под формулу 4-2)">i</span>
           </div>
         </div>
       </div>
-
-      <div id="trainLegend" style="display:none"></div>
 
       <div id="trainExtraSettings">
         <div class="noteNamingSwitchRow" id="langSwitchRow">
@@ -8329,9 +8343,18 @@ function setSidePanelOpen(open){
     // Закреплена сбоку от круга: показываем/скрываем саму панель по
     // тому же событию (колесо мыши / клавиша), что и в обычном режиме,
     // но без модального затемнения фона — панель не всплывающая, а
-    // встроена в разметку рядом с кругом.
+    // встроена в разметку рядом с кругом. Открытие/закрытие анимируется
+    // выезжанием слева направо через класс pin-visible (см. CSS
+    // #sidePanel.pinned / .pin-visible) — панель остаётся в потоке
+    // (display:flex) всё время, видимость и позиция управляются
+    // opacity/transform, чтобы transition отработал в обе стороны.
     sidePanel.classList.remove('open');
-    sidePanel.style.display = open ? 'flex' : 'none';
+    sidePanel.style.display = 'flex';
+    if(open){
+      requestAnimationFrame(()=>{ sidePanel.classList.add('pin-visible'); });
+    } else {
+      sidePanel.classList.remove('pin-visible');
+    }
     sidePanelBackdrop.style.display = 'none';
     sidePanelBackdrop.classList.remove('open');
     localStorage.setItem(SIDE_PANEL_OPEN_KEY, open ? '1' : '0');
@@ -8486,6 +8509,7 @@ function updateSidePanelLayout(){
     updateSidePanelPinOffset();
   } else {
     sidePanel.classList.remove('pinned');
+    sidePanel.classList.remove('pin-visible');
     sidePanel.style.marginRight = '';
     if(sidePanel.parentElement !== document.body){
       sidePanelHomeAnchor.insertAdjacentElement('afterend', sidePanel);
@@ -10165,10 +10189,31 @@ applyZoom();
   function showTip(icon){
     var text = icon.getAttribute('data-tip');
     if(!text) return;
-    // Если в тексте подсказки есть формула вида "... - 1 3 5 b7." —
-    // отделяем её (после последнего " - ") и подсвечиваем отдельным
-    // цветом --tip-formula-red (см. :root в начале файла, там же можно
-    // поменять цвет/прозрачность).
+    // Если в тексте подсказки есть куски, обрамлённые "@@...@@" — красим
+    // каждый такой кусок отдельным цветом --tip-formula-red (см. :root в
+    // начале файла, там же можно поменять цвет/прозрачность). Можно
+    // сколько угодно таких кусков в одной подсказке.
+    if(text.indexOf('@@') !== -1){
+      var parts = text.split('@@');
+      tip.textContent = '';
+      parts.forEach(function(part, i){
+        if(part === '') return;
+        if(i % 2 === 1){
+          var span = document.createElement('span');
+          span.className = 'tipFormulaHighlight';
+          span.textContent = part;
+          tip.appendChild(span);
+        } else {
+          tip.appendChild(document.createTextNode(part));
+        }
+      });
+      tip.style.display = 'block';
+      positionTip(icon);
+      return;
+    }
+    // Иначе — старое поведение: если в тексте подсказки есть формула вида
+    // "... - 1 3 5 b7.", отделяем её (после последнего " - ") и красим тем
+    // же цветом.
     var sepIdx = text.lastIndexOf(' - ');
     if(sepIdx === -1){
       tip.textContent = text;

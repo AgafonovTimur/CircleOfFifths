@@ -133,9 +133,9 @@
     --text:var(--app-text-color);
     --btn-text:var(--app-text-color);
 
-    --ring-major:#eae9e4;
-    --ring-minor:#eae9e4;
-    --ring-note:#eae9e4;
+    --ring-major:#c7c7c7;
+    --ring-minor:#c7c7c7;
+    --ring-note:#c7c7c7;
     --ring-major-hover:#dcdbd4;
     --ring-minor-hover:#dcdbd4;
 
@@ -160,7 +160,7 @@
 
     --menu-bg:#ffffff;
     --menu-border:#d3d2cc;
-    --btn-bg:#eae9e4;
+    --btn-bg:#c7c7c7;
     --btn-bg-hover:#dcdbd4;
     --btn-active-bg:#2f2f2f;
     --btn-active-text:#ffffff;
@@ -173,7 +173,7 @@
     /* клавиатура-подсказка: белые клавиши в светлой теме — тот же цвет,
        что у кнопок и ячеек круга (--btn-bg/--ring-major), чёрные остаются
        тёмными для контраста */
-    --piano-white-key:#eae9e4;
+    --piano-white-key:#c7c7c7;
     --piano-black-key:#2a2a2a;
     --piano-key-label-on-white:#1b1b1b;
     --piano-key-label-on-black:#fff;
@@ -294,18 +294,6 @@
     align-items:safe center;
     justify-content:safe center;
     position:relative;
-  }
-  #level2NoteLabel{
-    position:absolute;
-    top:6%;
-    left:50%;
-    transform:translateX(-50%);
-    font-family:'PT Sans Bold Embedded', Arial, sans-serif;
-    font-weight:bold;
-    font-size:47px;
-    color:var(--app-text-color);
-    pointer-events:none;
-    z-index:5;
   }
   /* ===== Единый тёмный чекбокс для ВСЕХ настроек (Ноты/Аккорды/Обучение/
      MIDI) — вместо системного белого квадратика браузера, как на макете
@@ -700,9 +688,8 @@
      (#l3PianoWrap ниже) — тот же приём, что и #trainCircleInner для
      "Обучения": фиксированный 480x480 layout-бокс с position:relative,
      от которого клавиатура отсчитывает left:100% (правый край круга)
-     независимо от ширины экрана. #level2NoteLabel остаётся прямым
-     ребёнком #circleWrap (как и раньше) — сюда переехал только сам
-     svg#circle, поэтому его позиционирование не меняется. */
+     независимо от ширины экрана. Сюда переехал только сам svg#circle,
+     поэтому позиционирование остальных элементов не меняется. */
   #circleInner{
     position:relative;
     width:480px;
@@ -1281,6 +1268,13 @@
     padding:9px 3px;
     line-height:1.2;
   }
+  /* Гармонический/мелодический минор — отдельный маленький ряд под
+     основными 7 ладами: 2 колонки вместо 3, чтобы длинное название
+     ("Гармонический минор") помещалось на кнопке без переноса. */
+  .chordGridCard.cols2{
+    grid-template-columns:repeat(2, 1fr);
+    margin-top:var(--chordgrid-row-gap, 10px);
+  }
   .chordGridCard .ringBtnRow{
     gap:4px;
   }
@@ -1374,6 +1368,12 @@
     border-radius:12px;
     padding:var(--legend-padding, 20px);      /* было: 16px */
     box-sizing:border-box;
+
+    /* расстояние от кнопки "Гармонический минор" до легенды и от
+       легенды до кнопок выбора языка уменьшено на 10px относительно
+       общего gap:10px у родителя #sidePanel */
+    margin-top:-10px;
+    margin-bottom:-10px;
   }
   .legendRow{
     display:flex;
@@ -1462,7 +1462,6 @@
         <svg id="l3PianoSvg"></svg>
       </div>
     </div>
-    <div id="level2NoteLabel" style="display:none"></div>
   </div>
   <div id="trainCircleWrap" style="display:none">
     <div id="trainCircleInner">
@@ -1592,7 +1591,7 @@
       <div id="level2TypeHeader" data-i18n="chordTypeHeader">Тип аккорда</div>
       <div id="level2TypeButtons">
         <div class="ringBtnRow">
-          <button class="ringBtn active" id="level2MajorMinorBtn" type="button" data-chordtype="triad" data-i18n="majMinChord">Мажор/Минор</button>
+          <button class="ringBtn" id="level2MajorMinorBtn" type="button" data-chordtype="triad" data-i18n="majMinChord">Мажор/Минор</button>
           <span class="infoIcon" data-tip="Обычные трезвучия: мажор или минор — в зависимости от того, по какому кольцу круга кликнули." data-i18n-tip="tipTriad">i</span>
         </div>
         <div class="ringBtnRow">
@@ -1716,6 +1715,16 @@
         <div class="ringBtnRow">
           <button class="ringBtn" id="level3ModeLocrianBtn" type="button" data-mode="locrian" data-i18n="modeLocrian">Локрийский</button>
           <span class="infoIcon" data-tip="6-0">i</span>
+        </div>
+      </div>
+      <div id="level3ModeButtonsExtra" class="chordGridCard cols2">
+        <div class="ringBtnRow">
+          <button class="ringBtn" id="level3ModeHarmMinorBtn" type="button" data-mode="harmMinor" data-i18n="modeHarmMinor">Гармонический минор</button>
+          <span class="infoIcon" data-tip="4-2">i</span>
+        </div>
+        <div class="ringBtnRow">
+          <button class="ringBtn" id="level3ModeMelMinorBtn" type="button" data-mode="melMinor" data-i18n="modeMelMinor">Мелодический минор</button>
+          <span class="infoIcon" data-tip="4-2">i</span>
         </div>
       </div>
 
@@ -1919,6 +1928,16 @@
             <span class="infoIcon" data-tip="6-0">i</span>
           </div>
         </div>
+        <div id="trainModeGroupsExtra" class="chordGridCard cols2">
+          <div class="ringBtnRow">
+            <button class="ringBtn" id="trainModeHarmMinorBtn" data-mode="harmMinor" data-i18n="modeHarmMinor">Гармонический минор</button>
+            <span class="infoIcon" data-tip="4-2">i</span>
+          </div>
+          <div class="ringBtnRow">
+            <button class="ringBtn" id="trainModeMelMinorBtn" data-mode="melMinor" data-i18n="modeMelMinor">Мелодический минор</button>
+            <span class="infoIcon" data-tip="4-2">i</span>
+          </div>
+        </div>
       </div>
 
       <div id="trainLegend" style="display:none"></div>
@@ -2020,6 +2039,26 @@
 <script>
 
 /* =========================================================
+   Масштабирование круга: объявлено в самом начале скрипта.
+   Значения zoomPractice/zoomTraining читают функции, которые
+   вызываются ещё на этапе загрузки (updateL3PianoOffset(),
+   updateTrainPianoOffset(), updateSidePanelPinOffset() и т.д.).
+   Обращение к let/const до их объявления (temporal dead zone)
+   кидает ReferenceError даже через typeof — поэтому объявления
+   должны идти раньше любого исполняемого кода, который их читает.
+   ========================================================= */
+const ZOOM_MIN = 100;
+const ZOOM_MAX = 1000;
+const ZOOM_STEP = 10;
+const ZOOM_PRACTICE_STORAGE_KEY = 'circleOfFifthsZoomPractice';
+const ZOOM_TRAINING_STORAGE_KEY = 'circleOfFifthsZoomTraining';
+
+let zoomPractice = parseInt(localStorage.getItem(ZOOM_PRACTICE_STORAGE_KEY), 10);
+if(isNaN(zoomPractice)) zoomPractice = 100;
+let zoomTraining = parseInt(localStorage.getItem(ZOOM_TRAINING_STORAGE_KEY), 10);
+if(isNaN(zoomTraining)) zoomTraining = 100;
+
+/* =========================================================
    НАСТРОЙКИ ноты в центре круга (размер / цвет / шрифт)
    ========================================================= */
 const CENTER_NOTE_CONFIG = {
@@ -2054,7 +2093,9 @@ const CENTER_MODE_LABEL_CONFIG = {
   maxWidth: 160          // максимальная ширина строки, чтобы не заезжать на круг
 };
 const CENTER_MODE_LABEL_SHORT = {
-  mixolydian: 'Миксолид.'
+  mixolydian: 'Миксолид.',
+  harmMinor: 'Гармон. минор',
+  melMinor: 'Мелод. минор'
 };
 /* ========================================================= */
 
@@ -2106,8 +2147,28 @@ let noteNamingSystem = localStorage.getItem(NOTE_NAMING_SYSTEM_KEY) === 'solfege
 // слог сольфеджио, остаток строки (напр. "m", "maj7", "sus4") не
 // трогает. Если система "abc" — возвращает строку как есть.
 function noteDisplay(str){
-  if(noteNamingSystem !== 'solfege' || typeof str !== 'string') return str;
-  return str.replace(/^([A-G])(#|b)?/, (m, letter, acc) => (NOTE_TO_SOLFEGE[letter] || letter) + (acc || ''));
+  if(typeof str !== 'string') return str;
+  let out = str;
+  if(noteNamingSystem === 'solfege'){
+    out = out.replace(/^([A-G])(#|b|♯|♭)?/, (m, letter, acc) => (NOTE_TO_SOLFEGE[letter] || letter) + (acc || ''));
+  }
+  // Единый стиль знаков альтерации во всём интерфейсе: ASCII '#'/'b',
+  // которыми оперирует внутренняя логика (spellTrainInterval и т.п.),
+  // при выводе на экран заменяются на юникодные '♯'/'♭' — так буквы
+  // аккорда под нотами и подписи на мини-клавиатуре совпадают с
+  // надписями на круге (был "Си♭" на круге и "Сиb" под ним).
+  return toUnicodeAccidentals(out);
+}
+
+// Заменяет только знаки альтерации, не трогая обычные буквы:
+// '#' всегда является диезом, 'b' — только сразу после названия ноты
+// (латинской буквы, слогового названия или уже стоящего знака) либо
+// перед цифрой ступени (напр. "7b5").
+function toUnicodeAccidentals(str){
+  let out = str.replace(/#/g, '♯').replace(/b(?=\d)/g, '♭');
+  let prev;
+  do { prev = out; out = out.replace(/([A-GА-Яа-яёЁ♯♭])b/g, '$1♭'); } while(out !== prev);
+  return out;
 }
 
 // Пересобирает текст всех уже нарисованных подписей нот на всех
@@ -2218,6 +2279,8 @@ const I18N = {
   modeMixolydian:      { ru:'Миксолидийский', en:'Mixolydian', zh:'混合利底亚调式' },
   modeDorian:          { ru:'Дорийский', en:'Dorian', zh:'多利亚调式' },
   modeMinor:           { ru:'Минор', en:'Minor', zh:'小调' },
+  modeHarmMinor:       { ru:'Гармонический минор', en:'Harmonic minor', zh:'和声小调' },
+  modeMelMinor:        { ru:'Мелодический минор', en:'Melodic minor', zh:'旋律小调' },
   modePhrygian:        { ru:'Фригийский', en:'Phrygian', zh:'弗里几亚调式' },
   modeLocrian:         { ru:'Локрийский', en:'Locrian', zh:'洛克利亚调式' },
   noInputsOption:      { ru:'Нет входов', en:'No inputs', zh:'无输入设备' },
@@ -2506,6 +2569,15 @@ function activeChords(){
   });
 }
 
+/* Сколько нот реально включено в наборе (считаем только по ячейкам круга,
+   а не по всем ключам объекта) — по этому числу работает защита последней
+   ноты: последнюю включённую ноту снять кликом нельзя. */
+function countSelected(set){
+  let n = 0;
+  allChords.forEach(c=>{ if(set[c.ring+'-'+c.index]) n++; });
+  return n;
+}
+
 /* ===== Ноты (клик мышью / MIDI-ПК клавиатура): раньше это были
    Уровень 1 и Уровень 2 с двумя независимыми наборами выбранных нот,
    теперь это два способа ответа внутри одной вкладки "Ноты", поэтому
@@ -2559,6 +2631,15 @@ let rootHistory = [];
 
 function pickNewChord(){
   let pool = activeChords();
+  if(pool.length === 0){
+    // страховка: если по какой-то причине не осталось ни одной включённой
+    // ноты — возвращаем C, чтобы приложение не осталось без вопросов
+    selectedNotes['major-0'] = true;
+    saveSelectedNotes();
+    if(typeof updateAllSelectVisuals === 'function') updateAllSelectVisuals();
+    if(typeof updateAllSelectVisualsL2 === 'function') updateAllSelectVisualsL2();
+    pool = activeChords();
+  }
 
   // сколько последних нот исключать из следующего пула:
   // >=4 включённых нот — не повторять текущую;
@@ -2691,9 +2772,9 @@ function onSelectWedgeClick(e){
   const ring = e.currentTarget.getAttribute('data-ring');
   const index = parseInt(e.currentTarget.getAttribute('data-index'));
   const key = ring+'-'+index;
-  const selectedCount = Object.values(selectedNotes).filter(Boolean).length;
+  const selectedCount = countSelected(selectedNotes);
 
-  if(selectedNotes[key] && selectedCount === 1) return;
+  if(selectedNotes[key] && selectedCount <= 1) return;
 
   selectedNotes[key] = !selectedNotes[key];
   updateSelectWedgeVisual(ring, index);
@@ -2790,9 +2871,9 @@ function onSelectWedgeClickL2(e){
   const ring = e.currentTarget.getAttribute('data-ring');
   const index = parseInt(e.currentTarget.getAttribute('data-index'));
   const key = ring+'-'+index;
-  const selectedCount = Object.values(selectedNotesL2).filter(Boolean).length;
+  const selectedCount = countSelected(selectedNotesL2);
 
-  if(selectedNotesL2[key] && selectedCount === 1) return;
+  if(selectedNotesL2[key] && selectedCount <= 1) return;
 
   selectedNotesL2[key] = !selectedNotesL2[key];
   updateSelectWedgeVisualL2(ring, index);
@@ -2889,9 +2970,9 @@ function onSelectWedgeClick3(e){
   const ring = e.currentTarget.getAttribute('data-ring');
   const index = parseInt(e.currentTarget.getAttribute('data-index'));
   const key = ring+'-'+index;
-  const selectedCount = Object.values(selectedNotesL3).filter(Boolean).length;
+  const selectedCount = countSelected(selectedNotesL3);
 
-  if(selectedNotesL3[key] && selectedCount === 1) return;
+  if(selectedNotesL3[key] && selectedCount <= 1) return;
 
   selectedNotesL3[key] = !selectedNotesL3[key];
   updateSelectWedgeVisual3(ring, index);
@@ -3384,10 +3465,17 @@ function parseTrainNoteName(raw){
 
 // Возвращает букву+знак альтерации ноты, отстоящей от rootRaw на interval
 // полутонов (interval может быть >11, напр. 14 = нона).
-function spellTrainInterval(rootRaw, interval){
+// letterStep (необязательный) — на сколько букв нотного ряда отступать от
+// тоники. Нужен для гамм/ладов: там каждая следующая нота — обязательно
+// следующая буква (C D E F# G A B), поэтому #4 пишется как F#, а не Gb.
+// Если параметр не передан — как раньше, буква выбирается по числу
+// полутонов (LETTER_STEP_BY_SEMITONE), что верно для аккордов.
+function spellTrainInterval(rootRaw, interval, letterStep){
   const root = parseTrainNoteName(rootRaw);
   const mod = ((interval % 12) + 12) % 12;
-  const steps = LETTER_STEP_BY_SEMITONE[mod];
+  const steps = (letterStep === undefined || letterStep === null)
+    ? LETTER_STEP_BY_SEMITONE[mod]
+    : ((letterStep % 7) + 7) % 7;
   const rootLetterIdx = LETTERS7.indexOf(root.letter);
   let letterIdx = (rootLetterIdx + steps) % 7;
   let letter = LETTERS7[letterIdx];
@@ -3420,6 +3508,43 @@ function spellTrainInterval(rootRaw, interval){
   if(diff > 0) acc = '#'.repeat(diff);
   else if(diff < 0) acc = 'b'.repeat(-diff);
   return letter + acc;
+}
+
+/* Строгое диатоническое написание ноты лада: буква берётся строго по
+   letterStep (следующая ступень = следующая буква), знаки альтерации не
+   «спасаются» подменой буквы, как в spellTrainInterval выше. Поэтому
+   результат может содержать дубль-диез/дубль-бемоль — про это говорит
+   поле alter (число знаков со знаком: +2 = дубль-диез). Используется
+   только в trainModeLettersFor ниже, чтобы понять, годится ли данная
+   запись тоники для гаммы. */
+function spellTrainIntervalStrict(rootRaw, interval, letterStep){
+  const root = parseTrainNoteName(rootRaw);
+  const mod = ((interval % 12) + 12) % 12;
+  const steps = (letterStep === undefined || letterStep === null)
+    ? LETTER_STEP_BY_SEMITONE[mod]
+    : ((letterStep % 7) + 7) % 7;
+  const letter = LETTERS7[(LETTERS7.indexOf(root.letter) + steps) % 7];
+  const targetPc = ((root.pc + interval) % 12 + 12) % 12;
+  let diff = ((targetPc - NATURAL_PC[letter]) % 12 + 12) % 12;
+  if(diff > 6) diff -= 12;
+  const acc = diff > 0 ? '#'.repeat(diff) : diff < 0 ? 'b'.repeat(-diff) : '';
+  return { text: letter + acc, alter: diff };
+}
+
+// Все варианты записи той же по высоте тоники, не требующие дубль-знака.
+// Первой идёт «родная» запись (с той же буквой, что пришла с круга),
+// затем энгармонические замены: "C#" -> ["C#", "Db"], "Ab" -> ["Ab", "G#"].
+function enharmonicTonicSpellings(rootRaw){
+  const root = parseTrainNoteName(rootRaw);
+  const own = [], other = [];
+  LETTERS7.forEach(letter=>{
+    let d = ((root.pc - NATURAL_PC[letter]) % 12 + 12) % 12;
+    if(d > 6) d -= 12;
+    if(Math.abs(d) > 1) return;
+    const text = letter + (d > 0 ? '#' : d < 0 ? 'b' : '');
+    (letter === root.letter ? own : other).push(text);
+  });
+  return own.concat(other);
 }
 
 // Формулы аккордов в полутонах от тоники (0 = тоника).
@@ -3460,12 +3585,31 @@ const TRAIN_MODES = [
   { id:'dorian',      L:3, R:3, formula:[0,2,3,5,7,9,10] },
   { id:'minor',       L:4, R:2, formula:[0,2,3,5,7,8,10] },
   { id:'phrygian',    L:5, R:1, formula:[0,1,3,5,7,8,10] },
-  { id:'locrian',     L:6, R:0, formula:[0,1,3,5,6,8,10] }
+  { id:'locrian',     L:6, R:0, formula:[0,1,3,5,6,8,10] },
+  // Гармонический/мелодический минор — та же цепочка из 7 соседних ячеек
+  // на круге, что и у обычного минора (L:4, R:2 от тоники), только 7-я
+  // ступень (у мелодического — ещё и 6-я) звучит на полтона выше. На
+  // круге эта повышенная нота физически стоит в другом месте, поэтому
+  // вместо неё подсвечивается (и подписывается) та же ячейка натурального
+  // минора, что рвало бы цепочку, — см. raise (список ступеней по
+  // порядку формулы, которые фактически "заимствуются" из соседней
+  // ячейки круга и красятся отдельным цветом) и highlightModeForTonic().
+  // raiseFifthsOffset — смещения (в шагах круга квинт от тоники) тех
+  // ячеек цепочки, чья подпись/подсветка временно "занимает" повышенную
+  // ступень вместо родной ноты натурального минора: -2 — 7-я ступень
+  // (у обоих новых ладов), -4 — 6-я ступень (только у мелодического).
+  // raise — ячейки цепочки лада, чья нота натурального минора временно
+  // заменяется повышенной. cellOffset — смещение индекса ячейки от
+  // тоники на круге (эмпирически: -2 — ячейка 7-й ступени минора, -4 —
+  // ячейка 6-й ступени), semitone — точный интервал от тоники в
+  // полутонах для правильной подписи (11 = большая 7-я, 9 = большая 6-я).
+  { id:'harmMinor',   L:4, R:2, formula:[0,2,3,5,7,8,11], raise:[{cellOffset:-2, semitone:11}] },
+  { id:'melMinor',    L:4, R:2, formula:[0,2,3,5,7,9,11], raise:[{cellOffset:-4, semitone:9}, {cellOffset:-2, semitone:11}] }
 ];
 const TRAIN_MODE_BTN_IDS = {
   lydian:'trainModeLydianBtn', major:'trainModeMajorBtn', mixolydian:'trainModeMixolydianBtn',
   dorian:'trainModeDorianBtn', minor:'trainModeMinorBtn', phrygian:'trainModePhrygianBtn',
-  locrian:'trainModeLocrianBtn'
+  locrian:'trainModeLocrianBtn', harmMinor:'trainModeHarmMinorBtn', melMinor:'trainModeMelMinorBtn'
 };
 function trainModeCfg(modeId){
   return TRAIN_MODES.find(m => m.id === modeId) || null;
@@ -3476,7 +3620,23 @@ function trainModeCfg(modeId){
 function trainModeLettersFor(noteRaw, modeId){
   const cfg = trainModeCfg(modeId);
   if(!cfg) return null;
-  return cfg.formula.map(iv => spellTrainInterval(noteRaw, iv));
+  /* В гамме каждая следующая ступень — обязательно следующая буква
+     нотного ряда. Для далёких от центра круга тоник такое написание
+     иногда требует дубль-диезов/бемолей (C♯ лидийский по нотам — это
+     C# D# E# F## G# A# B#). Дубль-знаки в приложении не используются,
+     а прежняя «спасательная» подмена буквы в spellTrainInterval давала
+     мусор вроде "C# D# E# G G# A# B#" (буква G дважды подряд).
+     Поэтому: пробуем записать гамму от самой тоники, а если без
+     дубль-знака не выходит — от её энгармонического двойника
+     (C♯ лидийский -> D♭ лидийский: Db Eb F G Ab Bb C). Ноты по высоте
+     те же, зато запись читаемая — так и принято в теории. */
+  for(const root of enharmonicTonicSpellings(noteRaw)){
+    const spelled = cfg.formula.map((iv, i) => spellTrainIntervalStrict(root, iv, i));
+    if(spelled.every(s => Math.abs(s.alter) <= 1)) return spelled.map(s => s.text);
+  }
+  // теоретически недостижимо (проверено для всех 12 тоник × 7 ладов на
+  // обоих кольцах), но на всякий случай — прежнее поведение
+  return cfg.formula.map((iv, i) => spellTrainInterval(noteRaw, iv, i));
 }
 
 // Размер шрифта букв аккорда в зависимости от количества нот в нём —
@@ -3602,6 +3762,13 @@ function computeTrainPianoNotes(){
   if(trainModeType){
     const spelledMode = trainModeLettersFor(pressedTrainTonicName, trainModeType);
     if(!spelledMode) return null;
+    // Гармонический/мелодический минор: повышенные ступени (см. raise в
+    // TRAIN_MODES) красятся так же, как на самом круге (var(--red-flash)) —
+    // определяем их по совпадению интервала формулы с semitone из raise.
+    const modeCfgForColor = trainModeCfg(trainModeType);
+    const raisedSemitones = modeCfgForColor && modeCfgForColor.raise
+      ? new Set(modeCfgForColor.raise.map(r => r.semitone))
+      : null;
     const notesMode = [];
     let rankM = 0, prevPcM = null;
     spelledMode.forEach((raw, i)=>{
@@ -3610,7 +3777,9 @@ function computeTrainPianoNotes(){
       prevPcM = p.pc;
       // Цвет ладовых нот на клавиатуре — тот же var(--purple), что и
       // подсветка лада на круге (см. highlightModeForTonic() выше).
-      notesMode.push({ letter:p.letter, offset:p.offset, pc:p.pc, rank:rankM, degree:(i===0?'root':'second'), color:(i===0?'var(--green)':'rgba(59,109,145,0.9)') });
+      const isRaised = raisedSemitones && modeCfgForColor.formula && raisedSemitones.has(modeCfgForColor.formula[i]);
+      const color = i===0 ? 'var(--green)' : (isRaised ? 'var(--red-flash)' : 'rgba(59,109,145,0.9)');
+      notesMode.push({ letter:p.letter, offset:p.offset, pc:p.pc, rank:rankM, degree:(i===0?'root':'second'), color });
     });
     return notesMode;
   }
@@ -3858,6 +4027,13 @@ function computeL3PianoNotes(){
   if(currentL3.modeType){
     const spelledMode = trainModeLettersFor(currentL3.tonicNoteRaw, currentL3.modeType);
     if(!spelledMode) return null;
+    // Гармонический/мелодический минор: повышенные ступени (см. raise в
+    // TRAIN_MODES) красятся так же, как на самом круге (var(--red-flash)) —
+    // определяем их по совпадению интервала формулы с semitone из raise.
+    const modeCfgForColor = trainModeCfg(currentL3.modeType);
+    const raisedSemitones = modeCfgForColor && modeCfgForColor.raise
+      ? new Set(modeCfgForColor.raise.map(r => r.semitone))
+      : null;
     const notesMode = [];
     let rankM = 0, prevPcM = null;
     spelledMode.forEach((raw, i)=>{
@@ -3866,7 +4042,9 @@ function computeL3PianoNotes(){
       prevPcM = p.pc;
       // Цвет ладовых нот на клавиатуре — тот же var(--purple), что и
       // подсветка лада на круге (см. highlightModeForTonic() выше).
-      notesMode.push({ letter:p.letter, offset:p.offset, pc:p.pc, rank:rankM, degree:(i===0?'root':'second'), color:(i===0?'var(--green)':'rgba(59,109,145,0.9)') });
+      const isRaised = raisedSemitones && modeCfgForColor.formula && raisedSemitones.has(modeCfgForColor.formula[i]);
+      const color = i===0 ? 'var(--green)' : (isRaised ? 'var(--red-flash)' : 'rgba(59,109,145,0.9)');
+      notesMode.push({ letter:p.letter, offset:p.offset, pc:p.pc, rank:rankM, degree:(i===0?'root':'second'), color });
     });
     return notesMode;
   }
@@ -4177,14 +4355,6 @@ trainLockKeyCheckbox.addEventListener('change', ()=>{
 });
 
 trainSvg.appendChild(el('circle', {cx:CX, cy:CY, r:R0-2, id:'trainCenterCircle'}));
-const trainCenterText = el('text', {
-  x:CX, y:CY, id:'trainCenterNote',
-  dy: CENTER_NOTE_CONFIG.verticalOffset + 'em',
-  'font-size': CENTER_NOTE_CONFIG.fontSize,
-  fill: CENTER_NOTE_CONFIG.color,
-  'font-family': CENTER_NOTE_CONFIG.fontFamily
-});
-trainSvg.appendChild(trainCenterText);
 
 /* =========================================================
    Стрелки-подсказка на круге обучения (вариант "Мажор 1"):
@@ -4474,6 +4644,12 @@ function chordTypeUIVariant2Blocked(type, ring){
 // с углом i*30°), поэтому его можно использовать как "линейку" для перевода
 // любой ноты (мажор/минор/dim) в её позицию на круге квинт.
 const majorsSemitone = majors.map(n => noteNames.indexOf(FLAT_TO_SHARP[n] || n));
+// То же самое для минорного кольца. Объявлено здесь, рядом с
+// majorsSemitone, а не ниже в MIDI-блоке: getModeNoteLettersL3()
+// (Практика 3, лады) может вызываться уже при загрузке страницы —
+// раньше, чем выполнялся MIDI-блок, и тогда обращение к ещё не
+// объявленной const обрывало запуск приложения.
+const minorsSemitone = minors.map(n => noteNames.indexOf(rootOf(n)));
 function fifthsIndexOfSemitone(semi){
   return majorsSemitone.indexOf(semi);
 }
@@ -5467,12 +5643,24 @@ function buildExtendedLetterArrows(chordType, ring, tonicIndex){
       }
     }
   } else if(chordType === 'add11' || chordType === 'dom9' || chordType === 'dom11' || chordType === 'dom13'){
-    if(!(chordType === 'dom13' && ring === 'minor')){
+    // 9 (dom9) и 11 (dom11) с тоникой на МИНОРНОМ кольце: схема зеркальна
+    // мажорной — так же, как у 7 (dom7) на минорном кольце (см.
+    // buildSeventhLetterArrows): переход от квинты на противоположное
+    // кольцо (Am -> Em -> G) даёт СЕПТИМУ, а большая терция берётся
+    // прямым шагом по своему же кольцу (+4, Am -> C#m).
+    const domMinorLetter = (chordType === 'dom9' || chordType === 'dom11') && ring === 'minor';
+    if(domMinorLetter){
+      drawCrossAt(fifthIndex, 'seventh');
+      const thirdIdx = ((tonicIndex + 4) % 12 + 12) % 12;
+      drawMinorV1Arrow(tonicIndex, thirdIdx, arrowsCfg.third.color, 'trainArrowHead_third');
+    } else if(!(chordType === 'dom13' && ring === 'minor')){
       // третья: переход от квинты на противоположное кольцо (как в dom7)
       drawCrossAt(fifthIndex, 'third');
     }
     if(degrees.seventh !== undefined && degrees.eleventh === undefined){
-      if(ring === 'minor'){
+      if(domMinorLetter){
+        // терция и септима уже нарисованы выше
+      } else if(ring === 'minor'){
         // dom9 на минорном кольце (напр. тоника Am для аккорда "A9"):
         // септима — прямой шаг по своему же кольцу на +4 (Am -> C#m),
         // как в буквенной схеме для A7 на минорном кольце (см.
@@ -5498,12 +5686,9 @@ function buildExtendedLetterArrows(chordType, ring, tonicIndex){
         // кольцу: Dm -> Gm (септима)
         const targetIndex = ((midIndex - 1) % 12 + 12) % 12;
         drawMinorV1Arrow(midIndex, targetIndex, arrowsCfg.seventh.color, 'trainArrowHead_seventh');
-      } else if(ring === 'minor'){
-        // dom11 на минорном кольце (напр. тоника Am для аккорда "A11"):
-        // септима — прямой шаг по своему же кольцу на +4 (Am -> C#m), как
-        // и у dom9 на минорном кольце, а не цепочка через Dm -> Gm
-        const targetIndex = ((tonicIndex + 4) % 12 + 12) % 12;
-        drawMinorV1Arrow(tonicIndex, targetIndex, arrowsCfg.seventh.color, 'trainArrowHead_seventh');
+      } else if(domMinorLetter){
+        // dom11 на минорном кольце: терция (Am -> C#m) и септима
+        // (Am -> Em -> G) уже нарисованы выше
       } else {
         // септима: тоника -> −1 (=ундецима) -> −2, одной цепочкой
         const targetIndex = ((tonicIndex - 2) % 12 + 12) % 12;
@@ -5979,7 +6164,20 @@ let currentL3 = null;
    типов — все они попадают в общую выборку для новых вопросов.
    level3ChordTypes — Set выбранных типов; хотя бы один тип должен
    оставаться выбранным всегда (последний нельзя снять кликом/хоткеем). */
-let level3ChordTypes = new Set(['triad']);
+/* Выбор запоминается в localStorage (ключи L3_* ниже) и восстанавливается
+   при следующем открытии страницы — как язык, тема и прочие настройки. */
+const L3_FAMILY_KEY = 'circleL3Family';
+const L3_CHORD_TYPES_KEY = 'circleL3ChordTypes';
+const L3_MODE_TYPES_KEY = 'circleL3ModeTypes';
+
+function loadL3Set(key){
+  let arr = null;
+  try{ arr = JSON.parse(localStorage.getItem(key)); }catch(e){ arr = null; }
+  return Array.isArray(arr) ? arr.filter(v => typeof v === 'string') : null;
+}
+
+let level3ChordTypes = new Set(loadL3Set(L3_CHORD_TYPES_KEY) || ['triad']);
+if(level3ChordTypes.size === 0) level3ChordTypes = new Set(['triad']);
 
 function getStepsForChordTypeL3(type, ring){
   if(type === 'triad'){
@@ -6140,13 +6338,28 @@ function pickNewChordL3(){
    все кнопки предыдущего семейства (но их внутренний выбор
    запоминается на случай возврата). Минимум одна кнопка активного
    семейства всегда должна оставаться нажатой. */
-let level3Family = 'chords';
-let level3ModeTypes = new Set();
+let level3Family = localStorage.getItem(L3_FAMILY_KEY) === 'modes' ? 'modes' : 'chords';
+let level3ModeTypes = new Set(loadL3Set(L3_MODE_TYPES_KEY) || []);
 const LEVEL3_MODE_BTN_IDS = {
   lydian:'level3ModeLydianBtn', major:'level3ModeMajorBtn', mixolydian:'level3ModeMixolydianBtn',
   dorian:'level3ModeDorianBtn', minor:'level3ModeMinorBtn', phrygian:'level3ModePhrygianBtn',
-  locrian:'level3ModeLocrianBtn'
+  locrian:'level3ModeLocrianBtn', harmMinor:'level3ModeHarmMinorBtn', melMinor:'level3ModeMelMinorBtn'
 };
+
+// отбрасываем сохранённые значения, которых уже нет в списке кнопок
+level3ModeTypes = new Set(Array.from(level3ModeTypes).filter(id => LEVEL3_MODE_BTN_IDS[id]));
+// если сохранено семейство "лады", хотя бы один лад должен быть выбран
+if(level3Family === 'modes' && level3ModeTypes.size === 0){
+  level3ModeTypes.add(Object.keys(LEVEL3_MODE_BTN_IDS)[0]);
+}
+
+function saveLevel3Selection(){
+  try{
+    localStorage.setItem(L3_FAMILY_KEY, level3Family);
+    localStorage.setItem(L3_CHORD_TYPES_KEY, JSON.stringify(Array.from(level3ChordTypes)));
+    localStorage.setItem(L3_MODE_TYPES_KEY, JSON.stringify(Array.from(level3ModeTypes)));
+  }catch(e){}
+}
 
 // Подпись лада под нотой в центре круга (см. CENTER_MODE_LABEL_CONFIG /
 // centerModeLabelText выше). Если выбран лад (currentL3.modeType) — под
@@ -6195,6 +6408,34 @@ function getModeNoteLettersL3(ring, tonicIndex, modeId){
     letters.add(rootOf(noteNames[pc]));
   });
   return letters;
+}
+
+// Гармонический/мелодический минор: повышенная ступень (напр. 7-я — B
+// вместо B♭) физически подсвечивается и засчитывается на ячейке круга,
+// отстоящей от тоники на r.cellOffset шагов (та же ячейка, что в
+// raiseModeWedge/highlightModeForTonic красится красным и подписывается
+// повышенной нотой) — напр. для C: ячейка B♭ (индекс тоники - 2). Клик по
+// ЭТОЙ ячейке даёт другую букву (напр. "A♯" вместо "B") — она не входит в
+// currentL3.letters (там только 7 канонических нот лада).
+// ВАЖНО: ключ — КОНКРЕТНАЯ ячейка ("кольцо-индекс"), а не буква. По букве
+// подменять нельзя: на позиции ячейки-заменителя стоят РАЗНЫЕ ноты на
+// разных кольцах (для C гарм.: B♭ на мажорном, но Gm на минорном), и
+// подмена по букве ломала бы честную ноту лада с тем же именем (клик по
+// любой G засчитывался как B, а сама G — 5-я ступень — переставала
+// засчитываться). Подменяем только ячейку того кольца, на котором лад
+// реально построен (ring), — там и стоит замещённая нота.
+function getModeRaiseAliasesL3(ring, tonicIndex, modeId){
+  const cfg = trainModeCfg(modeId);
+  const aliases = new Map();
+  if(!cfg || !cfg.raise) return aliases;
+  const semitones = ring === 'minor' ? minorsSemitone : majorsSemitone;
+  const tonicSemitone = semitones[tonicIndex];
+  cfg.raise.forEach(r=>{
+    const idx = ((tonicIndex + r.cellOffset) % 12 + 12) % 12;
+    const pc = ((tonicSemitone + r.semitone) % 12 + 12) % 12;
+    aliases.set(ring + '-' + idx, rootOf(noteNames[pc]));
+  });
+  return aliases;
 }
 
 function updateLevel3ModeButtonsActive(){
@@ -6252,8 +6493,12 @@ function pickNewModeL3(){
     // "G♯") — иначе в вопросе появляются диезы, которых на мажорном
     // кругу нет. Для сверки правильности клика по-прежнему используется
     // канонический rootLetter (см. ниже и highlightLetterOnRings).
-    name: chosen.name,
+    // У лада нет наклонения мажор/минор, поэтому "m" минорного кольца
+    // отбрасываем (на случай отката к минорному пулу, когда все ноты
+    // мажорного кольца сняты) — иначе вопрос выглядел бы как "Gm".
+    name: chosen.name.replace(/m$/, ''),
     letters: getModeNoteLettersL3(chosen.ring, chosen.index, modeType),
+    raiseAliases: getModeRaiseAliasesL3(chosen.ring, chosen.index, modeType),
     rootLetter: rootLetter,
     found: new Set()
   };
@@ -6283,6 +6528,7 @@ function setLevel3ModeType(modeId){
   }
   updateLevel3ModeButtonsActive();
   updateLevel3ChordButtonsActive();
+  saveLevel3Selection();
   currentL3 = null;
   if(practiceLevel === 3) pickNewChordL3();
   if(typeof updateL3Piano === 'function') updateL3Piano();
@@ -6316,6 +6562,7 @@ document.querySelectorAll('#level2TypeButtons .ringBtn[data-chordtype]').forEach
     updateLevel3ChordButtonsActive();
     // Выбор типа аккорда снимает выбранный лад (взаимоисключающе).
     updateLevel3ModeButtonsActive();
+    saveLevel3Selection();
     currentL3 = null;
     if(practiceLevel === 3) pickNewChordL3();
     if(typeof updateL3Piano === 'function') updateL3Piano();
@@ -6328,7 +6575,16 @@ function onWedgeClickLevel3(e){
   if(!currentL3) return;
   const ring = e.currentTarget.getAttribute('data-ring');
   const index = parseInt(e.currentTarget.getAttribute('data-index'));
-  const letter = rootOf((ring === 'major' ? majors : minors)[index]);
+  let letter = rootOf((ring === 'major' ? majors : minors)[index]);
+  // Гармонический/мелодический минор: клик по ячейке-заменителю
+  // повышенной ступени (напр. B♭, физически подписанной как "B") даёт
+  // другую букву ("A♯"), не входящую в currentL3.letters — приводим её к
+  // канонической букве той же ступени лада. Ключ — конкретная ячейка
+  // ("кольцо-индекс"), а не буква (см. getModeRaiseAliasesL3).
+  const raiseKey = ring + '-' + index;
+  if(currentL3.raiseAliases && currentL3.raiseAliases.has(raiseKey)){
+    letter = currentL3.raiseAliases.get(raiseKey);
+  }
 
   if(currentL3.letters.has(letter)){
     // Для лада: тоника — зелёным, остальные верные ноты — цветом
@@ -6409,8 +6665,6 @@ if(level3HintBtn){
    В центре ничего не отображается. Настройки (выбор нот) — свой
    независимый набор selectedNotesL2 (см. круг выбора выше).
    ========================================================= */
-const level2NoteLabelEl = document.getElementById('level2NoteLabel');
-if(level2NoteLabelEl) level2NoteLabelEl.style.display = 'none';
 
 const YELLOW_HIGHLIGHT_L2 = resolveColor(3); /* жёлтый — подсветка ячейки-задания */
 
@@ -6750,6 +7004,7 @@ function clearTriadHighlights(){
     setWedgeInstant(item, item.baseColor, null);
   });
   highlightedTrainWedges = [];
+  unraiseTrainWedges();
 }
 
 // красит ячейки квинты и терции для заданной тоники (мажор или минор), 50% прозрачности.
@@ -6798,11 +7053,21 @@ function highlightModeForTonic(ring, tonicIndex){
   // Чтобы поменять на другой цвет — замените 'var(--purple)' в обоих
   // циклах ниже на нужную CSS-переменную (--yellow/--blue/--cyan/...,
   // см. их объявления в начале файла в блоках :root и [data-theme]). 121,237,255
+  // Ячейки гармонического/мелодического минора, у которых нота
+  // натурального минора временно заменяется повышенной (напр. B♭ -> B):
+  // красятся отдельным (красным) цветом и получают подменённую подпись —
+  // см. raiseModeWedge()/unraiseTrainWedges() ниже.
+  const raiseList = cfg.raise || [];
   for(let k = 1; k <= cfg.L; k++){
     const idx = ((tonicIndex - k) % 12 + 12) % 12;
     const item = trainWedgeMap[ring + '-' + idx];
     if(item){
-      setWedgeInstant(item, keyBlendColor('rgba(59,109,145,0.8)'), null);
+      const raiseCfg = raiseList.find(r => r.cellOffset === -k);
+      if(raiseCfg){
+        raiseModeWedge(item, ring, tonicIndex, raiseCfg.semitone);
+      } else {
+        setWedgeInstant(item, keyBlendColor('rgba(59,109,145,0.8)'), null);
+      }
       highlightedTrainWedges.push(item);
     }
   }
@@ -6810,10 +7075,41 @@ function highlightModeForTonic(ring, tonicIndex){
     const idx = ((tonicIndex + k) % 12 + 12) % 12;
     const item = trainWedgeMap[ring + '-' + idx];
     if(item){
-      setWedgeInstant(item, keyBlendColor('rgba(59,109,145,0.8)'), null);
+      const raiseCfg = raiseList.find(r => r.cellOffset === k);
+      if(raiseCfg){
+        raiseModeWedge(item, ring, tonicIndex, raiseCfg.semitone);
+      } else {
+        setWedgeInstant(item, keyBlendColor('rgba(59,109,145,0.8)'), null);
+      }
       highlightedTrainWedges.push(item);
     }
   }
+}
+
+// Красит одну ячейку цепочки лада в красный (--red-flash, уже с 50%
+// прозрачностью — тот же цвет, что и вспышка неверного ответа) и меняет
+// её подпись на повышенную ноту (напр. "Gb" -> "G", "Bb" -> "B") —
+// используется только для ячеек-заменителей гармонического/мелодического
+// минора (см. TRAIN_MODES.raiseFifthsOffset выше). Чтобы поменять цвет —
+// замените 'var(--red-flash)' ниже на нужную CSS-переменную (см. их
+// объявления в начале файла в блоках :root и [data-theme]).
+const raisedTrainWedges = [];
+function raiseModeWedge(item, ring, tonicIndex, semitoneInterval){
+  setWedgeInstant(item, 'var(--red-flash)', null);
+  const tonicName = trainWedgeMap[ring + '-' + tonicIndex].name;
+  const tonicRaw = ring === 'minor' ? rootOf(tonicName) : tonicName;
+  const spelled = spellTrainIntervalStrict(tonicRaw, semitoneInterval);
+  item.label.textContent = noteDisplay(spelled.text);
+  raisedTrainWedges.push(item);
+}
+
+// Возвращает подписи изменённых ячеек обратно к их родному названию —
+// вызывается вместе со снятием подсветки (см. clearTriadHighlights).
+function unraiseTrainWedges(){
+  raisedTrainWedges.forEach(item => {
+    item.label.textContent = noteDisplay(item.name);
+  });
+  raisedTrainWedges.length = 0;
 }
 
 // красит ячейки sus-аккорда (тоника + 2-3 ноты) для тоники, выбранной на
@@ -6932,10 +7228,22 @@ function highlightExtendedLetterCells(chordType, ring, tonicIndex){
       paint(ring, targetIndex, 'thirteenth');
     }
   } else if(chordType === 'add11' || chordType === 'dom9' || chordType === 'dom11' || chordType === 'dom13'){
-    if(!(chordType === 'dom13' && ring === 'minor')){
+    // 9 (dom9) и 11 (dom11) с тоникой на МИНОРНОМ кольце — те же ячейки,
+    // что рисуют стрелки: септима на противоположном кольце в позиции
+    // квинты (Am -> G), большая терция на своём кольце (+4, Am -> C#m)
+    const domMinorLetter = (chordType === 'dom9' || chordType === 'dom11') && ring === 'minor';
+    if(domMinorLetter){
+      paint(otherRing, fifthIndex, 'seventh');
+      paint(ring, ((tonicIndex + 4) % 12 + 12) % 12, 'third');
+      if(degrees.eleventh !== undefined){
+        paint(ring, ((tonicIndex - 1) % 12 + 12) % 12, 'eleventh');
+      }
+    } else if(!(chordType === 'dom13' && ring === 'minor')){
       paint(otherRing, fifthIndex, 'third');
     }
-    if(degrees.seventh !== undefined){
+    if(domMinorLetter){
+      // всё покрашено выше
+    } else if(degrees.seventh !== undefined){
       const midIndex = ((tonicIndex - 1) % 12 + 12) % 12;
       const targetIndex = ((tonicIndex - 2) % 12 + 12) % 12;
       if(degrees.eleventh !== undefined) paint(ring, midIndex, 'eleventh');
@@ -6958,7 +7266,11 @@ function highlightExtendedLetterCells(chordType, ring, tonicIndex){
       }
     }
   } else if(chordType === 'maj9' || chordType === 'maj11' || chordType === 'maj13'){
-    if(ring === 'minor' && chordType === 'maj9'){
+    if(ring === 'minor' && (chordType === 'maj9' || chordType === 'maj11')){
+      // maj9/maj11 на минорном кольце: терция и септима лежат на СВОЁМ же
+      // (минорном) кольце (Am -> C#m, Am -> G#m) — те же ячейки, что и у
+      // стрелок в buildExtendedLetterArrows. Раньше maj11 сюда не попадал
+      // и красился по общей ветке (крест на мажорное кольцо).
       const thirdIndex = ((tonicIndex + degrees.third) % 12 + 12) % 12;
       paint(ring, thirdIndex, 'third');
       if(degrees.seventh !== undefined){
@@ -7017,6 +7329,16 @@ function highlightExtendedLetterCells(chordType, ring, tonicIndex){
       // buildExtendedLetterArrows); нона окрашивается отдельно выше,
       // тердецима — отдельным блоком ниже
       const eleventhIdx = ((tonicIndex - 1) % 12 + 12) % 12;
+      const seventhIdx = ((tonicIndex - 2) % 12 + 12) % 12;
+      const thirdIdx = ((tonicIndex - 3) % 12 + 12) % 12;
+      paint(ring, seventhIdx, 'seventh');
+      paint(ring, thirdIdx, 'third');
+    } else if((chordType === 'm11' || chordType === 'm13') && ring !== 'minor'){
+      // m11/m13 на мажорном кольце: терция и септима — продолжение цепочки
+      // по своему же кольцу вниз по квинтам от ундецимы (C -> F -> Bb -> Eb),
+      // те же ячейки, что рисуют стрелки в buildExtendedLetterArrows.
+      // Раньше сюда попадала общая ветка с крестом на минорное кольцо
+      // (красились Am и Em вместо Eb и Bb).
       const seventhIdx = ((tonicIndex - 2) % 12 + 12) % 12;
       const thirdIdx = ((tonicIndex - 3) % 12 + 12) % 12;
       paint(ring, seventhIdx, 'seventh');
@@ -7209,7 +7531,6 @@ let trainRootHistory = [];
 function pickNewTrainChord(){
   let pool = trainActiveChords();
   if(pool.length === 0){
-    trainCenterText.textContent = '';
     currentTrain = null;
     return;
   }
@@ -7651,11 +7972,15 @@ const level1Panel = document.getElementById('level1Panel');
 const level2Panel = document.getElementById('level2Panel');
 const level3Panel = document.getElementById('level3Panel');
 const notesPanel = document.getElementById('notesPanel');
-const level2MajorMinorBtn = document.getElementById('level2MajorMinorBtn');
 
-// пока единственная кнопка в группе типа аккорда для Уровня 3 —
-// всегда активна, логики переключения нет (задел на будущее)
-if(level2MajorMinorBtn) level2MajorMinorBtn.classList.add('active');
+/* Раньше здесь принудительно включалась кнопка "Мажор/Минор" (остаток
+   от времён, когда она была единственной кнопкой в группе типов
+   аккорда). Этот код выполнялся ПОЗЖЕ восстановления сохранённого
+   выбора (updateLevel3ChordButtonsActive/updateLevel3ModeButtonsActive
+   выше), поэтому после перезагрузки страницы с выбранным ладом
+   "Мажор/Минор" загоралась вместе с ладом, хотя семейства
+   взаимоисключающие. Состоянием кнопок теперь занимаются только
+   функции update*ButtonsActive. */
 
 function applyPracticeLevel(){
   level1Panel.style.display = practiceLevel === 1 ? 'flex' : 'none';
@@ -7675,8 +8000,6 @@ function applyPracticeLevel(){
   if(practiceLevel === 3 && !currentL3) pickNewChordL3();
   if(typeof renderLevel3Hint === 'function') renderLevel3Hint();
   if(typeof updateL3Piano === 'function') updateL3Piano();
-
-  if(level2NoteLabelEl) level2NoteLabelEl.style.display = 'none';
 
   if(practiceLevel === 2 && currentL2){
     setWedgeFillL2(currentL2.ring, currentL2.index, YELLOW_HIGHLIGHT_L2);
@@ -7857,6 +8180,18 @@ function currentTopTab(){
   return 'p1';
 }
 
+/* Выбранный способ ответа на вкладке "Ноты" (1 — клик мышью,
+   2 — MIDI/ПК клавиатура) запоминается отдельно от текущей вкладки,
+   поэтому уход на "Аккорды/Лады" или "Обучение" и возврат обратно
+   его не сбрасывает; значение сохраняется и между перезагрузками,
+   как остальные настройки. */
+const NOTES_INPUT_LEVEL_KEY = 'circleNotesInputLevel';
+let notesInputLevel = (practiceLevel === 2 || localStorage.getItem(NOTES_INPUT_LEVEL_KEY) === '2') ? 2 : 1;
+function setNotesInputLevel(level){
+  notesInputLevel = level;
+  try{ localStorage.setItem(NOTES_INPUT_LEVEL_KEY, String(level)); }catch(e){}
+}
+
 function updateNotesInputButtons(){
   if(notesInputMouseBtn) notesInputMouseBtn.classList.toggle('active', practiceLevel === 1);
   if(notesInputMidiBtn) notesInputMidiBtn.classList.toggle('active', practiceLevel === 2);
@@ -7877,7 +8212,7 @@ topTabPractice1Btn.addEventListener('click', ()=>{
   // способ ответа (клик мышью / MIDI-ПК клавиатура) — меняем
   // practiceLevel на 1 только если до этого была активна вкладка
   // "Аккорды/Лады" (practiceLevel === 3) либо шло "Обучение".
-  if(practiceLevel !== 1 && practiceLevel !== 2) practiceLevel = 1;
+  if(practiceLevel !== 1 && practiceLevel !== 2) practiceLevel = notesInputLevel;
   applyMode();
   applyPracticeLevel();
   applyTopTabs();
@@ -7899,6 +8234,7 @@ if(notesInputMouseBtn){
   notesInputMouseBtn.addEventListener('click', ()=>{
     appMode = 'practice';
     practiceLevel = 1;
+    setNotesInputLevel(1);
     applyMode();
     applyPracticeLevel();
     applyTopTabs();
@@ -7908,6 +8244,7 @@ if(notesInputMidiBtn){
   notesInputMidiBtn.addEventListener('click', ()=>{
     appMode = 'practice';
     practiceLevel = 2;
+    setNotesInputLevel(2);
     applyMode();
     applyPracticeLevel();
     applyTopTabs();
@@ -7925,28 +8262,8 @@ window.addEventListener('resize', ()=>{
 });
 applyTopTabs();
 
-/* =========================================================
-   Масштабирование круга: переменные объявлены здесь (до логики панели
-   настроек ниже), т.к. updateSidePanelPinOffset() читает zoomPractice/
-   zoomTraining через typeof уже при первом вызове updateSidePanelLayout()
-   на загрузке страницы (когда "настройки сбоку" включены). typeof на
-   let/const до их объявления (temporal dead zone) кидает ReferenceError,
-   а не 'undefined' как для var — поэтому объявления зума должны идти
-   раньше, иначе при включённой галочке "настройки сбоку" вся остальная
-   часть этого <script> (включая requestMidiAccess() в самом низу) не
-   выполнялась бы из-за необработанного исключения (этим объясняется
-   баг с отсутствием запроса доступа к MIDI при включённой галочке).
-   ========================================================= */
-const ZOOM_MIN = 100;
-const ZOOM_MAX = 1000;
-const ZOOM_STEP = 10;
-const ZOOM_PRACTICE_STORAGE_KEY = 'circleOfFifthsZoomPractice';
-const ZOOM_TRAINING_STORAGE_KEY = 'circleOfFifthsZoomTraining';
-
-let zoomPractice = parseInt(localStorage.getItem(ZOOM_PRACTICE_STORAGE_KEY), 10);
-if(isNaN(zoomPractice)) zoomPractice = 100;
-let zoomTraining = parseInt(localStorage.getItem(ZOOM_TRAINING_STORAGE_KEY), 10);
-if(isNaN(zoomTraining)) zoomTraining = 100;
+/* Переменные и константы масштабирования круга (ZOOM_*, zoomPractice,
+   zoomTraining) перенесены в самое начало <script> — см. комментарий там. */
 
 /* =========================================================
    Клавиша W (или Ц) — показать/скрыть модальную панель настроек
@@ -8723,7 +9040,6 @@ document.addEventListener('keydown', (e)=>{
    Нажатие ноты с ДРУГИМ pitch class сбрасывает цикл и начинает заново
    с мажорной клетки для новой ноты — как и с буквенными горячими клавишами.
    ========================================================= */
-const minorsSemitone = minors.map(n => noteNames.indexOf(rootOf(n)));
 
 let midiAccess = null;
 let midiHotkeyPc = null;
@@ -9217,6 +9533,9 @@ try{
 
 const dawIntervalInput = document.getElementById('dawIntervalInput');
 const dawVelocityInput = document.getElementById('dawVelocityInput');
+// верхний предел интервала между нотами (сек): дальше таймеры браузера
+// переполняются и срабатывают мгновенно
+const DAW_INTERVAL_MAX_SEC = 60;
 const dawFormatMidi1Btn = document.getElementById('dawFormatMidi1Btn');
 const dawFormatMidi2Btn = document.getElementById('dawFormatMidi2Btn');
 const dawOutputSelect = document.getElementById('dawOutputSelect');
@@ -9227,7 +9546,7 @@ const dawPlaySequenceBtn = document.getElementById('dawPlaySequenceBtn');
 function parseDawInterval(raw){
   const n = parseFloat(String(raw).trim().replace(',', '.'));
   if(!isFinite(n) || n < 0) return 1;
-  return n;
+  return Math.min(n, DAW_INTERVAL_MAX_SEC);
 }
 function loadDawInterval(){
   let saved = null;
@@ -9639,7 +9958,10 @@ function playCurrentTrainChordToDaw(){
     const items = notes.slice(0, DAW_SPLIT_MAX).map((note, i) => {
       const cfg = dawSplitConfig[i];
       const channel = (cfg.ch - 1) & 0x0f;
-      const noteNum = note.pc + (cfg.oct + 1) * 12;
+      // rank учитывает, что нона/ундецима/тердецима лежат октавой выше
+      // тоники (как в обычном режиме, см. dawNoteNumberFor); cfg.oct
+      // задаёт базовую октаву строки.
+      const noteNum = Math.min(127, Math.max(0, note.pc + (cfg.oct + 1) * 12 + (note.rank || 0) * 12));
       const ccVal = cfg.live ? dawLiveModwheelValue : cfg.cc;
       return { channel, noteNum, ccVal, live: cfg.live };
     });

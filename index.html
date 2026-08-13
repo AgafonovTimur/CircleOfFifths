@@ -6369,7 +6369,12 @@ function saveLevel3Selection(){
 // Если выбран тип аккорда (не лад) — подпись пустая, в центре остаётся
 // только аккорд, как и раньше.
 function updateL3CenterModeLabel(){
-  if(!currentL3 || !currentL3.modeType){
+  // Название лада в центре круга относится только к вкладке "Аккорды/Лады"
+  // (practiceLevel === 3). На других вкладках (напр. "Ноты") надпись
+  // должна быть пустой, даже если currentL3 всё ещё хранит последний
+  // выбранный лад — иначе после перехода в "Ноты" старое название
+  // оставалось висеть поверх круга.
+  if(practiceLevel !== 3 || !currentL3 || !currentL3.modeType){
     centerModeLabelText.textContent = '';
     return;
   }

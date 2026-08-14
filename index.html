@@ -184,6 +184,233 @@
     --status-ok:#1e7a34;
     --status-error:#b3261e;
   }
+
+  /* ===== Дополнительные тёмные темы (переключатель «Тема №1…№4») =====
+     Каждая переопределяет ту же палитру переменных, что и :root.
+     Тема 1 — серо-золотая, тема 2 — тёмно-синяя с оранжевым,
+     тема 3 — серая с оранжевым, тема 4 — тёмно-серая с оранжевым. */
+  body.theme-t1{
+    --btn-bg-bottom:#232326;
+    --btn-border:#3a3a40;
+    --accent-top:#d8ad51;
+    --accent-2:#a9853a;
+    --accent-border:#8d6f2f;
+    --btn-font:'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    /* общий фон страницы — как в тёмной теме */
+    --bg:#141414;
+    --shadow:#303030;
+    --app-text-color:#e4e4e7;
+    --text:var(--app-text-color);
+    --btn-text:var(--app-text-color);
+
+    --ring-major:#313136;
+    --ring-minor:#313136;
+    --ring-note:#3d3d43;
+    --ring-major-hover:#45454b;
+    --ring-minor-hover:#3b3b41;
+
+    --menu-bg:#232326;
+    --menu-border:#2f2f33;
+    --btn-bg:#3a3a40;
+    --btn-bg-hover:#4a4a52;
+    --btn-active-bg:#c9a04a;
+    --btn-active-text:#221c0c;
+    --btn-active-hover-bg:#d8ad51;
+    --key-pressed:var(--btn-active-bg);
+    --header-text:var(--app-text-color);
+    --section-label:var(--app-text-color);
+
+    --piano-white-key:#6b6b6b;
+    --piano-black-key:#1a1a1c;
+    --piano-key-label-on-white:#1a1a1c;
+    --piano-key-label-on-black:#fff;
+
+    --panel-border:rgba(255,255,255,0.15);
+    --checkbox-accent:#c9a04a;
+  }
+
+  body.theme-t2{
+    --btn-border:#273044;
+    --accent-border:#e58e38;
+    --btn-font:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --bg:#0b0e14;
+    --shadow:#1f2738;
+    --app-text-color:#e2e8f0;
+    --text:var(--app-text-color);
+    --btn-text:var(--app-text-color);
+
+    --ring-major:#1c2230;
+    --ring-minor:#1c2230;
+    --ring-note:#273044;
+    --ring-major-hover:#252d40;
+    --ring-minor-hover:#222a3a;
+
+    --menu-bg:#131722;
+    --menu-border:#273044;
+    --btn-bg:#1c2230;
+    --btn-bg-hover:#252d40;
+    --btn-active-bg:#1b212f;
+    --btn-active-text:#f59e0b;
+    --btn-active-hover-bg:#232b3d;
+    /* нажатая нота на круге остаётся заливкой, иначе её не видно */
+    --key-pressed:#f59e0b;
+    --header-text:var(--app-text-color);
+    --section-label:var(--app-text-color);
+
+    --piano-white-key:#4a5568;
+    --piano-black-key:#10141d;
+    --piano-key-label-on-white:#0b0e14;
+    --piano-key-label-on-black:#fff;
+
+    --panel-border:rgba(255,255,255,0.12);
+    --tooltip-bg:#131722;
+    --tooltip-text:#e2e8f0;
+    --checkbox-accent:#f59e0b;
+  }
+
+
+
+
+
+
+  body.theme-t4{
+    --btn-border:#3d3d3d;
+    --accent-border:#e58e38;
+    --btn-font:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --bg:#121212;
+    --shadow:#2a2a2a;
+    --app-text-color:#e4e4e7;
+    --text:var(--app-text-color);
+    --btn-text:var(--app-text-color);
+
+    --ring-major:#2b2b2b;
+    --ring-minor:#2b2b2b;
+    --ring-note:#3a3a3a;
+    --ring-major-hover:#383838;
+    --ring-minor-hover:#333333;
+
+    --menu-bg:#1e1e1e;
+    --menu-border:#2a2a2a;
+    --btn-bg:#2d2d2d;
+    --btn-bg-hover:#383838;
+    --btn-active-bg:#28241e;
+    --btn-active-text:#f59e0b;
+    --btn-active-hover-bg:#332d24;
+    /* нажатая нота на круге остаётся заливкой, иначе её не видно */
+    --key-pressed:#f59e0b;
+    --header-text:var(--app-text-color);
+    --section-label:var(--app-text-color);
+
+    --piano-white-key:#6b6b6b;
+    --piano-black-key:#161616;
+    --piano-key-label-on-white:#121212;
+    --piano-key-label-on-black:#fff;
+
+    --panel-border:rgba(255,255,255,0.14);
+    --checkbox-accent:#f59e0b;
+  }
+
+  /* ===== Вид кнопок в дополнительных темах =====
+     Серо-жёлтая повторяет кнопки из файла ритма: свой шрифт, лёгкая
+     выпуклость (вертикальный градиент), рамка и скругление 8px, у выбранной
+     кнопки — жёлтый градиент и жирный тёмный текст.
+     Тёмно-синяя и чёрно-оранжевая повторяют кнопки из Ear Trainer: плоский
+     фон, тонкая рамка, скругление 6px, шрифт системного интерфейса. */
+  body.theme-t1 .ringBtn,
+  body.theme-t1 .noteNamingBtn,
+  body.theme-t1 .noteBtn,
+  body.theme-t1 .topTabBtn{
+    font-family:var(--btn-font);
+    font-weight:400;
+    /* высота/отступы кнопок — как в файле ритма */
+    font-size:13px;
+    padding:6px 11px;
+    line-height:1.2;
+    background:linear-gradient(var(--btn-bg), var(--btn-bg-bottom));
+    border:1px solid var(--btn-border);
+    border-radius:8px;
+  }
+  body.theme-t1 .ringBtn:hover:not(.disabled),
+  body.theme-t1 .noteNamingBtn:hover,
+  body.theme-t1 .noteBtn:hover,
+  body.theme-t1 .topTabBtn:hover{
+    background:var(--btn-bg-hover);
+  }
+  body.theme-t1 .ringBtn.active,
+  body.theme-t1 .noteNamingBtn.active,
+  body.theme-t1 .noteBtn.active,
+  body.theme-t1 .topTabBtn.active{
+    background:linear-gradient(var(--accent-top), var(--accent-2));
+    color:var(--btn-active-text);
+    font-weight:700;
+    border-color:var(--accent-border);
+  }
+  body.theme-t1 .ringBtn.active:hover,
+  body.theme-t1 .noteNamingBtn.active:hover,
+  body.theme-t1 .noteBtn.active:hover,
+  body.theme-t1 .topTabBtn.active:hover{
+    background:var(--btn-active-hover-bg);
+  }
+
+  body.theme-t2 .ringBtn,
+  body.theme-t2 .noteNamingBtn,
+  body.theme-t2 .noteBtn,
+  body.theme-t2 .topTabBtn,
+  body.theme-t4 .ringBtn,
+  body.theme-t4 .noteNamingBtn,
+  body.theme-t4 .noteBtn,
+  body.theme-t4 .topTabBtn{
+    font-family:var(--btn-font);
+    font-weight:500;
+    font-size:13px;
+    padding:6px 11px;
+    line-height:1.2;
+    border:1px solid var(--btn-border);
+    border-radius:6px;
+  }
+  body.theme-t2 .ringBtn.active,
+  body.theme-t2 .noteNamingBtn.active,
+  body.theme-t2 .noteBtn.active,
+  body.theme-t2 .topTabBtn.active,
+  body.theme-t4 .ringBtn.active,
+  body.theme-t4 .noteNamingBtn.active,
+  body.theme-t4 .noteBtn.active,
+  body.theme-t4 .topTabBtn.active{
+    border-color:var(--accent-border, var(--btn-active-bg));
+  }
+
+  /* строка выбора темы */
+  .themeSelectRow{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    width:100%;
+  }
+  /* строка выбора темы на вкладках "Ноты" и "Аккорды/Лады": стоит под
+     чекбоксом "Настройки сбоку от круга", с одинаковыми отступами от
+     него сверху и от следующего элемента снизу */
+  .themeSelectRowPractice{
+    align-self:stretch;
+    margin:2px 0 4px;
+  }
+  .themeSelectRow select{
+    /* выпадающий список занимает ровно половину ширины окна настроек
+       и прижат к его правому краю (margin-left:auto съедает свободное
+       место слева, подпись остаётся у левого края) */
+    flex:0 0 50%;
+    width:50%;
+    max-width:50%;
+    margin-left:auto;
+    background:var(--btn-bg);
+    color:var(--btn-text);
+    border:none;
+    border-radius:6px;
+    padding:8px 6px;
+    font-family:var(--font);
+    font-size:13px;
+    cursor:pointer;
+  }
+
   html,body{
     margin:0;padding:0;background:var(--bg);
     height:100%;
@@ -216,6 +443,9 @@
      "клавиатурной навигацией" и подсвечивает focus-visible). Рамка не
      несёт смысла в этом интерфейсе, поэтому убираем везде. */
   button:focus, button:focus-visible{
+    outline:none;
+  }
+  select:focus, select:focus-visible{
     outline:none;
   }
   #app{
@@ -906,6 +1136,7 @@
      ширину панели (как на макете), кнопки равной ширины. ===== */
   .noteNamingSwitchRow{
     display:flex;
+    flex-wrap:wrap;
     gap:8px;
     align-self:stretch;
     width:100%;
@@ -1514,6 +1745,22 @@
 
   <label id="sidePanelPinRow"><input type="checkbox" id="sidePanelPinCheckbox"><span data-i18n="sidePanelPin">Настройки сбоку от круга</span></label>
 
+  <!-- Вторая копия строки выбора темы — для вкладок "Ноты" и
+       "Аккорды/Лады". Физически переносится под чекбокс "Настройки
+       сбоку от круга" той вкладки, которая открыта (см.
+       updateThemeRowPosition() в <script>), а на вкладке "Обучение"
+       скрывается — там своя строка темы внутри #trainExtraSettings. -->
+  <div class="themeSelectRow themeSelectRowPractice" id="themeSwitchRowPractice" style="display:none;">
+    <span data-i18n="themeLabel">Тема оформления:</span>
+    <select id="themeSelectPractice" class="themeSelectEl">
+      <option value="dark" data-i18n="themeDark">Тёмная</option>
+      <option value="t1" data-i18n="themeGrayYellow">Серо-жёлтая</option>
+      <option value="t4" data-i18n="themeBlackOrange">Чёрно-оранжевая</option>
+      <option value="t2" data-i18n="themeDarkBlue">Тёмно-синяя</option>
+      <option value="light" data-i18n="themeLight">Светлая</option>
+    </select>
+  </div>
+
   <div id="practicePanel">
 
     <div id="notesPanel">
@@ -1577,7 +1824,7 @@
             </select>
           </div>
           <div id="notesMidiInputSelectsContainer" class="midiInputSelectsContainer">
-            <div class="midiPanelRow"><select class="midiInputPortSelect" id="notesMidiInputSelect"><option>—</option></select></div>
+            <div class="midiPanelRow"><span data-i18n="midiInputPortLabel">MIDI вход:</span><select class="midiInputPortSelect" id="notesMidiInputSelect"><option>—</option></select></div>
           </div>
           <div class="midiPanelRow">
             <label for="notesDawOutputSelect" data-i18n="midiOutputLabel">MIDI выход:</label>
@@ -1734,11 +1981,11 @@
       <div id="level3ModeButtonsExtra" class="chordGridCard cols2">
         <div class="ringBtnRow">
           <button class="ringBtn" id="level3ModeHarmMinorBtn" type="button" data-mode="harmMinor" data-i18n="modeHarmMinor">Гармонический минор</button>
-          <span class="infoIcon" data-tip="@@4-2@@ (4 слева от тоники-2 справа) формула, но на схеме @@Bb заменена на B@@ на круге для удобства запоминания и она выделена цветом, чтобы не забыть при изучении - @@C D Eb F G Ab Bb@@">i</span>
+          <span class="infoIcon" data-i18n-tip="tipModeHarmMinorL3" data-tip="@@4-2@@ (4 слева от тоники-2 справа) формула, но на схеме @@Bb заменена на B@@ на круге для удобства запоминания и она выделена цветом, чтобы не забыть при изучении - @@C D Eb F G Ab Bb@@">i</span>
         </div>
         <div class="ringBtnRow">
           <button class="ringBtn" id="level3ModeMelMinorBtn" type="button" data-mode="melMinor" data-i18n="modeMelMinor">Мелодический минор</button>
-          <span class="infoIcon" data-tip="@@4-2@@ (4 слева от тоники-2 справа) формула, но на схеме @@Bb заменена на B, Ab заменена на A@@ и не сдвинута на +1 по часовой стрелке на круге для удобства запоминания и она выделена цветом, чтобы не забыть при изучении - @@C D Eb F G A Bb@@">i</span>
+          <span class="infoIcon" data-i18n-tip="tipModeMelMinorL3" data-tip="@@4-2@@ (4 слева от тоники-2 справа) формула, но на схеме @@Bb заменена на B, Ab заменена на A@@ и не сдвинута на +1 по часовой стрелке на круге для удобства запоминания и она выделена цветом, чтобы не забыть при изучении - @@C D Eb F G Ab Bb@@">i</span>
         </div>
       </div>
 
@@ -1772,7 +2019,7 @@
           </select>
         </div>
         <div id="l3MidiInputSelectsContainer" class="midiInputSelectsContainer">
-          <div class="midiPanelRow"><select class="midiInputPortSelect" id="l3MidiInputSelect"><option>—</option></select></div>
+          <div class="midiPanelRow"><span data-i18n="midiInputPortLabel">MIDI вход:</span><select class="midiInputPortSelect" id="l3MidiInputSelect"><option>—</option></select></div>
         </div>
         <div class="midiPanelRow">
           <label for="l3DawOutputSelect" data-i18n="midiOutputLabel">MIDI выход:</label>
@@ -1947,11 +2194,11 @@
         <div id="trainModeGroupsExtra" class="chordGridCard cols2">
           <div class="ringBtnRow">
             <button class="ringBtn" id="trainModeHarmMinorBtn" data-mode="harmMinor" data-i18n="modeHarmMinor">Гармонический минор</button>
-            <span class="infoIcon" data-tip="@@4-2@@ (4 слева от тоники-2 справа) формула, но на схеме @@Bb заменена на B@@ на круге - @@C D Eb F G Ab Bb@@. Засчитываются оба варианта на мажорном кольце : Bb и B(второй вариант под формулу 4-2)">i</span>
+            <span class="infoIcon" data-i18n-tip="tipModeHarmMinorTrain" data-tip="@@4-2@@ (4 слева от тоники-2 справа) формула, но на схеме @@Bb заменена на B@@ на круге - @@C D Eb F G Ab Bb@@. Засчитываются оба варианта на мажорном кольце : Bb и B(второй вариант под формулу 4-2)">i</span>
           </div>
           <div class="ringBtnRow">
             <button class="ringBtn" id="trainModeMelMinorBtn" data-mode="melMinor" data-i18n="modeMelMinor">Мелодический минор</button>
-            <span class="infoIcon" data-tip="@@4-2@@ (4 слева от тоники-2 справа) формула, но на схеме @@Bb заменена на B, Ab заменена на A@@ на круге - @@C D Eb F G Ab Bb@@. Засчитываются оба варианта на мажорном кольце : Bb и B(второй вариант под формулу 4-2)">i</span>
+            <span class="infoIcon" data-i18n-tip="tipModeMelMinorTrain" data-tip="@@4-2@@ (4 слева от тоники-2 справа) формула, но на схеме @@Bb заменена на B, Ab заменена на A@@ на круге - @@C D Eb F G Ab Bb@@. Засчитываются оба варианта на мажорном кольце : Bb и B(второй вариант под формулу 4-2)">i</span>
           </div>
         </div>
       </div>
@@ -1962,9 +2209,15 @@
           <button type="button" class="noteNamingBtn" id="langEnBtn" data-lang="en">English</button>
           <button type="button" class="noteNamingBtn" id="langZhBtn" data-lang="zh">中文</button>
         </div>
-        <div class="noteNamingSwitchRow" id="themeSwitchRow">
-          <button type="button" class="noteNamingBtn" id="themeDarkBtn" data-theme="dark" data-i18n="themeDark">Тёмная тема</button>
-          <button type="button" class="noteNamingBtn" id="themeLightBtn" data-theme="light" data-i18n="themeLight">Светлая тема</button>
+        <div class="themeSelectRow" id="themeSwitchRow">
+          <span data-i18n="themeLabel">Тема оформления:</span>
+          <select id="themeSelect" class="themeSelectEl">
+            <option value="dark" data-i18n="themeDark">Тёмная</option>
+            <option value="t1" data-i18n="themeGrayYellow">Серо-жёлтая</option>
+            <option value="t4" data-i18n="themeBlackOrange">Чёрно-оранжевая</option>
+            <option value="t2" data-i18n="themeDarkBlue">Тёмно-синяя</option>
+            <option value="light" data-i18n="themeLight">Светлая</option>
+          </select>
         </div>
         <label><input type="checkbox" id="trainShowChordLettersCheckbox"><span data-i18n="showChordLetters">Показывать буквы аккорда под нотами</span></label>
         <label><input type="checkbox" id="trainShowDegreesCheckbox"><span data-i18n="showDegrees">Показывать ступени аккорда</span></label>
@@ -2010,7 +2263,7 @@
           </select>
         </div>
         <div id="midiInputSelectsContainer" class="midiInputSelectsContainer">
-          <div class="midiPanelRow"><select class="midiInputPortSelect" id="midiInputSelect"><option>—</option></select></div>
+          <div class="midiPanelRow"><span data-i18n="midiInputPortLabel">MIDI вход:</span><select class="midiInputPortSelect" id="midiInputSelect"><option>—</option></select></div>
         </div>
         <div id="dawOutPanel">
           <div class="midiPanelRow">
@@ -2107,9 +2360,9 @@ const CENTER_MODE_LABEL_CONFIG = {
   maxWidth: 160          // максимальная ширина строки, чтобы не заезжать на круг
 };
 const CENTER_MODE_LABEL_SHORT = {
-  mixolydian: 'Миксолид.',
-  harmMinor: 'Гармон. минор',
-  melMinor: 'Мелод. минор'
+  mixolydian: { ru:'Миксолид.',      en:'Mixolyd.',   zh:'混合利底亚' },
+  harmMinor:  { ru:'Гармон. минор',  en:'Harm. minor', zh:'和声小调' },
+  melMinor:   { ru:'Мелод. минор',   en:'Mel. minor',   zh:'旋律小调' }
 };
 /* ========================================================= */
 
@@ -2200,7 +2453,13 @@ function refreshAllNoteNameDisplays(){
       if(s3) s3.label.textContent = noteDisplay(names[i]);
       const t = trainWedgeMap[ring+'-'+i];
       if(t){
-        t.label.textContent = noteDisplay(t.name);
+        // Ячейка-заменитель гарм./мелод. минора (см. raiseModeWedge): у неё
+        // сейчас на подписи не родная нота, а замена (напр. "B" вместо
+        // "Bb") — пересобираем именно её, иначе после переключения
+        // ABC/до-ре-ми подпись откатывалась на родную ноту, а ячейка при
+        // этом оставалась красной (см. баг с "дробью" тоже завязанной на
+        // t.name — там дробь трогать не нужно, у заменителей её нет).
+        t.label.textContent = noteDisplay(t.raisedLabelRaw || t.name);
         if(t.altBottomLabel){
           const altNoteName = (TRAIN_ALT_NOTE_MAP[ring] || {})[t.name];
           if(altNoteName) t.altBottomLabel.textContent = noteDisplay(altNoteName);
@@ -2272,13 +2531,22 @@ const I18N = {
   showChordLetters:    { ru:'Показывать буквы аккорда под нотами', en:'Show chord letters under notes', zh:'在音符下方显示和弦字母' },
   showDegrees:         { ru:'Показывать ступени аккорда', en:'Show chord degrees', zh:'显示和弦音级' },
   lockKey:             { ru:'Привязать тональность', en:'Lock key', zh:'锁定调性' },
-  themeDark:           { ru:'Тёмная тема', en:'Dark theme', zh:'深色主题' },
-  themeLight:          { ru:'Светлая тема', en:'Light theme', zh:'浅色主题' },
+  themeLabel:          { ru:'Тема оформления:', en:'Theme:', zh:'主题：' },
+  themeDark:           { ru:'Тёмная', en:'Dark', zh:'深色' },
+  themeGrayYellow:     { ru:'Серо-жёлтая', en:'Gray-yellow', zh:'灰黄色' },
+  themeBlackOrange:    { ru:'Чёрно-оранжевая', en:'Black-orange', zh:'黑橙色' },
+  themeDarkBlue:       { ru:'Тёмно-синяя', en:'Dark blue', zh:'深蓝色' },
+  themeLight:          { ru:'Светлая', en:'Light', zh:'浅色' },
   altNoteMajorTitle:   { ru:'Показать альтернативную ноту на мажорном кругу', en:'Show alternate note on the major circle', zh:'在大调圆圈上显示替代音符' },
   altNoteMinorTitle:   { ru:'Показать альтернативную ноту на минорном кругу', en:'Show alternate note on the minor circle', zh:'在小调圆圈上显示替代音符' },
   noteNamingTitle:     { ru:'Название нот', en:'Note naming', zh:'音符命名' },
   midiInputLabel:      { ru:'Количество MIDI входов:', en:'Number of MIDI inputs:', zh:'MIDI 输入数量：' },
+  midiInputPortLabel:  { ru:'MIDI вход:', en:'MIDI input:', zh:'MIDI 输入：' },
   midiOutputLabel:     { ru:'MIDI выход:', en:'MIDI output:', zh:'MIDI 输出：' },
+  midiNoInputsFound:   { ru:'MIDI входы не найдены', en:'No MIDI inputs found', zh:'未找到MIDI输入设备' },
+  midiInputsPrefix:    { ru:'Входы:', en:'Inputs:', zh:'输入设备：' },
+  midiPortNotConnected:{ ru:'(не подключено)', en:'(not connected)', zh:'（未连接）' },
+  webMidiUnsupported:  { ru:'Браузер не поддерживает Web MIDI (нужен Chrome/Edge)', en:'Browser does not support Web MIDI (Chrome/Edge required)', zh:'浏览器不支持 Web MIDI（需要 Chrome/Edge）' },
   midiStatusDefault:   { ru:'MIDI-клавиатура не подключена. Нажмите кнопку ниже, чтобы подключить.', en:'MIDI keyboard not connected. Press the button below to connect.', zh:'MIDI键盘未连接。请点击下方按钮进行连接。' },
   midiReconnectBtn:    { ru:'Подключить MIDI клавиатуру', en:'Connect MIDI keyboard', zh:'连接MIDI键盘' },
   dawOutTitle:         { ru:'Сыграть аккорд в DAW (при нажатии на ячейку аккорда):', en:'Play chord in DAW (when clicking a chord cell):', zh:'在DAW中播放和弦（点击和弦单元格时）：' },
@@ -2297,6 +2565,26 @@ const I18N = {
   modeMelMinor:        { ru:'Мелодический минор', en:'Melodic minor', zh:'旋律小调' },
   modePhrygian:        { ru:'Фригийский', en:'Phrygian', zh:'弗里几亚调式' },
   modeLocrian:         { ru:'Локрийский', en:'Locrian', zh:'洛克利亚调式' },
+  tipModeHarmMinorL3: {
+    ru:'@@4-2@@ (4 слева от тоники-2 справа) формула, но на схеме @@Bb заменена на B@@ на круге для удобства запоминания и она выделена цветом, чтобы не забыть при изучении - @@C D Eb F G Ab Bb@@',
+    en:'@@4-2@@ (4 to the left of the tonic, 2 to the right) is the formula, but on the diagram @@Bb is replaced with B@@ on the circle for easier memorising and it is highlighted so you do not forget while studying - @@C D Eb F G Ab Bb@@',
+    zh:'@@4-2@@（主音左边4个，右边2个）是公式，但在图上为方便记忆 @@Bb 在圆圈上被替换为 B@@，并用颜色标出以便学习时不要忘记 - @@C D Eb F G Ab Bb@@'
+  },
+  tipModeMelMinorL3: {
+    ru:'@@4-2@@ (4 слева от тоники-2 справа) формула, но на схеме @@Bb заменена на B, Ab заменена на A@@ и не сдвинута на +1 по часовой стрелке на круге для удобства запоминания и она выделена цветом, чтобы не забыть при изучении - @@C D Eb F G Ab Bb@@',
+    en:'@@4-2@@ (4 to the left of the tonic, 2 to the right) is the formula, but on the diagram @@Bb is replaced with B, Ab is replaced with A@@ (not shifted +1 clockwise on the circle) for easier memorising and it is highlighted so you do not forget while studying - @@C D Eb F G Ab Bb@@',
+    zh:'@@4-2@@（主音左边4个，右边2个）是公式，但在图上为方便记忆 @@Bb 被替换为 B，Ab 被替换为 A@@（在圆圈上不顺时针移动+1），并用颜色标出以便学习时不要忘记 - @@C D Eb F G Ab Bb@@'
+  },
+  tipModeHarmMinorTrain: {
+    ru:'@@4-2@@ (4 слева от тоники-2 справа) формула, но на схеме @@Bb заменена на B@@ на круге - @@C D Eb F G Ab Bb@@. Засчитываются оба варианта на мажорном кольце : Bb и B(второй вариант под формулу 4-2)',
+    en:'@@4-2@@ (4 to the left of the tonic, 2 to the right) is the formula, but on the diagram @@Bb is replaced with B@@ on the circle - @@C D Eb F G Ab Bb@@. Both variants count on the major ring: Bb and B (the second variant matches the 4-2 formula)',
+    zh:'@@4-2@@（主音左边4个，右边2个）是公式，但在图上 @@Bb 在圆圈上被替换为 B@@ - @@C D Eb F G Ab Bb@@。在大调音环上两种写法都算正确：Bb 和 B（第二种对应4-2公式）'
+  },
+  tipModeMelMinorTrain: {
+    ru:'@@4-2@@ (4 слева от тоники-2 справа) формула, но на схеме @@Bb заменена на B, Ab заменена на A@@ на круге - @@C D Eb F G Ab Bb@@. Засчитываются оба варианта на мажорном кольце : Bb и B(второй вариант под формулу 4-2)',
+    en:'@@4-2@@ (4 to the left of the tonic, 2 to the right) is the formula, but on the diagram @@Bb is replaced with B, Ab is replaced with A@@ on the circle - @@C D Eb F G Ab Bb@@. Both variants count on the major ring: Bb and B (the second variant matches the 4-2 formula)',
+    zh:'@@4-2@@（主音左边4个，右边2个）是公式，但在图上 @@Bb 被替换为 B，Ab 被替换为 A@@ - @@C D Eb F G Ab Bb@@。在大调音环上两种写法都算正确：Bb 和 B（第二种对应4-2公式）'
+  },
   noInputsOption:      { ru:'Нет входов', en:'No inputs', zh:'无输入设备' },
   noOutputsOption:     { ru:'Нет выходов', en:'No outputs', zh:'无输出设备' },
   dawSplitNoteLabel:   { ru:'Нота', en:'Note', zh:'音符' },
@@ -2414,24 +2702,36 @@ function applyLanguage(lang){
    открытии.
    ========================================================= */
 const APP_THEME_KEY = 'circleAppTheme';
+/* Все темы одним списком: id -> класс на body ('' = базовая тёмная из :root).
+   Порядок пунктов в выпадающем списке задан в разметке (#themeSelect). */
+const APP_THEMES = {
+  dark:  '',
+  t1:    'theme-t1',
+  t4:    'theme-t4',
+  t2:    'theme-t2',
+  light: 'theme-light'
+};
 let appTheme = localStorage.getItem(APP_THEME_KEY) || 'dark';
-if(appTheme !== 'dark' && appTheme !== 'light') appTheme = 'dark';
+if(!(appTheme in APP_THEMES)) appTheme = 'dark';
 
 function applyTheme(theme){
-  appTheme = (theme === 'light') ? 'light' : 'dark';
+  appTheme = (theme in APP_THEMES) ? theme : 'dark';
   localStorage.setItem(APP_THEME_KEY, appTheme);
-  document.body.classList.toggle('theme-light', appTheme === 'light');
-  const darkBtn = document.getElementById('themeDarkBtn');
-  const lightBtn = document.getElementById('themeLightBtn');
-  if(darkBtn) darkBtn.classList.toggle('active', appTheme === 'dark');
-  if(lightBtn) lightBtn.classList.toggle('active', appTheme === 'light');
+  Object.keys(APP_THEMES).forEach(id=>{
+    const cls = APP_THEMES[id];
+    if(cls) document.body.classList.toggle(cls, id === appTheme);
+  });
+  // выпадающих списков темы несколько (в "Обучении" и общий для
+  // "Ноты"/"Аккорды/Лады") — держим их значения синхронными
+  document.querySelectorAll('.themeSelectEl').forEach(sel=>{
+    if(sel.value !== appTheme) sel.value = appTheme;
+  });
 }
 
 (function initThemeSwitch(){
-  const darkBtn = document.getElementById('themeDarkBtn');
-  const lightBtn = document.getElementById('themeLightBtn');
-  if(darkBtn) darkBtn.addEventListener('click', ()=>applyTheme('dark'));
-  if(lightBtn) lightBtn.addEventListener('click', ()=>applyTheme('light'));
+  document.querySelectorAll('.themeSelectEl').forEach(sel=>{
+    sel.addEventListener('change', ()=>applyTheme(sel.value));
+  });
   applyTheme(appTheme);
 })();
 
@@ -6078,7 +6378,8 @@ const _keyBlendCanvas = document.createElement('canvas');
 _keyBlendCanvas.width = 1; _keyBlendCanvas.height = 1;
 const _keyBlendCtx = _keyBlendCanvas.getContext('2d', { willReadFrequently:true });
 function keyBlendColor(colorCss){
-  const themeTag = document.body.classList.contains('theme-light') ? 'light' : 'dark';
+  const themeTag = (typeof appTheme === 'string') ? appTheme
+                   : (document.body.classList.contains('theme-light') ? 'light' : 'dark');
   if(themeTag !== _keyBlendThemeTag){ _keyBlendCache.clear(); _keyBlendThemeTag = themeTag; }
   const cacheKey = colorCss;
   if(_keyBlendCache.has(cacheKey)) return _keyBlendCache.get(cacheKey);
@@ -6398,7 +6699,8 @@ function updateL3CenterModeLabel(){
   if(fullLabel && typeof centerModeLabelText.getComputedTextLength === 'function'){
     try{
       if(centerModeLabelText.getComputedTextLength() > CENTER_MODE_LABEL_CONFIG.maxWidth){
-        const shortLabel = CENTER_MODE_LABEL_SHORT[currentL3.modeType];
+        const shortLabelEntry = CENTER_MODE_LABEL_SHORT[currentL3.modeType];
+        const shortLabel = shortLabelEntry ? (shortLabelEntry[appLang] || shortLabelEntry.ru) : null;
         if(shortLabel) centerModeLabelText.textContent = shortLabel;
       }
     }catch(e){ /* getComputedTextLength недоступен (напр. элемент не в DOM) — оставляем полное название */ }
@@ -7118,6 +7420,12 @@ function raiseModeWedge(item, ring, tonicIndex, semitoneInterval){
   const tonicName = trainWedgeMap[ring + '-' + tonicIndex].name;
   const tonicRaw = ring === 'minor' ? rootOf(tonicName) : tonicName;
   const spelled = spellTrainIntervalStrict(tonicRaw, semitoneInterval);
+  // Запоминаем «сырую» подмену на самом item — так refreshAllNoteNameDisplays()
+  // (переключатель ABC/до-ре-ми) знает, что у этой ячейки сейчас не родное
+  // название, а замена, и пересобирает именно её текст, а не t.name (иначе
+  // после переключения системы названий подпись откатывалась на родную
+  // ноту, хотя ячейка при этом оставалась красной).
+  item.raisedLabelRaw = spelled.text;
   item.label.textContent = noteDisplay(spelled.text);
   raisedTrainWedges.push(item);
 }
@@ -7126,6 +7434,7 @@ function raiseModeWedge(item, ring, tonicIndex, semitoneInterval){
 // вызывается вместе со снятием подсветки (см. clearTriadHighlights).
 function unraiseTrainWedges(){
   raisedTrainWedges.forEach(item => {
+    item.raisedLabelRaw = null;
     item.label.textContent = noteDisplay(item.name);
   });
   raisedTrainWedges.length = 0;
@@ -8459,6 +8768,26 @@ function updateSidePanelPinRowPosition(){
   } else if(sidePanelPinRowEl.parentElement !== target || target.lastElementChild !== sidePanelPinRowEl){
     target.appendChild(sidePanelPinRowEl);
   }
+  updateThemeRowPosition(tab);
+}
+
+/* Строка выбора темы для вкладок "Ноты" и "Аккорды/Лады" —
+   ставится сразу ПОСЛЕ чекбокса "Настройки сбоку от круга" в той же
+   панели. На вкладке "Обучение" прячется: там своя строка темы внутри
+   #trainExtraSettings. */
+function updateThemeRowPosition(tab){
+  const row = document.getElementById('themeSwitchRowPractice');
+  if(!row || !sidePanelPinRowEl) return;
+  if(tab === 'training'){
+    row.style.display = 'none';
+    return;
+  }
+  row.style.display = 'flex';
+  const parent = sidePanelPinRowEl.parentElement;
+  if(!parent) return;
+  if(row.parentElement !== parent || sidePanelPinRowEl.nextElementSibling !== row){
+    parent.insertBefore(row, sidePanelPinRowEl.nextElementSibling);
+  }
 }
 
 /* ===== Расположение MIDI-настроек вкладки "Ноты" (#notesMidiPanel):
@@ -9392,9 +9721,13 @@ function ensureMidiInputRows(count){
     for(let i = rows.length; i < count; i++){
       const row = document.createElement('div');
       row.className = 'midiPanelRow';
+      const label = document.createElement('span');
+      label.setAttribute('data-i18n', 'midiInputPortLabel');
+      label.textContent = t('midiInputPortLabel');
       const sel = document.createElement('select');
       sel.className = 'midiInputPortSelect';
       sel.innerHTML = '<option>—</option>';
+      row.appendChild(label);
       row.appendChild(sel);
       container.appendChild(row);
     }
@@ -9416,6 +9749,12 @@ allMidiInputCountSelects().forEach(sel => {
 });
 
 function populateMidiSelect(){
+  // Без подключённой MIDI-клавиатуры midiAccess ещё null (доступ запрашивается
+  // отдельно, кнопкой) — раньше это падало с TypeError при любом действии,
+  // которое вызывает populateMidiSelect до подключения (смена количества
+  // входов, смена языка). Ведём себя как остальные вызывающие места (см.
+  // refreshDawOutputSelect) — до получения доступа просто ничего не менять.
+  if(!midiAccess) return;
   ensureMidiInputRows(midiInputRowCount);
   const statusLines = allMidiStatusLines();
   const inputs = [...midiAccess.inputs.values()];
@@ -9436,7 +9775,7 @@ function populateMidiSelect(){
         inputs.forEach(inp => {
           const opt = document.createElement('option');
           opt.value = inp.id;
-          opt.textContent = inp.name + (inp.state !== 'connected' ? ' (не подключено)' : '');
+          opt.textContent = inp.name + (inp.state !== 'connected' ? ' ' + t('midiPortNotConnected') : '');
           sel.appendChild(opt);
         });
         // если для этой строки есть сохранённый выбор (совпадающий с
@@ -9452,10 +9791,10 @@ function populateMidiSelect(){
   });
   statusLines.forEach(statusLine => {
     if(inputs.length === 0){
-      statusLine.textContent = 'MIDI входы не найдены';
+      statusLine.textContent = t('midiNoInputsFound');
       statusLine.classList.add('midiStatusError');
     } else {
-      statusLine.textContent = `Входы: ${inputs.map(i => i.name).join(', ')}`;
+      statusLine.textContent = `${t('midiInputsPrefix')} ${inputs.map(i => i.name).join(', ')}`;
       statusLine.classList.remove('midiStatusError');
     }
   });
@@ -9487,7 +9826,7 @@ document.addEventListener('change', (e)=>{
 function requestMidiAccess(){
   const statusLines = allMidiStatusLines();
   if(!navigator.requestMIDIAccess){
-    statusLines.forEach(s => { s.textContent = 'Браузер не поддерживает Web MIDI (нужен Chrome/Edge)'; s.classList.add('midiStatusError'); });
+    statusLines.forEach(s => { s.textContent = t('webMidiUnsupported'); s.classList.add('midiStatusError'); });
     return;
   }
   navigator.requestMIDIAccess({ sysex: false })
@@ -9671,7 +10010,7 @@ function populateDawOutputSelect(){
     outputs.forEach(out => {
       const opt = document.createElement('option');
       opt.value = out.id;
-      opt.textContent = out.name + (out.state !== 'connected' ? ' (не подключено)' : '');
+      opt.textContent = out.name + (out.state !== 'connected' ? ' ' + t('midiPortNotConnected') : '');
       sel.appendChild(opt);
     });
     sel.value = chosenId;

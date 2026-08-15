@@ -7757,6 +7757,7 @@ function saveTrainModeType(){
 }
 
 function clearTrainTonicPress(){
+  trainWheelAccum = 0;
   if(pressedTrainTonicWedge){
     pressedTrainTonicWedge.el.setAttribute('fill', pressedTrainTonicWedge.baseColor);
     pressedTrainTonicWedge.el.removeAttribute('fill-opacity');
@@ -7889,6 +7890,34 @@ function pickNewTrainChord(){
 
   trainRootHistory.push(rootOf(currentTrain.name));
   if(trainRootHistory.length > 3) trainRootHistory.shift();
+}
+
+/* Прокрутка колеса мыши над кругом на вкладке "Обучение": если тоника
+   уже выбрана, "прокручиваем" её по кругу — вниз по колесу = по часовой
+   стрелке (к следующей ноте по кварто-квинтовому кругу), вверх = против
+   часовой. Ведёт себя так, будто быстро кликаем по соседним нотам подряд
+   (со всеми стрелками/подсветкой на каждом шаге), а сила прокрутки задаёт
+   количество нот, через которые проходим — как в обычном скролле
+   страницы. Работает одинаково для мажорного и минорного кольца. */
+let trainWheelAccum = 0;
+function onTrainCircleWheel(e){
+  if(appMode !== 'training') return;
+  if(!pressedTrainTonicRing || pressedTrainTonicIndex === null) return;
+  if(sidePanelEl && sidePanelEl.contains(e.target)) return;
+  e.preventDefault();
+  trainWheelAccum += e.deltaY;
+  const unit = 100; // сколько deltaY нужно накопить на один шаг по кругу
+  let steps = Math.trunc(Math.abs(trainWheelAccum) / unit);
+  if(steps < 1) return;
+  const dir = trainWheelAccum > 0 ? 1 : -1;
+  trainWheelAccum -= dir * steps * unit;
+  const ring = pressedTrainTonicRing;
+  const total = ring === 'major' ? majors.length : minors.length;
+  for(let s = 0; s < steps; s++){
+    if(!pressedTrainTonicRing) break; // на случай, если шаг вдруг снял выбор
+    const nextIndex = ((pressedTrainTonicIndex + dir) % total + total) % total;
+    selectTrainTonic(ring, nextIndex);
+  }
 }
 
 function onTrainWedgeClick(e){
@@ -8256,6 +8285,8 @@ const trainingPanel = document.getElementById('trainingPanel');
 const circleWrap = document.getElementById('circleWrap');
 const trainCircleWrap = document.getElementById('trainCircleWrap');
 const trainDisplayModeButtonsBlock = document.getElementById('trainDisplayModeButtons');
+const sidePanelEl = document.getElementById('sidePanel');
+trainCircleWrap.addEventListener('wheel', onTrainCircleWheel, { passive: false });
 
 function applyMode(){
   const isTraining = appMode === 'training';
@@ -8888,18 +8919,22 @@ window.addEventListener('resize', ()=>{
 // и мобильной версии — "тап вне настроек").
 sidePanelBackdrop.addEventListener('click', () => setSidePanelOpen(false));
 
-/* ===== ДЕСКТОП: колесо мыши — прокрутка вверх открывает настройки,
-   вниз закрывает. Не действует в мобильной раскладке (там своя логика
-   свайпов ниже), чтобы поведения не пересекались. ===== */
-document.addEventListener('wheel', (e) => {
+/* ===== ДЕСКТОП: средняя кнопка мыши (колесо как кнопка) открывает и
+   закрывает настройки — одно нажатие открывает, следующее закрывает.
+   Не действует в мобильной раскладке. ===== */
+document.addEventListener('mousedown', (e) => {
   if (isMobile) return;
-  if (sidePanel.contains(e.target)) return; // скролл внутри панели — не трогаем
-  if (e.deltaY < 0) {
-    setSidePanelOpen(true);
-  } else if (e.deltaY > 0) {
-    setSidePanelOpen(false);
-  }
-}, { passive: true });
+  if (e.button !== 1) return; // только средняя кнопка мыши
+  if (sidePanel.contains(e.target)) return; // клик внутри панели — не трогаем
+  e.preventDefault(); // чтобы не появлялась авто-прокрутка браузера
+  toggleSidePanel();
+});
+// Некоторые браузеры дополнительно шлют 'auxclick' для средней кнопки —
+// глушим его тут же, чтобы не было побочных эффектов (открытие ссылок
+// в новой вкладке и т.п.), сам toggle уже выполнен в mousedown выше.
+document.addEventListener('auxclick', (e) => {
+  if (e.button === 1) e.preventDefault();
+});
 
 /* ===== МОБИЛЬНАЯ ВЕРСИЯ: свайп вверх В ЛЮБОМ МЕСТЕ ЭКРАНА открывает
    панель, свайп вниз в любом месте закрывает её (плюс тап вне панели

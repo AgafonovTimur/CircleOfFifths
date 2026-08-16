@@ -7,7 +7,7 @@
      сделаны короткими ТАПАМИ без сдвига, поэтому они не конфликтуют с
      нативным двупальцевым "щипком" (там пальцы заметно двигаются). -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Circle of Fifths</title>
+<title>Кварто-квинтовый круг</title>
 <style>
 
   /* глобально запрещаем выделение текста мышью по всему приложению
@@ -2018,14 +2018,12 @@
           <button class="ringBtn" id="level3ModeLocrianBtn" type="button" data-mode="locrian" data-i18n="modeLocrian">Локрийский</button>
           <span class="infoIcon" data-tip="@@6-0@@">i</span>
         </div>
-      </div>
-      <div id="level3ModeButtonsExtra" class="chordGridCard cols2">
         <div class="ringBtnRow">
-          <button class="ringBtn" id="level3ModeHarmMinorBtn" type="button" data-mode="harmMinor" data-i18n="modeHarmMinor">Гармонический минор</button>
+          <button class="ringBtn" id="level3ModeHarmMinorBtn" type="button" data-mode="harmMinor" data-i18n="modeHarmMinor">Гармон минор</button>
           <span class="infoIcon" data-i18n-tip="tipModeHarmMinorL3" data-tip="@@4-2@@ (4 слева от тоники-2 справа) формула, но на схеме @@Bb заменена на B@@ на круге для удобства запоминания и она выделена цветом, чтобы не забыть при изучении - @@C D Eb F G Ab Bb@@">i</span>
         </div>
         <div class="ringBtnRow">
-          <button class="ringBtn" id="level3ModeMelMinorBtn" type="button" data-mode="melMinor" data-i18n="modeMelMinor">Мелодический минор</button>
+          <button class="ringBtn" id="level3ModeMelMinorBtn" type="button" data-mode="melMinor" data-i18n="modeMelMinor">Мелод минор</button>
           <span class="infoIcon" data-i18n-tip="tipModeMelMinorL3" data-tip="@@4-2@@ (4 слева от тоники-2 справа) формула, но на схеме @@Bb заменена на B, Ab заменена на A@@ и не сдвинута на +1 по часовой стрелке на круге для удобства запоминания и она выделена цветом, чтобы не забыть при изучении - @@C D Eb F G Ab Bb@@">i</span>
         </div>
       </div>
@@ -2231,14 +2229,12 @@
             <button class="ringBtn" id="trainModeLocrianBtn" data-mode="locrian" data-i18n="modeLocrian">Локрийский</button>
             <span class="infoIcon" data-tip="@@6-0@@">i</span>
           </div>
-        </div>
-        <div id="trainModeGroupsExtra" class="chordGridCard cols2">
           <div class="ringBtnRow">
-            <button class="ringBtn" id="trainModeHarmMinorBtn" data-mode="harmMinor" data-i18n="modeHarmMinor">Гармонический минор</button>
+            <button class="ringBtn" id="trainModeHarmMinorBtn" data-mode="harmMinor" data-i18n="modeHarmMinor">Гармон минор</button>
             <span class="infoIcon" data-i18n-tip="tipModeHarmMinorTrain" data-tip="@@4-2@@ (4 слева от тоники-2 справа) формула, но на схеме @@Bb заменена на B@@ на круге - @@C D Eb F G Ab Bb@@. Засчитываются оба варианта на мажорном кольце : Bb и B(второй вариант под формулу 4-2)">i</span>
           </div>
           <div class="ringBtnRow">
-            <button class="ringBtn" id="trainModeMelMinorBtn" data-mode="melMinor" data-i18n="modeMelMinor">Мелодический минор</button>
+            <button class="ringBtn" id="trainModeMelMinorBtn" data-mode="melMinor" data-i18n="modeMelMinor">Мелод минор</button>
             <span class="infoIcon" data-i18n-tip="tipModeMelMinorTrain" data-tip="@@4-2@@ (4 слева от тоники-2 справа) формула, но на схеме @@Bb заменена на B, Ab заменена на A@@ на круге - @@C D Eb F G Ab Bb@@. Засчитываются оба варианта на мажорном кольце : Bb и B(второй вариант под формулу 4-2)">i</span>
           </div>
         </div>
@@ -2605,8 +2601,8 @@ const I18N = {
   modeMixolydian:      { ru:'Миксолидийский', en:'Mixolydian', zh:'混合利底亚调式' },
   modeDorian:          { ru:'Дорийский', en:'Dorian', zh:'多利亚调式' },
   modeMinor:           { ru:'Минор', en:'Minor', zh:'小调' },
-  modeHarmMinor:       { ru:'Гармонический минор', en:'Harmonic minor', zh:'和声小调' },
-  modeMelMinor:        { ru:'Мелодический минор', en:'Melodic minor', zh:'旋律小调' },
+  modeHarmMinor:       { ru:'Гармон минор', en:'Harm minor', zh:'和声小调' },
+  modeMelMinor:        { ru:'Мелод минор', en:'Mel minor', zh:'旋律小调' },
   modePhrygian:        { ru:'Фригийский', en:'Phrygian', zh:'弗里几亚调式' },
   modeLocrian:         { ru:'Локрийский', en:'Locrian', zh:'洛克利亚调式' },
   tipModeHarmMinorL3: {
@@ -2690,9 +2686,13 @@ function t(key){
   return entry[appLang] || entry.ru;
 }
 
+const APP_TITLE_I18N = { ru: 'Кварто-квинтовый круг', en: 'Circle of Fifths', zh: '五度圈' };
+
 function applyLanguage(lang){
   appLang = (lang === 'en' || lang === 'zh') ? lang : 'ru';
   localStorage.setItem(APP_LANG_KEY, appLang);
+  document.title = APP_TITLE_I18N[appLang] || APP_TITLE_I18N.ru;
+  document.documentElement.setAttribute('lang', appLang);
   document.querySelectorAll('[data-i18n]').forEach(el=>{
     const key = el.getAttribute('data-i18n');
     const entry = I18N[key];

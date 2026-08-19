@@ -1070,7 +1070,17 @@
     fill:none;
     stroke-linejoin:round;
     stroke-linecap:round;
+    /* стрелки нарисованы поверх клавиш — они не должны перехватывать
+       клики по клавиатуре-ответу вкладки "Аккорды/Лады" (см.
+       .l3PianoAnswerKey ниже) */
+    pointer-events:none;
   }
+  /* Клавиши клавиатуры-подсказки в "Аккордах/Ладах" одновременно
+     работают как способ ответа: клик по клавише засчитывается так же,
+     как клик по ячейке круга (см. onL3PianoKeyClick в <script>).
+     Клавиатура "Обучения" остаётся некликабельной — класс вешается
+     только в renderL3Piano(). */
+  .l3PianoAnswerKey{ cursor:pointer; }
   /* Показывается на 1 секунду в центре круга при выборе типа аккорда
      цифровой клавишей в режиме "Обучение". */
   #trainHotkeyChordLabel{
@@ -1239,6 +1249,19 @@
   }
   #level3ExtraSettings input[type="checkbox"]{
     cursor:pointer;
+  }
+  /* Подпункт "Скрыть ячейки круга" — зависит от "Показывать клавиатуру"
+     (level3ShowPianoCheckbox), поэтому визуально сдвинут вправо, как
+     #trainLockKeyRow у аналогичной настройки в "Обучении". */
+  #level3HideWedgesRow{
+    margin-left:24px;
+  }
+  #level3HideWedgesRow.disabled{
+    opacity:0.4;
+    cursor:not-allowed;
+  }
+  #level3HideWedgesRow.disabled input[type="checkbox"]{
+    cursor:not-allowed;
   }
   #midiPanel, .midiPanel{
     margin:10px 0 4px;
@@ -1992,31 +2015,31 @@
       <div id="level3ModeButtons" class="chordGridCard cols3">
         <div class="ringBtnRow">
           <button class="ringBtn" id="level3ModeLydianBtn" type="button" data-mode="lydian" data-i18n="modeLydian">Лидийский</button>
-          <span class="infoIcon" data-tip="@@0-6@@">i</span>
+          <span class="infoIcon" data-i18n-tip="tipMode0_6" data-tip="@@0-6@@. 0 нот слева от выбранной ноты, 6 справа">i</span>
         </div>
         <div class="ringBtnRow">
           <button class="ringBtn" id="level3ModeMajorBtn" type="button" data-mode="major" data-i18n="modeMajor">Мажор</button>
-          <span class="infoIcon" data-tip="@@1-5@@">i</span>
+          <span class="infoIcon" data-i18n-tip="tipMode1_5" data-tip="@@1-5@@. 1 нота слева от выбранной ноты, 5 справа">i</span>
         </div>
         <div class="ringBtnRow">
           <button class="ringBtn" id="level3ModeMixolydianBtn" type="button" data-mode="mixolydian" data-i18n="modeMixolydian">Миксолидийский</button>
-          <span class="infoIcon" data-tip="@@2-4@@">i</span>
+          <span class="infoIcon" data-i18n-tip="tipMode2_4" data-tip="@@2-4@@. 2 ноты слева от выбранной ноты, 4 справа">i</span>
         </div>
         <div class="ringBtnRow">
           <button class="ringBtn" id="level3ModeDorianBtn" type="button" data-mode="dorian" data-i18n="modeDorian">Дорийский</button>
-          <span class="infoIcon" data-tip="@@3-3@@">i</span>
+          <span class="infoIcon" data-i18n-tip="tipMode3_3" data-tip="@@3-3@@. 3 ноты слева от выбранной ноты, 3 справа">i</span>
         </div>
         <div class="ringBtnRow">
           <button class="ringBtn" id="level3ModeMinorBtn" type="button" data-mode="minor" data-i18n="modeMinor">Минор</button>
-          <span class="infoIcon" data-tip="@@4-2@@">i</span>
+          <span class="infoIcon" data-i18n-tip="tipMode4_2" data-tip="@@4-2@@. 4 ноты слева от выбранной ноты, 2 справа">i</span>
         </div>
         <div class="ringBtnRow">
           <button class="ringBtn" id="level3ModePhrygianBtn" type="button" data-mode="phrygian" data-i18n="modePhrygian">Фригийский</button>
-          <span class="infoIcon" data-tip="@@5-1@@">i</span>
+          <span class="infoIcon" data-i18n-tip="tipMode5_1" data-tip="@@5-1@@. 5 нот слева от выбранной ноты, 1 справа">i</span>
         </div>
         <div class="ringBtnRow">
           <button class="ringBtn" id="level3ModeLocrianBtn" type="button" data-mode="locrian" data-i18n="modeLocrian">Локрийский</button>
-          <span class="infoIcon" data-tip="@@6-0@@">i</span>
+          <span class="infoIcon" data-i18n-tip="tipMode6_0" data-tip="@@6-0@@. 6 нот слева от выбранной ноты, 0 справа">i</span>
         </div>
         <div class="ringBtnRow">
           <button class="ringBtn" id="level3ModeHarmMinorBtn" type="button" data-mode="harmMinor" data-i18n="modeHarmMinor">Гармон минор</button>
@@ -2039,6 +2062,7 @@
       </div>
       <div id="level3ExtraSettings">
         <label><input type="checkbox" id="level3ShowPianoCheckbox"><span data-i18n="showKeyboard">Показывать клавиатуру</span></label>
+        <label id="level3HideWedgesRow"><input type="checkbox" id="level3HideWedgesCheckbox"><span data-i18n="hideWedges">Скрыть ячейки круга</span></label>
       </div>
 
       <!-- ===== Копия MIDI-настроек из "Обучения" — см. подробный
@@ -2203,31 +2227,31 @@
         <div id="trainModeGroups" class="chordGridCard cols3">
           <div class="ringBtnRow">
             <button class="ringBtn" id="trainModeLydianBtn" data-mode="lydian" data-i18n="modeLydian">Лидийский</button>
-            <span class="infoIcon" data-tip="@@0-6@@">i</span>
+            <span class="infoIcon" data-i18n-tip="tipMode0_6" data-tip="@@0-6@@. 0 нот слева от выбранной ноты, 6 справа">i</span>
           </div>
           <div class="ringBtnRow">
             <button class="ringBtn" id="trainModeMajorBtn" data-mode="major" data-i18n="modeMajor">Мажор</button>
-            <span class="infoIcon" data-tip="@@1-5@@">i</span>
+            <span class="infoIcon" data-i18n-tip="tipMode1_5" data-tip="@@1-5@@. 1 нота слева от выбранной ноты, 5 справа">i</span>
           </div>
           <div class="ringBtnRow">
             <button class="ringBtn" id="trainModeMixolydianBtn" data-mode="mixolydian" data-i18n="modeMixolydian">Миксолидийский</button>
-            <span class="infoIcon" data-tip="@@2-4@@">i</span>
+            <span class="infoIcon" data-i18n-tip="tipMode2_4" data-tip="@@2-4@@. 2 ноты слева от выбранной ноты, 4 справа">i</span>
           </div>
           <div class="ringBtnRow">
             <button class="ringBtn" id="trainModeDorianBtn" data-mode="dorian" data-i18n="modeDorian">Дорийский</button>
-            <span class="infoIcon" data-tip="@@3-3@@">i</span>
+            <span class="infoIcon" data-i18n-tip="tipMode3_3" data-tip="@@3-3@@. 3 ноты слева от выбранной ноты, 3 справа">i</span>
           </div>
           <div class="ringBtnRow">
             <button class="ringBtn" id="trainModeMinorBtn" data-mode="minor" data-i18n="modeMinor">Минор</button>
-            <span class="infoIcon" data-tip="@@4-2@@">i</span>
+            <span class="infoIcon" data-i18n-tip="tipMode4_2" data-tip="@@4-2@@. 4 ноты слева от выбранной ноты, 2 справа">i</span>
           </div>
           <div class="ringBtnRow">
             <button class="ringBtn" id="trainModePhrygianBtn" data-mode="phrygian" data-i18n="modePhrygian">Фригийский</button>
-            <span class="infoIcon" data-tip="@@5-1@@">i</span>
+            <span class="infoIcon" data-i18n-tip="tipMode5_1" data-tip="@@5-1@@. 5 нот слева от выбранной ноты, 1 справа">i</span>
           </div>
           <div class="ringBtnRow">
             <button class="ringBtn" id="trainModeLocrianBtn" data-mode="locrian" data-i18n="modeLocrian">Локрийский</button>
-            <span class="infoIcon" data-tip="@@6-0@@">i</span>
+            <span class="infoIcon" data-i18n-tip="tipMode6_0" data-tip="@@6-0@@. 6 нот слева от выбранной ноты, 0 справа">i</span>
           </div>
           <div class="ringBtnRow">
             <button class="ringBtn" id="trainModeHarmMinorBtn" data-mode="harmMinor" data-i18n="modeHarmMinor">Гармон минор</button>
@@ -2564,6 +2588,7 @@ const I18N = {
   modeTypeHeader:      { ru:'Выберите лады', en:'Choose modes', zh:'选择调式' },
   majMinChord:         { ru:'Мажор/Минор', en:'Major/Minor', zh:'大调/小调' },
   showKeyboard:        { ru:'Показывать клавиатуру', en:'Show keyboard', zh:'显示键盘' },
+  hideWedges:          { ru:'Скрыть ячейки круга', en:'Hide circle cells', zh:'隐藏圆环单元格' },
   variant1:            { ru:'Вариант 1', en:'Variant 1', zh:'方案 1' },
   variant2:            { ru:'Вариант 2', en:'Variant 2', zh:'方案 2' },
   byArrows:            { ru:'Стрелками', en:'Arrows', zh:'箭头' },
@@ -2605,6 +2630,41 @@ const I18N = {
   modeMelMinor:        { ru:'Мелод минор', en:'Mel minor', zh:'旋律小调' },
   modePhrygian:        { ru:'Фригийский', en:'Phrygian', zh:'弗里几亚调式' },
   modeLocrian:         { ru:'Локрийский', en:'Locrian', zh:'洛克利亚调式' },
+  tipMode0_6: {
+    ru:'@@0-6@@. 0 нот слева от выбранной ноты, 6 справа',
+    en:'@@0-6@@. 0 notes to the left of the selected note, 6 to the right',
+    zh:'@@0-6@@。所选音符左边 0 个音，右边 6 个'
+  },
+  tipMode1_5: {
+    ru:'@@1-5@@. 1 нота слева от выбранной ноты, 5 справа',
+    en:'@@1-5@@. 1 note to the left of the selected note, 5 to the right',
+    zh:'@@1-5@@。所选音符左边 1 个音，右边 5 个'
+  },
+  tipMode2_4: {
+    ru:'@@2-4@@. 2 ноты слева от выбранной ноты, 4 справа',
+    en:'@@2-4@@. 2 notes to the left of the selected note, 4 to the right',
+    zh:'@@2-4@@。所选音符左边 2 个音，右边 4 个'
+  },
+  tipMode3_3: {
+    ru:'@@3-3@@. 3 ноты слева от выбранной ноты, 3 справа',
+    en:'@@3-3@@. 3 notes to the left of the selected note, 3 to the right',
+    zh:'@@3-3@@。所选音符左边 3 个音，右边 3 个'
+  },
+  tipMode4_2: {
+    ru:'@@4-2@@. 4 ноты слева от выбранной ноты, 2 справа',
+    en:'@@4-2@@. 4 notes to the left of the selected note, 2 to the right',
+    zh:'@@4-2@@。所选音符左边 4 个音，右边 2 个'
+  },
+  tipMode5_1: {
+    ru:'@@5-1@@. 5 нот слева от выбранной ноты, 1 справа',
+    en:'@@5-1@@. 5 notes to the left of the selected note, 1 to the right',
+    zh:'@@5-1@@。所选音符左边 5 个音，右边 1 个'
+  },
+  tipMode6_0: {
+    ru:'@@6-0@@. 6 нот слева от выбранной ноты, 0 справа',
+    en:'@@6-0@@. 6 notes to the left of the selected note, 0 to the right',
+    zh:'@@6-0@@。所选音符左边 6 个音，右边 0 个'
+  },
   tipModeHarmMinorL3: {
     ru:'@@4-2@@ (4 слева от тоники-2 справа) формула, но на схеме @@Bb заменена на B@@ на круге для удобства запоминания и она выделена цветом, чтобы не забыть при изучении - @@C D Eb F G Ab Bb@@',
     en:'@@4-2@@ (4 to the left of the tonic, 2 to the right) is the formula, but on the diagram @@Bb is replaced with B@@ on the circle for easier memorising and it is highlighted so you do not forget while studying - @@C D Eb F G Ab Bb@@',
@@ -3033,6 +3093,10 @@ const FLASH_RED = 'var(--red-flash)';
 const FLASH_YELLOW = 'var(--yellow)';
 
 function flashWedge(ringName, index, color, duration){
+  // Пока ячейки круга скрыты (настройка "Скрыть ячейки круга" в
+  // "Аккорды/Ладах") — не подсвечиваем клик цветом, круга всё равно не
+  // видно, ответ идёт по клавиатуре сбоку/ПК/MIDI.
+  if(typeof l3WedgesCurrentlyHidden !== 'undefined' && l3WedgesCurrentlyHidden) return;
   const item = wedgeMap[ringName+'-'+index];
   item.el.setAttribute('fill', color);
   setTimeout(()=>{
@@ -4483,23 +4547,29 @@ function renderL3Piano(notes, foundPcSet){
   buildL3PianoMarkerDefs(svg);
 
   layout.whiteKeys.forEach(k=>{
-    svg.appendChild(el('rect', { x:k.x, y:keysTopY, width:k.w, height:TRAIN_PIANO_WHITE_H, class:'trainPianoWhiteKey' }));
+    const r = el('rect', { x:k.x, y:keysTopY, width:k.w, height:TRAIN_PIANO_WHITE_H, class:'trainPianoWhiteKey l3PianoAnswerKey' });
+    r.addEventListener('click', ()=> onL3PianoKeyClick(k, keysTopY));
+    svg.appendChild(r);
   });
 
   const visibleNotes = notes.filter((n,i)=> i===0 || foundPcSet.has(n.pc));
 
+  // Цветные накладки уже найденных нот и подписи не должны перехватывать
+  // клик — под ними лежат сами клавиши, по которым идёт ответ.
   visibleNotes.forEach(n=>{
     const key = layout.pcKeyMap[n.rank+'_'+n.pc];
     if(!key || key.isBlack) return;
-    svg.appendChild(el('rect', { x:key.x, y:keysTopY, width:key.w, height:TRAIN_PIANO_WHITE_H, fill:n.color }));
+    svg.appendChild(el('rect', { x:key.x, y:keysTopY, width:key.w, height:TRAIN_PIANO_WHITE_H, fill:n.color, 'pointer-events':'none' }));
   });
   layout.blackKeys.forEach(k=>{
-    svg.appendChild(el('rect', { x:k.x, y:keysTopY, width:k.w, height:TRAIN_PIANO_BLACK_H, class:'trainPianoBlackKey' }));
+    const r = el('rect', { x:k.x, y:keysTopY, width:k.w, height:TRAIN_PIANO_BLACK_H, class:'trainPianoBlackKey l3PianoAnswerKey' });
+    r.addEventListener('click', ()=> onL3PianoKeyClick(k, keysTopY));
+    svg.appendChild(r);
   });
   visibleNotes.forEach(n=>{
     const key = layout.pcKeyMap[n.rank+'_'+n.pc];
     if(!key || !key.isBlack) return;
-    svg.appendChild(el('rect', { x:key.x, y:keysTopY, width:key.w, height:TRAIN_PIANO_BLACK_H, fill:n.color, opacity:'0.85' }));
+    svg.appendChild(el('rect', { x:key.x, y:keysTopY, width:key.w, height:TRAIN_PIANO_BLACK_H, fill:n.color, opacity:'0.85', 'pointer-events':'none' }));
   });
   visibleNotes.forEach(n=>{
     const key = layout.pcKeyMap[n.rank+'_'+n.pc];
@@ -4553,11 +4623,101 @@ function renderL3Piano(notes, foundPcSet){
   });
 }
 
+/* Кратковременная вспышка клавиши клавиатуры-подсказки (аналог
+   flashWedge для круга). Рисуется отдельным прямоугольником поверх
+   клавиши, а не сменой fill: базовые клавиши красятся через CSS-класс
+   (.trainPianoWhiteKey/.trainPianoBlackKey), который перебивает
+   presentation-атрибут fill. */
+function flashL3PianoKey(key, keysTopY, color){
+  if(!l3PianoSvgEl) return;
+  const h = key.isBlack ? TRAIN_PIANO_BLACK_H : TRAIN_PIANO_WHITE_H;
+  const r = el('rect', {
+    x:key.x, y:keysTopY, width:key.w, height:h,
+    fill:color, 'pointer-events':'none'
+  });
+  if(key.isBlack){
+    // Чёрная клавиша и так должна быть выше всех — кладём вспышку
+    // самой последней (поверх всего, как и раньше).
+    l3PianoSvgEl.appendChild(r);
+  } else {
+    // Белую вспышку вставляем ПЕРЕД первой чёрной клавишей в SVG, а не
+    // в конец — иначе она рисуется поверх чёрных клавиш и частично их
+    // перекрывает. Так вспышка остаётся под чёрными клавишами, как и
+    // положено белой клавише.
+    const firstBlack = l3PianoSvgEl.querySelector('.trainPianoBlackKey');
+    if(firstBlack) l3PianoSvgEl.insertBefore(r, firstBlack);
+    else l3PianoSvgEl.appendChild(r);
+  }
+  setTimeout(()=>{ if(r.parentNode) r.parentNode.removeChild(r); }, 300);
+}
+
+/* Ответ кликом по клавише клавиатуры справа от круга ("Аккорды/Лады").
+   Клавиша задаёт высоту звука (key.pc), а не позицию на круге, поэтому
+   октава значения не имеет — как и на круге, ответ сверяется по букве
+   ноты. Одновременно подсвечивается соответствующая ячейка круга, чтобы
+   было видно связь "нота на клавиатуре <-> место на круге". */
+function onL3PianoKeyClick(key, keysTopY){
+  if(appMode !== 'practice' || practiceLevel !== 3 || !currentL3) return;
+  const letter = rootOf(noteNames[key.pc]);
+  const correct = !!(currentL3.letters && currentL3.letters.has(letter));
+  const color = l3AnswerFlashColor(letter);
+  // Тоника (и вообще любая уже отвеченная верная нота) и так постоянно
+  // видна на клавиатуре своим цветом — новую цветную вспышку поверх неё
+  // рисовать не нужно, иначе она "накрывает" уже отображённую клавишу.
+  // Вспышку рисуем только для НОВОГО верного ответа и для неверных нот
+  // (чтобы было видно, что нота не подходит).
+  const tonicLetter = currentL3.modeType ? currentL3.rootLetter : rootOf(currentL3.tonicNoteRaw);
+  const alreadyShown = correct && (letter === tonicLetter || currentL3.found.has(letter));
+  if(!alreadyShown){
+    flashL3PianoKey(key, keysTopY, color);
+  }
+  // Круг подсвечиваем только при ВЕРНОЙ ноте — чтобы было видно, где эта
+  // нота лежит на круге. При неверной ноте ячейку круга не трогаем: у
+  // гармонического/мелодического минора ячейка-заменитель (напр. B♭) на
+  // круге засчитывается как верная, а на клавиатуре её реальная высота
+  // (B♭) в лад не входит — красная вспышка на этой же ячейке выглядела
+  // бы противоречиво.
+  if(correct){
+    const cell = l3CircleCellForLetter(letter);
+    if(cell) flashWedge(cell.ring, cell.index, color, 300);
+  }
+  l3RegisterAnswer(letter);
+}
+
 const L3_SHOW_PIANO_KEY = 'circleL3ShowPiano';
 let l3ShowPiano = localStorage.getItem(L3_SHOW_PIANO_KEY) === '1';
 
+/* Настройка "Скрыть ячейки круга" (подпункт "Показывать клавиатуру",
+   только вкладка "Аккорды/Лады") — при включении все 24 ячейки круга
+   (мажорное и минорное кольцо) становятся невидимыми (прозрачными),
+   название текущего аккорда/лада в центре круга при этом остаётся, а
+   отвечать нужно на клавиатуре справа от круга или на клаве ПК/MIDI.
+   Доступна только когда включена "Показывать клавиатуру" — выключение
+   клавиатуры одновременно выключает и снимает этот чекбокс. */
+const L3_HIDE_WEDGES_KEY = 'circleL3HideWedges';
+let l3HideWedges = l3ShowPiano && localStorage.getItem(L3_HIDE_WEDGES_KEY) === '1';
+let l3WedgesCurrentlyHidden = false;
+
+function wedgeTrueColor(ring){
+  return ring === 'major' ? 'var(--ring-major)' : 'var(--ring-minor)';
+}
+
+function updateL3WedgeVisibility(){
+  const shouldHide = l3HideWedges && appMode === 'practice' && practiceLevel === 3;
+  if(shouldHide === l3WedgesCurrentlyHidden) return;
+  allChords.forEach(c=>{
+    const item = wedgeMap[c.ring+'-'+c.index];
+    if(!item) return;
+    const color = shouldHide ? 'transparent' : wedgeTrueColor(c.ring);
+    item.baseColor = color;
+    item.el.setAttribute('fill', color);
+  });
+  l3WedgesCurrentlyHidden = shouldHide;
+}
+
 function updateL3Piano(){
   const shouldShow = l3ShowPiano && appMode === 'practice' && practiceLevel === 3;
+  updateL3WedgeVisibility();
   const notes = shouldShow ? computeL3PianoNotes() : null;
   if(!notes){
     l3PianoWrapEl.style.display = 'none';
@@ -4579,15 +4739,47 @@ function updateL3PianoOffset(){
   l3PianoWrapEl.style.marginLeft = (32 + Math.max(0, extra)) + 'px';
 }
 
+const level3HideWedgesCheckbox = document.getElementById('level3HideWedgesCheckbox');
+const level3HideWedgesRow = document.getElementById('level3HideWedgesRow');
+
+function setL3HideWedgesAvailability(enabled){
+  if(level3HideWedgesCheckbox) level3HideWedgesCheckbox.disabled = !enabled;
+  if(level3HideWedgesRow) level3HideWedgesRow.classList.toggle('disabled', !enabled);
+}
+
 const level3ShowPianoCheckbox = document.getElementById('level3ShowPianoCheckbox');
 if(level3ShowPianoCheckbox){
   level3ShowPianoCheckbox.checked = l3ShowPiano;
   level3ShowPianoCheckbox.addEventListener('change', ()=>{
     l3ShowPiano = level3ShowPianoCheckbox.checked;
     localStorage.setItem(L3_SHOW_PIANO_KEY, l3ShowPiano ? '1' : '0');
+    if(!l3ShowPiano && l3HideWedges){
+      // выключили "Показывать клавиатуру" при включённом "Скрыть ячейки
+      // круга" — снимаем оба чекбокса и возвращаем все ячейки круга.
+      l3HideWedges = false;
+      localStorage.setItem(L3_HIDE_WEDGES_KEY, '0');
+      if(level3HideWedgesCheckbox) level3HideWedgesCheckbox.checked = false;
+    }
+    setL3HideWedgesAvailability(l3ShowPiano);
     updateL3Piano();
   });
 }
+
+if(level3HideWedgesCheckbox){
+  level3HideWedgesCheckbox.checked = l3HideWedges;
+  level3HideWedgesCheckbox.addEventListener('change', ()=>{
+    if(!l3ShowPiano){
+      // чекбокс должен быть недоступен без "Показывать клавиатуру" —
+      // страховка на случай программного/непредвиденного клика.
+      level3HideWedgesCheckbox.checked = false;
+      return;
+    }
+    l3HideWedges = level3HideWedgesCheckbox.checked;
+    localStorage.setItem(L3_HIDE_WEDGES_KEY, l3HideWedges ? '1' : '0');
+    updateL3Piano();
+  });
+}
+setL3HideWedgesAvailability(l3ShowPiano);
 
 /* --- Ступени диатонических аккордов тональности (римские цифры) в правом
    верхнем углу каждой ячейки --- */
@@ -6936,6 +7128,74 @@ document.querySelectorAll('#level2TypeButtons .ringBtn[data-chordtype]').forEach
 updateLevel3ChordButtonsActive();
 updateLevel3ModeButtonsActive();
 
+/* Цвет вспышки для ответа буквой letter: неверная нота — красный;
+   верная — зелёный (для лада зелёный только у тоники, остальные ноты
+   жёлтые, как и раньше). Вынесено отдельно, т.к. одну и ту же проверку
+   используют И клик по кругу (onWedgeClickLevel3), И клик по
+   клавиатуре-подсказке справа (onL3PianoKeyClick). */
+function l3AnswerFlashColor(letter){
+  if(!currentL3 || !currentL3.letters.has(letter)) return FLASH_RED;
+  return currentL3.modeType
+    ? (letter === currentL3.rootLetter ? FLASH_GREEN : FLASH_YELLOW)
+    : FLASH_GREEN;
+}
+
+/* Засчитывает ноту letter как ответ (без визуальной вспышки — её рисует
+   вызывающая сторона: круг флешит ячейку, клавиатура — клавишу).
+   Возвращает true, если нота входит в аккорд/лад. */
+function l3RegisterAnswer(letter){
+  if(!currentL3) return false;
+  if(!currentL3.letters.has(letter)) return false;
+  if(!currentL3.found.has(letter)){
+    currentL3.found.add(letter);
+    renderLevel3Hint();
+    if(typeof updateL3Piano === 'function') updateL3Piano();
+    if(currentL3.found.size === currentL3.letters.size){
+      setTimeout(pickNewChordL3, 450);
+    }
+  }
+  return true;
+}
+
+/* Ячейка круга, которую нужно подсветить при ответе с КЛАВИАТУРЫ (чтобы
+   было видно, где эта нота лежит на круге). Для аккордов ячейка берётся
+   по той же схеме ("Вариант 1"), что и в "Обучении" — см.
+   getL3DegreePositions (та же функция, что уже используется для MIDI):
+   напр. для C (мажорное трезвучие) терция E показывается как Em на
+   минорном кольце, а не как E на мажорном. Для повышенных ступеней
+   гармонического/мелодического минора (лады) возвращается
+   ячейка-заменитель (та же, что красится на круге), а не "родная" ячейка
+   ноты — иначе вспыхивала бы ячейка вне подсвеченной цепочки лада. В
+   остальных случаях предпочитается кольцо, на котором построен текущий
+   аккорд/лад. */
+function l3CircleCellForLetter(letter){
+  if(currentL3 && currentL3.chordType){
+    const positions = getL3DegreePositions(currentL3.ring, currentL3.index, currentL3.chordType);
+    for(const pos of positions){
+      const cellLetter = rootOf((pos.ring === 'major' ? majors : minors)[pos.index]);
+      if(cellLetter === letter) return pos;
+    }
+  }
+  if(currentL3 && currentL3.raiseAliases){
+    for(const [cellKey, aliasLetter] of currentL3.raiseAliases){
+      if(aliasLetter === letter){
+        const dash = cellKey.lastIndexOf('-');
+        return { ring: cellKey.slice(0, dash), index: parseInt(cellKey.slice(dash+1)) };
+      }
+    }
+  }
+  const findOn = ring => ring === 'major'
+    ? majors.findIndex(n => rootOf(n) === letter)
+    : minors.findIndex(n => rootOf(n) === letter);
+  const preferred = (currentL3 && currentL3.ring) ? currentL3.ring : 'major';
+  let idx = findOn(preferred);
+  if(idx !== -1) return { ring: preferred, index: idx };
+  const other = preferred === 'major' ? 'minor' : 'major';
+  idx = findOn(other);
+  if(idx !== -1) return { ring: other, index: idx };
+  return null;
+}
+
 function onWedgeClickLevel3(e){
   if(!currentL3) return;
   const ring = e.currentTarget.getAttribute('data-ring');
@@ -6951,24 +7211,11 @@ function onWedgeClickLevel3(e){
     letter = currentL3.raiseAliases.get(raiseKey);
   }
 
-  if(currentL3.letters.has(letter)){
-    // Для лада: тоника — зелёным, остальные верные ноты — цветом
-    // терции (жёлтый). Для аккорда поведение прежнее — всё зелёным.
-    const flashColor = currentL3.modeType
-      ? (letter === currentL3.rootLetter ? FLASH_GREEN : FLASH_YELLOW)
-      : FLASH_GREEN;
-    flashWedge(ring, index, flashColor, 300);
-    if(!currentL3.found.has(letter)){
-      currentL3.found.add(letter);
-      renderLevel3Hint();
-      if(typeof updateL3Piano === 'function') updateL3Piano();
-      if(currentL3.found.size === currentL3.letters.size){
-        setTimeout(pickNewChordL3, 450);
-      }
-    }
-  } else {
-    flashWedge(ring, index, FLASH_RED, 300);
-  }
+  // Для лада: тоника — зелёным, остальные верные ноты — цветом терции
+  // (жёлтый). Для аккорда поведение прежнее — всё зелёным. Неверная
+  // нота — красным (см. l3AnswerFlashColor выше).
+  flashWedge(ring, index, l3AnswerFlashColor(letter), 300);
+  l3RegisterAnswer(letter);
 }
 
 /* ===== Практика 3: подсказка (буквы нот аккорда прямо на местах, куда

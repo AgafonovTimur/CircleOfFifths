@@ -1015,6 +1015,41 @@
     overflow:visible;
     display:block;
   }
+  /* ===== Кнопки обращений под мини-клавиатурой "Обучения" =====
+     НАСТРОЙКА ПОЛОЖЕНИЯ (всё в пикселях, отсчёт — от самой мини-
+     клавиатуры, а не от круга/экрана):
+       --train-inv-offset-x : сдвиг ряда кнопок вправо от ЛЕВОГО КРАЯ
+                              клавиатуры. 6px = ровно левый край самой
+                              левой (первой) клавиши мини-пианино
+                              (столько же, сколько TRAIN_PIANO_MARGIN_X
+                              в JS). Больше — весь ряд едет вправо,
+                              меньше (можно и отрицательное) — влево.
+       --train-inv-offset-y : расстояние от НИЖНЕГО КРАЯ клавиш до
+                              кнопок. Больше — кнопки ниже.
+       --train-inv-btn-gap   : зазор между кнопками.
+       --train-inv-btn-width : ширина одной кнопки.
+     Т.к. блок лежит внутри #trainPianoWrap, при движении/масштабе
+     клавиатуры кнопки едут вместе с ней. */
+  #trainPianoWrap{
+    --train-inv-offset-x:6px;
+    --train-inv-offset-y:14px;
+    --train-inv-btn-gap:6px;
+    --train-inv-btn-width:96px;
+  }
+  #trainInversionBtns{
+    position:absolute;
+    top:100%;
+    left:0;
+    margin-left:var(--train-inv-offset-x);
+    margin-top:var(--train-inv-offset-y);
+    display:flex;
+    gap:var(--train-inv-btn-gap);
+  }
+  #trainInversionBtns .ringBtn{
+    width:var(--train-inv-btn-width);
+    padding:8px 4px;
+    font-size:13px;
+  }
   /* на узких/мобильных экранах места справа от круга нет — прячем */
   body.is-mobile #trainPianoWrap{
     display:none !important;
@@ -1175,6 +1210,16 @@
   #trainLockKeyRow.disabled input[type="checkbox"]{
     cursor:not-allowed;
   }
+  /* Подпункт "показывать обращения" — зависит от "Показывать клавиатуру"
+     (#trainShowPianoCheckbox), поэтому сдвинут вправо и гаснет так же,
+     как #trainLockKeyRow. */
+  #trainShowInversionsRow.disabled{
+    opacity:0.4;
+    cursor:not-allowed;
+  }
+  #trainShowInversionsRow.disabled input[type="checkbox"]{
+    cursor:not-allowed;
+  }
   /* ===== Настройка "Название нот": ABC / до-ре-ми (переключатель), а
      также язык интерфейса и тема — единый стиль строки кнопок на всю
      ширину панели (как на макете), кнопки равной ширины. ===== */
@@ -1262,6 +1307,36 @@
   }
   #level3HideWedgesRow.disabled input[type="checkbox"]{
     cursor:not-allowed;
+  }
+  /* ===== "добавить обращения" (Аккорды/Лады) =====
+     Строка чекбокса сдвинута вправо так же, как "Скрыть ячейки круга",
+     а ряд из 4 кнопок обращений идёт БЕЗ отступа — на всю ширину
+     панели настроек. */
+  #level3InversionsRow{
+    display:flex;
+    align-items:center;
+    align-self:flex-start;
+    gap:6px;
+    margin-left:24px;
+  }
+  /* при выбранном ладе обращения ни на что не влияют — строка гаснет
+     и чекбокс не нажимается (кнопки под ней гасит .ringBtn.disabled) */
+  #level3InversionsRow.disabled{
+    opacity:0.4;
+    cursor:not-allowed;
+  }
+  #level3InversionsRow.disabled input[type="checkbox"]{
+    cursor:not-allowed;
+  }
+  #level3InversionBtns{
+    display:grid;
+    grid-template-columns:repeat(4, 1fr);
+    gap:6px;
+    width:100%;
+  }
+  #level3InversionBtns .ringBtn{
+    padding:8px 2px;
+    font-size:12px;
   }
   #midiPanel, .midiPanel{
     margin:10px 0 4px;
@@ -1771,6 +1846,11 @@
       <div id="trainHotkeyChordLabel" style="display:none"></div>
       <div id="trainPianoWrap" style="display:none">
         <svg id="trainPianoSvg"></svg>
+        <!-- Кнопки обращений (основное/первое/второе/третье) под мини-
+             клавиатурой. Лежат ВНУТРИ #trainPianoWrap, поэтому двигаются
+             вместе с ней; положение настраивается CSS-переменными
+             --train-inv-offset-x / --train-inv-offset-y (см. стили). -->
+        <div id="trainInversionBtns" style="display:none"></div>
       </div>
     </div>
   </div>
@@ -2043,11 +2123,11 @@
         </div>
         <div class="ringBtnRow">
           <button class="ringBtn" id="level3ModeHarmMinorBtn" type="button" data-mode="harmMinor" data-i18n="modeHarmMinor">Гармон минор</button>
-          <span class="infoIcon" data-i18n-tip="tipModeHarmMinorL3" data-tip="@@4-2@@ (4 слева от тоники-2 справа) формула, но на схеме @@Bb заменена на B@@ на круге для удобства запоминания и она выделена цветом, чтобы не забыть при изучении - @@C D Eb F G Ab Bb@@">i</span>
+          <span class="infoIcon" data-i18n-tip="tipModeHarmMinorL3" data-tip="формула @@4-2@@ (4 слева от тоники-2 справа) формула, но на схеме @@вторая нота от тоники заменена на ноту на пол тона выше@@ для удобства запоминания и она выделена цветом, чтобы не забыть при изучении - для C maj : @@C D Eb F G Ab B@@. Засчитываются оба варианта на мажорном кольце : Bb и B(второй вариант под формулу 4-2).">i</span>
         </div>
         <div class="ringBtnRow">
           <button class="ringBtn" id="level3ModeMelMinorBtn" type="button" data-mode="melMinor" data-i18n="modeMelMinor">Мелод минор</button>
-          <span class="infoIcon" data-i18n-tip="tipModeMelMinorL3" data-tip="@@4-2@@ (4 слева от тоники-2 справа) формула, но на схеме @@Bb заменена на B, Ab заменена на A@@ и не сдвинута на +1 по часовой стрелке на круге для удобства запоминания и она выделена цветом, чтобы не забыть при изучении - @@C D Eb F G Ab Bb@@">i</span>
+          <span class="infoIcon" data-i18n-tip="tipModeMelMinorL3" data-tip="формула @@4-2@@ (4 слева от тоники-2 справа) , но на схеме @@вторая и четвертая слева ноты от тоники заменены на ноту на пол тона выше@@ для удобства запоминания и они выделена цветом, чтобы не забыть при изучении - для C maj : @@C D Eb F G A B@@. Засчитываются оба варианта на мажорном кольце : Bb и B(второй вариант под формулу 4-2).">i</span>
         </div>
       </div>
 
@@ -2063,6 +2143,11 @@
       <div id="level3ExtraSettings">
         <label><input type="checkbox" id="level3ShowPianoCheckbox"><span data-i18n="showKeyboard">Показывать клавиатуру</span></label>
         <label id="level3HideWedgesRow"><input type="checkbox" id="level3HideWedgesCheckbox"><span data-i18n="hideWedges">Скрыть ячейки круга</span></label>
+        <div id="level3InversionsRow">
+          <label><input type="checkbox" id="level3InversionsCheckbox"><span data-i18n="addInversions">Добавить обращения</span></label>
+          <span class="infoIcon" data-i18n-tip="tipInversions" data-tip="Обращения работают только с аккордами. Нажимать ноты нужно в порядке как они идут в обращении - @@иначе будет засчитано как неверная нота@@">i</span>
+        </div>
+        <div id="level3InversionBtns"></div>
       </div>
 
       <!-- ===== Копия MIDI-настроек из "Обучения" — см. подробный
@@ -2255,11 +2340,11 @@
           </div>
           <div class="ringBtnRow">
             <button class="ringBtn" id="trainModeHarmMinorBtn" data-mode="harmMinor" data-i18n="modeHarmMinor">Гармон минор</button>
-            <span class="infoIcon" data-i18n-tip="tipModeHarmMinorTrain" data-tip="@@4-2@@ (4 слева от тоники-2 справа) формула, но на схеме @@Bb заменена на B@@ на круге - @@C D Eb F G Ab Bb@@. Засчитываются оба варианта на мажорном кольце : Bb и B(второй вариант под формулу 4-2)">i</span>
+            <span class="infoIcon" data-i18n-tip="tipModeHarmMinorTrain" data-tip="формула @@4-2@@ (4 слева от тоники-2 справа) формула, но на схеме @@вторая нота от тоники заменена на ноту на пол тона выше@@ для удобства запоминания и она выделена цветом, чтобы не забыть при изучении - для C maj : @@C D Eb F G Ab B@@. Засчитываются оба варианта на мажорном кольце : Bb и B(второй вариант под формулу 4-2).">i</span>
           </div>
           <div class="ringBtnRow">
             <button class="ringBtn" id="trainModeMelMinorBtn" data-mode="melMinor" data-i18n="modeMelMinor">Мелод минор</button>
-            <span class="infoIcon" data-i18n-tip="tipModeMelMinorTrain" data-tip="@@4-2@@ (4 слева от тоники-2 справа) формула, но на схеме @@Bb заменена на B, Ab заменена на A@@ на круге - @@C D Eb F G Ab Bb@@. Засчитываются оба варианта на мажорном кольце : Bb и B(второй вариант под формулу 4-2)">i</span>
+            <span class="infoIcon" data-i18n-tip="tipModeMelMinorTrain" data-tip="формула @@4-2@@ (4 слева от тоники-2 справа) , но на схеме @@вторая и четвертая слева ноты от тоники заменены на ноту на пол тона выше@@ для удобства запоминания и они выделена цветом, чтобы не забыть при изучении - для C maj : @@C D Eb F G A B@@. Засчитываются оба варианта на мажорном кольце : Bb и B(второй вариант под формулу 4-2).">i</span>
           </div>
         </div>
       </div>
@@ -2284,6 +2369,7 @@
         <label><input type="checkbox" id="trainShowDegreesCheckbox"><span data-i18n="showDegrees">Показывать ступени аккорда</span></label>
         <label id="trainLockKeyRow" style="margin-left:24px;"><input type="checkbox" id="trainLockKeyCheckbox"><span data-i18n="lockKey">Привязать тональность</span></label>
         <label><input type="checkbox" id="trainShowPianoCheckbox"><span data-i18n="showKeyboard">Показывать клавиатуру</span></label>
+        <label id="trainShowInversionsRow" style="margin-left:24px;"><input type="checkbox" id="trainShowInversionsCheckbox"><span data-i18n="showInversions">Показывать обращения</span></label>
       </div>
 
       <div id="trainAltNoteSettings">
@@ -2589,6 +2675,21 @@ const I18N = {
   majMinChord:         { ru:'Мажор/Минор', en:'Major/Minor', zh:'大调/小调' },
   showKeyboard:        { ru:'Показывать клавиатуру', en:'Show keyboard', zh:'显示键盘' },
   hideWedges:          { ru:'Скрыть ячейки круга', en:'Hide circle cells', zh:'隐藏圆环单元格' },
+  showInversions:      { ru:'Показывать обращения', en:'Show inversions', zh:'显示转位' },
+  addInversions:       { ru:'Добавить обращения', en:'Add inversions', zh:'加入转位' },
+  invRoot:             { ru:'Основное', en:'Root', zh:'原位' },
+  inv1:                { ru:'Первое', en:'1st', zh:'第一' },
+  inv2:                { ru:'Второе', en:'2nd', zh:'第二' },
+  inv3:                { ru:'Третье', en:'3rd', zh:'第三' },
+  // подпись под названием аккорда в центре круга (Аккорды/Лады)
+  invLabel1:           { ru:'1е обращение', en:'1st inversion', zh:'第一转位' },
+  invLabel2:           { ru:'2е обращение', en:'2nd inversion', zh:'第二转位' },
+  invLabel3:           { ru:'3е обращение', en:'3rd inversion', zh:'第三转位' },
+  tipInversions: {
+    ru:'Обращения работают только с аккордами. Нажимать ноты нужно в порядке как они идут в обращении - @@иначе будет засчитано как неверная нота@@',
+    en:'Inversions work with chords only. Press the notes in the order they appear in the inversion - @@otherwise it counts as a wrong note@@',
+    zh:'转位仅适用于和弦。必须按转位中的顺序依次弹奏音符 - @@否则将被判为错误音符@@'
+  },
   variant1:            { ru:'Вариант 1', en:'Variant 1', zh:'方案 1' },
   variant2:            { ru:'Вариант 2', en:'Variant 2', zh:'方案 2' },
   byArrows:            { ru:'Стрелками', en:'Arrows', zh:'箭头' },
@@ -2666,24 +2767,24 @@ const I18N = {
     zh:'@@6-0@@。所选音符左边 6 个音，右边 0 个'
   },
   tipModeHarmMinorL3: {
-    ru:'@@4-2@@ (4 слева от тоники-2 справа) формула, но на схеме @@Bb заменена на B@@ на круге для удобства запоминания и она выделена цветом, чтобы не забыть при изучении - @@C D Eb F G Ab Bb@@',
-    en:'@@4-2@@ (4 to the left of the tonic, 2 to the right) is the formula, but on the diagram @@Bb is replaced with B@@ on the circle for easier memorising and it is highlighted so you do not forget while studying - @@C D Eb F G Ab Bb@@',
-    zh:'@@4-2@@（主音左边4个，右边2个）是公式，但在图上为方便记忆 @@Bb 在圆圈上被替换为 B@@，并用颜色标出以便学习时不要忘记 - @@C D Eb F G Ab Bb@@'
+    ru:'формула @@4-2@@ (4 слева от тоники-2 справа) формула, но на схеме @@вторая нота от тоники заменена на ноту на пол тона выше@@ для удобства запоминания и она выделена цветом, чтобы не забыть при изучении - для C maj : @@C D Eb F G Ab B@@. Засчитываются оба варианта на мажорном кольце : Bb и B(второй вариант под формулу 4-2).',
+    en:'formula @@4-2@@ (4 to the left of the tonic, 2 to the right), but on the diagram @@the second note to the left of the tonic is replaced with the note a semitone higher@@ for easier memorising and it is highlighted so you do not forget while studying - for C maj: @@C D Eb F G Ab B@@. Both variants count on the major ring: Bb and B (the second one matches the 4-2 formula).',
+    zh:'公式 @@4-2@@（主音左边4个，右边2个），但在图上为方便记忆，@@主音左边第二个音被替换为高半音的音@@，并用颜色标出以便学习时不要忘记 - 对于 C maj：@@C D Eb F G Ab B@@。在大调音环上两种写法都算正确：Bb 和 B（第二种对应4-2公式）。'
   },
   tipModeMelMinorL3: {
-    ru:'@@4-2@@ (4 слева от тоники-2 справа) формула, но на схеме @@Bb заменена на B, Ab заменена на A@@ и не сдвинута на +1 по часовой стрелке на круге для удобства запоминания и она выделена цветом, чтобы не забыть при изучении - @@C D Eb F G Ab Bb@@',
-    en:'@@4-2@@ (4 to the left of the tonic, 2 to the right) is the formula, but on the diagram @@Bb is replaced with B, Ab is replaced with A@@ (not shifted +1 clockwise on the circle) for easier memorising and it is highlighted so you do not forget while studying - @@C D Eb F G Ab Bb@@',
-    zh:'@@4-2@@（主音左边4个，右边2个）是公式，但在图上为方便记忆 @@Bb 被替换为 B，Ab 被替换为 A@@（在圆圈上不顺时针移动+1），并用颜色标出以便学习时不要忘记 - @@C D Eb F G Ab Bb@@'
+    ru:'формула @@4-2@@ (4 слева от тоники-2 справа) , но на схеме @@вторая и четвертая слева ноты от тоники заменены на ноту на пол тона выше@@ для удобства запоминания и они выделена цветом, чтобы не забыть при изучении - для C maj : @@C D Eb F G A B@@. Засчитываются оба варианта на мажорном кольце : Bb и B(второй вариант под формулу 4-2).',
+    en:'formula @@4-2@@ (4 to the left of the tonic, 2 to the right), but on the diagram @@the second and fourth notes to the left of the tonic are replaced with the notes a semitone higher@@ for easier memorising and they are highlighted so you do not forget while studying - for C maj: @@C D Eb F G A B@@. Both variants count on the major ring: Bb and B (the second one matches the 4-2 formula).',
+    zh:'公式 @@4-2@@（主音左边4个，右边2个），但在图上为方便记忆，@@主音左边第二个和第四个音被替换为高半音的音@@，并用颜色标出以便学习时不要忘记 - 对于 C maj：@@C D Eb F G A B@@。在大调音环上两种写法都算正确：Bb 和 B（第二种对应4-2公式）。'
   },
   tipModeHarmMinorTrain: {
-    ru:'@@4-2@@ (4 слева от тоники-2 справа) формула, но на схеме @@Bb заменена на B@@ на круге - @@C D Eb F G Ab Bb@@. Засчитываются оба варианта на мажорном кольце : Bb и B(второй вариант под формулу 4-2)',
-    en:'@@4-2@@ (4 to the left of the tonic, 2 to the right) is the formula, but on the diagram @@Bb is replaced with B@@ on the circle - @@C D Eb F G Ab Bb@@. Both variants count on the major ring: Bb and B (the second variant matches the 4-2 formula)',
-    zh:'@@4-2@@（主音左边4个，右边2个）是公式，但在图上 @@Bb 在圆圈上被替换为 B@@ - @@C D Eb F G Ab Bb@@。在大调音环上两种写法都算正确：Bb 和 B（第二种对应4-2公式）'
+    ru:'формула @@4-2@@ (4 слева от тоники-2 справа) формула, но на схеме @@вторая нота от тоники заменена на ноту на пол тона выше@@ для удобства запоминания и она выделена цветом, чтобы не забыть при изучении - для C maj : @@C D Eb F G Ab B@@. Засчитываются оба варианта на мажорном кольце : Bb и B(второй вариант под формулу 4-2).',
+    en:'formula @@4-2@@ (4 to the left of the tonic, 2 to the right), but on the diagram @@the second note to the left of the tonic is replaced with the note a semitone higher@@ for easier memorising and it is highlighted so you do not forget while studying - for C maj: @@C D Eb F G Ab B@@. Both variants count on the major ring: Bb and B (the second one matches the 4-2 formula).',
+    zh:'公式 @@4-2@@（主音左边4个，右边2个），但在图上为方便记忆，@@主音左边第二个音被替换为高半音的音@@，并用颜色标出以便学习时不要忘记 - 对于 C maj：@@C D Eb F G Ab B@@。在大调音环上两种写法都算正确：Bb 和 B（第二种对应4-2公式）。'
   },
   tipModeMelMinorTrain: {
-    ru:'@@4-2@@ (4 слева от тоники-2 справа) формула, но на схеме @@Bb заменена на B, Ab заменена на A@@ на круге - @@C D Eb F G Ab Bb@@. Засчитываются оба варианта на мажорном кольце : Bb и B(второй вариант под формулу 4-2)',
-    en:'@@4-2@@ (4 to the left of the tonic, 2 to the right) is the formula, but on the diagram @@Bb is replaced with B, Ab is replaced with A@@ on the circle - @@C D Eb F G Ab Bb@@. Both variants count on the major ring: Bb and B (the second variant matches the 4-2 formula)',
-    zh:'@@4-2@@（主音左边4个，右边2个）是公式，但在图上 @@Bb 被替换为 B，Ab 被替换为 A@@ - @@C D Eb F G Ab Bb@@。在大调音环上两种写法都算正确：Bb 和 B（第二种对应4-2公式）'
+    ru:'формула @@4-2@@ (4 слева от тоники-2 справа) , но на схеме @@вторая и четвертая слева ноты от тоники заменены на ноту на пол тона выше@@ для удобства запоминания и они выделена цветом, чтобы не забыть при изучении - для C maj : @@C D Eb F G A B@@. Засчитываются оба варианта на мажорном кольце : Bb и B(второй вариант под формулу 4-2).',
+    en:'formula @@4-2@@ (4 to the left of the tonic, 2 to the right), but on the diagram @@the second and fourth notes to the left of the tonic are replaced with the notes a semitone higher@@ for easier memorising and they are highlighted so you do not forget while studying - for C maj: @@C D Eb F G A B@@. Both variants count on the major ring: Bb and B (the second one matches the 4-2 formula).',
+    zh:'公式 @@4-2@@（主音左边4个，右边2个），但在图上为方便记忆，@@主音左边第二个和第四个音被替换为高半音的音@@，并用颜色标出以便学习时不要忘记 - 对于 C maj：@@C D Eb F G A B@@。在大调音环上两种写法都算正确：Bb 和 B（第二种对应4-2公式）。'
   },
   noInputsOption:      { ru:'Нет входов', en:'No inputs', zh:'无输入设备' },
   noOutputsOption:     { ru:'Нет выходов', en:'No outputs', zh:'无输出设备' },
@@ -2778,6 +2879,17 @@ function applyLanguage(lang){
   // когда откроется вкладка "Обучение" (см. applyMode()/renderTrainLegend()).
   try{
     if(typeof renderTrainLegend === 'function') renderTrainLegend();
+  }catch(e){}
+  // кнопки обращений и подпись обращения в центре круга подписаны через
+  // t(), поэтому их нужно перерисовать при смене языка
+  try{
+    if(typeof renderL3InversionButtons === 'function') renderL3InversionButtons();
+  }catch(e){}
+  try{
+    if(typeof updateTrainInversionButtons === 'function') updateTrainInversionButtons();
+  }catch(e){}
+  try{
+    if(typeof updateL3CenterModeLabel === 'function') updateL3CenterModeLabel();
   }catch(e){}
   try{
     if(typeof buildDawSplitPanel === 'function') buildDawSplitPanel();
@@ -4340,55 +4452,184 @@ function renderTrainPiano(notes){
   // код общий — на случай будущих формул с энгармоническим повтором).
   if(!showArrows) return;
 
-  const root = notes[0];
-  const rootKey = layout.pcKeyMap[root.rank+'_'+root.pc];
-  const targets = notes.slice(1);
-  if(!rootKey || !targets.length) return;
-
-  const targetsByKey = {};
-  targets.forEach(n=>{
-    const keyId = n.rank+'_'+n.pc;
-    (targetsByKey[keyId] = targetsByKey[keyId] || []).push(n);
+  /* Ноты могут приходить несколькими "порциями" — по одной на каждое
+     выбранное обращение (см. buildTrainInversionNotes ниже; поле
+     n.group). Для каждой порции стрелки строятся независимо и всегда
+     ИЗ ТОНИКИ этой порции (в обращениях тоника — уже не самая нижняя
+     нота, поэтому берём её по degree:'root', а не notes[0]). Если
+     обращения выключены, группа всего одна (group = 0) — поведение
+     ровно прежнее. */
+  const noteGroups = new Map();
+  notes.forEach(n=>{
+    const g = n.group || 0;
+    if(!noteGroups.has(g)) noteGroups.set(g, []);
+    noteGroups.get(g).push(n);
   });
 
-  targets.forEach((n, idx)=>{
-    const key = layout.pcKeyMap[n.rank+'_'+n.pc];
-    if(!key) return;
-    const startFrac = (idx+1) / (targets.length+1);
-    const sx = rootKey.x + rootKey.w*startFrac;
+  noteGroups.forEach(groupNotes=>{
+    const root = groupNotes.find(n => n.degree === 'root') || groupNotes[0];
+    const rootKey = layout.pcKeyMap[root.rank+'_'+root.pc];
+    const targets = groupNotes.filter(n => n !== root);
+    if(!rootKey || !targets.length) return;
 
-    const group = targetsByKey[n.rank+'_'+n.pc];
-    const posInGroup = group.indexOf(n);
-    const groupFrac = (posInGroup+1) / (group.length+1);
-    const tx = key.x + key.w*groupFrac;
+    const targetsByKey = {};
+    targets.forEach(n=>{
+      const keyId = n.rank+'_'+n.pc;
+      (targetsByKey[keyId] = targetsByKey[keyId] || []).push(n);
+    });
 
-    const stubH = TRAIN_PIANO_STUB_BASE + idx*TRAIN_PIANO_STUB_STEP;
-    const busY = keysTopY - stubH;
-    const colorIdx = TRAIN_PIANO_ARROW_COLORS.indexOf(n.color);
-    const markerId = `trainPianoArrowHead_${colorIdx >= 0 ? colorIdx : 0}`;
+    targets.forEach((n, idx)=>{
+      const key = layout.pcKeyMap[n.rank+'_'+n.pc];
+      if(!key) return;
+      const startFrac = (idx+1) / (targets.length+1);
+      const sx = rootKey.x + rootKey.w*startFrac;
 
-    const d = `M ${sx} ${keysTopY} L ${sx} ${busY} L ${tx} ${busY} L ${tx} ${keysTopY}`;
-    svg.appendChild(el('path', {
-      d, class:'trainPianoArrow', stroke:n.color, 'stroke-width':'2.4',
-      'marker-end': `url(#${markerId})`
-    }));
+      const group = targetsByKey[n.rank+'_'+n.pc];
+      const posInGroup = group.indexOf(n);
+      const groupFrac = (posInGroup+1) / (group.length+1);
+      const tx = key.x + key.w*groupFrac;
+
+      const stubH = TRAIN_PIANO_STUB_BASE + idx*TRAIN_PIANO_STUB_STEP;
+      const busY = keysTopY - stubH;
+      const colorIdx = TRAIN_PIANO_ARROW_COLORS.indexOf(n.color);
+      const markerId = `trainPianoArrowHead_${colorIdx >= 0 ? colorIdx : 0}`;
+
+      const d = `M ${sx} ${keysTopY} L ${sx} ${busY} L ${tx} ${busY} L ${tx} ${keysTopY}`;
+      svg.appendChild(el('path', {
+        d, class:'trainPianoArrow', stroke:n.color, 'stroke-width':'2.4',
+        'marker-end': `url(#${markerId})`
+      }));
+    });
   });
 }
 
 const TRAIN_SHOW_PIANO_KEY = 'circleTrainShowPiano';
 let trainShowPiano = localStorage.getItem(TRAIN_SHOW_PIANO_KEY) === '1';
 
+/* =========================================================
+   ОБРАЩЕНИЯ АККОРДА на мини-клавиатуре "Обучения".
+   Чекбокс "показывать обращения" (#trainShowInversionsCheckbox,
+   подпункт "Показывать клавиатуру") включает ряд кнопок под самой
+   клавиатурой: основное / первое / второе / третье. Кнопок столько,
+   сколько нот в текущем аккорде, но не больше 4 (трезвучие — 3
+   кнопки, септаккорд и всё, что больше, — 4). Выбрать можно ТОЛЬКО
+   ОДНО обращение — нажатие другой кнопки заменяет предыдущее, на
+   клавиатуре всегда показан ровно один вариант аккорда (второй
+   аккорд/вторая клавиатура рядом не дорисовывается). Первое
+   обращение строится от второй ноты основного вида, второе — от
+   третьей и т.д.; лишняя октава добавляется, только если ноты
+   действительно за неё выходят.
+   На круг, подсветку и стрелки круга это никак не влияет — меняются
+   только ноты на клавиатуре справа.
+   ========================================================= */
+const TRAIN_SHOW_INVERSIONS_KEY = 'circleTrainShowInversions';
+const TRAIN_INVERSION_KEY = 'circleTrainInversion';
+const INVERSION_BTN_I18N = ['invRoot','inv1','inv2','inv3'];
+
+function loadInversionSet(key){
+  let arr = null;
+  try{ arr = JSON.parse(localStorage.getItem(key)); }catch(e){ arr = null; }
+  if(!Array.isArray(arr)) return null;
+  const out = arr.map(v => parseInt(v, 10)).filter(v => v >= 0 && v <= 3);
+  return out.length ? out : null;
+}
+
+let trainShowInversions = localStorage.getItem(TRAIN_SHOW_INVERSIONS_KEY) === '1';
+// одно выбранное обращение: 0 — основной вид, 1..3 — первое/второе/третье
+let trainInversion = parseInt(localStorage.getItem(TRAIN_INVERSION_KEY), 10);
+if(!(trainInversion >= 0 && trainInversion <= 3)) trainInversion = 0;
+
+function saveTrainInversion(){
+  try{ localStorage.setItem(TRAIN_INVERSION_KEY, String(trainInversion)); }catch(e){}
+}
+
+/* Обращение = ноты аккорда, "прокрученные" вверх: первое обращение —
+   нижняя нота уходит на октаву вверх, второе — две нижние и т.д.
+   Ранги (номера октавных блоков клавиатуры) пересчитываются заново по
+   тому же правилу, что и в computeTrainPianoNotes: каждая следующая
+   нота кладётся строго правее (выше) предыдущей. */
+function invertTrainNotes(baseNotes, inv, rankBase){
+  const k = Math.max(0, Math.min(inv, baseNotes.length - 1));
+  const rotated = baseNotes.slice(k).concat(baseNotes.slice(0, k));
+  let rank = rankBase, prevPc = null;
+  return rotated.map(n=>{
+    if(prevPc !== null && n.pc <= prevPc) rank++;
+    prevPc = n.pc;
+    return Object.assign({}, n, { rank });
+  });
+}
+
+// Сколько кнопок обращений показывать для текущего аккорда (основное +
+// обращения, максимум 4).
+function trainInversionBtnCount(){
+  if(trainModeType || !pressedTrainTonicRing) return 0;
+  const formula = trainChordFormula(trainChordType, pressedTrainTonicRing);
+  return Math.min(formula ? formula.length : 3, 4);
+}
+
+// Ноты для клавиатуры в выбранном обращении — ровно один вариант
+// аккорда, ничего рядом не дорисовывается.
+function buildTrainInversionNotes(baseNotes){
+  const maxInv = Math.min(baseNotes.length, 4) - 1;
+  // у этого аккорда такого обращения нет (было выбрано "третье", а
+  // сейчас выбрано трезвучие) — сразу откатываемся к основному виду,
+  // ДО отрисовки, чтобы клавиатура и активная кнопка совпадали
+  if(trainInversion > maxInv){
+    trainInversion = 0;
+    saveTrainInversion();
+  }
+  return invertTrainNotes(baseNotes, trainInversion, 0);
+}
+
+const trainInversionBtnsEl = document.getElementById('trainInversionBtns');
+
+function updateTrainInversionButtons(){
+  if(!trainInversionBtnsEl) return;
+  const count = trainInversionBtnCount();
+  const visible = trainShowPiano && trainShowInversions && appMode === 'training'
+    && !!pressedTrainTonicName && count > 0;
+  if(!visible){
+    trainInversionBtnsEl.style.display = 'none';
+    while(trainInversionBtnsEl.firstChild) trainInversionBtnsEl.removeChild(trainInversionBtnsEl.firstChild);
+    return;
+  }
+  // у нынешнего аккорда такого обращения нет (напр. было выбрано
+  // "третье", а теперь выбрано трезвучие) — возвращаемся к основному виду
+  if(trainInversion >= count) trainInversion = 0;
+  trainInversionBtnsEl.style.display = 'flex';
+  while(trainInversionBtnsEl.firstChild) trainInversionBtnsEl.removeChild(trainInversionBtnsEl.firstChild);
+  for(let i=0; i<count; i++){
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'ringBtn' + (trainInversion === i ? ' active' : '');
+    btn.textContent = t(INVERSION_BTN_I18N[i]);
+    btn.addEventListener('click', ()=>{
+      // выбор одиночный: нажатая кнопка становится единственной активной,
+      // повторный клик по уже активной ничего не меняет
+      if(trainInversion === i) return;
+      trainInversion = i;
+      saveTrainInversion();
+      updateTrainPiano();
+    });
+    trainInversionBtnsEl.appendChild(btn);
+  }
+}
+
 function updateTrainPiano(){
   const shouldShow = trainShowPiano && appMode === 'training';
-  const notes = shouldShow ? computeTrainPianoNotes() : null;
+  let notes = shouldShow ? computeTrainPianoNotes() : null;
   if(!notes){
     trainPianoWrapEl.style.display = 'none';
     while(trainPianoSvgEl.firstChild) trainPianoSvgEl.removeChild(trainPianoSvgEl.firstChild);
+    updateTrainInversionButtons();
     return;
   }
+  // Обращения — только для аккордов (для ладов чекбокс ничего не делает).
+  if(trainShowInversions && !trainModeType) notes = buildTrainInversionNotes(notes);
   trainPianoWrapEl.style.display = 'flex';
   renderTrainPiano(notes);
   updateTrainPianoOffset();
+  updateTrainInversionButtons();
 }
 
 /* #trainCircleInner имеет фиксированный layout-размер 480x480, а сам
@@ -4408,12 +4649,42 @@ function updateTrainPianoOffset(){
 }
 
 const trainShowPianoCheckbox = document.getElementById('trainShowPianoCheckbox');
+const trainShowInversionsCheckbox = document.getElementById('trainShowInversionsCheckbox');
+const trainShowInversionsRow = document.getElementById('trainShowInversionsRow');
+
+// Подпункт "показывать обращения" доступен только вместе с
+// "Показывать клавиатуру" (кнопки обращений живут под клавиатурой).
+function setTrainInversionsAvailability(enabled){
+  if(trainShowInversionsCheckbox) trainShowInversionsCheckbox.disabled = !enabled;
+  if(trainShowInversionsRow) trainShowInversionsRow.classList.toggle('disabled', !enabled);
+}
+
 trainShowPianoCheckbox.checked = trainShowPiano;
 trainShowPianoCheckbox.addEventListener('change', ()=>{
   trainShowPiano = trainShowPianoCheckbox.checked;
   localStorage.setItem(TRAIN_SHOW_PIANO_KEY, trainShowPiano ? '1' : '0');
+  if(!trainShowPiano && trainShowInversions){
+    trainShowInversions = false;
+    localStorage.setItem(TRAIN_SHOW_INVERSIONS_KEY, '0');
+    if(trainShowInversionsCheckbox) trainShowInversionsCheckbox.checked = false;
+  }
+  setTrainInversionsAvailability(trainShowPiano);
   updateTrainPiano();
 });
+
+if(trainShowInversionsCheckbox){
+  trainShowInversionsCheckbox.checked = trainShowInversions;
+  trainShowInversionsCheckbox.addEventListener('change', ()=>{
+    if(!trainShowPiano){
+      trainShowInversionsCheckbox.checked = false;
+      return;
+    }
+    trainShowInversions = trainShowInversionsCheckbox.checked;
+    localStorage.setItem(TRAIN_SHOW_INVERSIONS_KEY, trainShowInversions ? '1' : '0');
+    updateTrainPiano();
+  });
+}
+setTrainInversionsAvailability(trainShowPiano);
 
 /* =========================================================
    Клавиатура-подсказка вкладки "Практика 3" (справа от круга).
@@ -4659,7 +4930,10 @@ function flashL3PianoKey(key, keysTopY, color){
 function onL3PianoKeyClick(key, keysTopY){
   if(appMode !== 'practice' || practiceLevel !== 3 || !currentL3) return;
   const letter = rootOf(noteNames[key.pc]);
-  const correct = !!(currentL3.letters && currentL3.letters.has(letter));
+  // с обращениями нота верна, только если она следующая по порядку
+  const expectedKeyLetter = l3ExpectedLetter();
+  const correct = !!(currentL3.letters && currentL3.letters.has(letter))
+    && (!expectedKeyLetter || letter === expectedKeyLetter);
   const color = l3AnswerFlashColor(letter);
   // Тоника (и вообще любая уже отвеченная верная нота) и так постоянно
   // видна на клавиатуре своим цветом — новую цветную вспышку поверх неё
@@ -6794,6 +7068,157 @@ function chordTypeSuffixL3(type){
   }
 }
 
+/* =========================================================
+   ОБРАЩЕНИЯ АККОРДОВ в Практике 3 ("Аккорды/Лады").
+   Чекбокс "добавить обращения" (#level3InversionsCheckbox) включает
+   ряд из 4 кнопок (основное / первое / второе / третье). Выбранные
+   варианты попадают в общий пул вопросов наравне с типами аккордов:
+   при каждом новом вопросе случайно берётся одно из выбранных
+   обращений, доступных для выпавшего типа аккорда (у трезвучия нет
+   третьего обращения — оно просто не выпадает).
+   Когда чекбокс выключен, кнопки заблокированы, вопросы всегда в
+   основном виде и порядок нажатия нот не проверяется (как раньше).
+   Когда включён — ноты нужно нажимать строго в порядке обращения,
+   иначе нота считается неверной (см. l3ExpectedLetter ниже).
+   Обращения работают только с аккордами, к ладам не применяются.
+   ========================================================= */
+const L3_USE_INVERSIONS_KEY = 'circleL3UseInversions';
+const L3_INVERSIONS_KEY = 'circleL3Inversions';
+let l3UseInversions = localStorage.getItem(L3_USE_INVERSIONS_KEY) === '1';
+let l3Inversions = new Set(loadInversionSet(L3_INVERSIONS_KEY) || [0]);
+if(l3Inversions.size === 0) l3Inversions = new Set([0]);
+
+function saveL3Inversions(){
+  try{ localStorage.setItem(L3_INVERSIONS_KEY, JSON.stringify(Array.from(l3Inversions))); }catch(e){}
+}
+
+// Сколько вариантов (основное + обращения) есть у данного типа аккорда,
+// но не больше 4 — как и в "Обучении".
+function l3InversionCountFor(type, ring){
+  const formula = trainChordFormula(type, ring);
+  return Math.min(formula ? formula.length : 3, 4);
+}
+
+/* Буквы нот аккорда в том порядке, в котором их нужно нажимать для
+   заданного обращения: основной вид — тоника, терция, квинта...;
+   первое обращение — начиная с терции и т.д. Буквы канонические
+   (как rootOf/noteNames), поэтому напрямую сравнимы с currentL3.letters. */
+function l3ChordOrderLetters(ring, tonicIndex, type, inversion){
+  const tonicPc = (ring === 'minor' ? minorsSemitone : majorsSemitone)[tonicIndex];
+  const formula = trainChordFormula(type, ring);
+  let letters = formula.map(iv => noteNames[((tonicPc + iv) % 12 + 12) % 12]);
+  const inv = Math.max(0, Math.min(inversion || 0, letters.length - 1));
+  if(inv > 0) letters = letters.slice(inv).concat(letters.slice(0, inv));
+  return letters;
+}
+
+// Какое обращение выпадет очередному вопросу (0 — основной вид).
+function pickL3Inversion(type, ring){
+  if(!l3UseInversions) return 0;
+  const max = l3InversionCountFor(type, ring) - 1;
+  const avail = Array.from(l3Inversions).filter(i => i >= 0 && i <= max);
+  if(!avail.length) return 0;
+  return avail[Math.floor(Math.random() * avail.length)];
+}
+
+// Нота, которую сейчас ждём по порядку обращения (null — порядок не
+// проверяется: обращения выключены или загадан лад).
+function l3ExpectedLetter(){
+  if(!currentL3 || !currentL3.order) return null;
+  return currentL3.order[currentL3.found.size] || null;
+}
+
+const level3InversionsCheckbox = document.getElementById('level3InversionsCheckbox');
+const level3InversionBtnsEl = document.getElementById('level3InversionBtns');
+
+/* Сколько кнопок обращений имеет смысл показывать при нынешнем наборе
+   выбранных типов аккордов: берём самый "длинный" из выбранных типов
+   (у трезвучия и sus2/sus4 всего 3 ноты — третьего обращения у них
+   просто нет, поэтому и кнопки быть не должно). Ровно та же логика, что
+   и в "Обучении" (trainInversionBtnCount). Кольцо не важно: у мажорного
+   и минорного трезвучия одинаковое число нот. */
+function l3MaxInversionCount(){
+  const types = level3ChordTypes.size > 0 ? Array.from(level3ChordTypes) : ['triad'];
+  let max = 1;
+  types.forEach(tp=>{
+    const c = l3InversionCountFor(tp, 'major');
+    if(c > max) max = c;
+  });
+  return Math.min(max, 4);
+}
+
+// Обращения доступны, только если включён чекбокс И сейчас загадываются
+// аккорды: у ладов порядок нажатия не проверяется, поэтому при выбранном
+// ладе весь блок гаснет и не нажимается.
+function l3InversionsEnabled(){
+  let family = 'chords';
+  try{ family = level3Family; }catch(e){ family = 'chords'; }
+  return l3UseInversions && family !== 'modes';
+}
+
+// Строка чекбокса "Добавить обращения" гаснет вместе с кнопками, когда
+// выбран лад (см. l3InversionsEnabled).
+function updateL3InversionsRowAvailability(){
+  let family = 'chords';
+  try{ family = level3Family; }catch(e){ family = 'chords'; }
+  const modes = (family === 'modes');
+  const row = document.getElementById('level3InversionsRow');
+  if(row) row.classList.toggle('disabled', modes);
+  if(level3InversionsCheckbox) level3InversionsCheckbox.disabled = modes;
+}
+
+function renderL3InversionButtons(){
+  if(!level3InversionBtnsEl) return;
+  updateL3InversionsRowAvailability();
+  const enabled = l3InversionsEnabled();
+  const count = l3MaxInversionCount();
+  // выбранных обращений, которых у нынешних типов аккорда нет, быть не
+  // должно — иначе кнопка горит, а вопрос выпадает в основном виде
+  let changed = false;
+  Array.from(l3Inversions).forEach(i=>{
+    if(i >= count){ l3Inversions.delete(i); changed = true; }
+  });
+  if(l3Inversions.size === 0){ l3Inversions.add(0); changed = true; }
+  if(changed) saveL3Inversions();
+  while(level3InversionBtnsEl.firstChild) level3InversionBtnsEl.removeChild(level3InversionBtnsEl.firstChild);
+  level3InversionBtnsEl.style.gridTemplateColumns = 'repeat(' + count + ', 1fr)';
+  for(let i=0; i<count; i++){
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'ringBtn'
+      + (l3Inversions.has(i) ? ' active' : '')
+      + (enabled ? '' : ' disabled');
+    btn.textContent = t(INVERSION_BTN_I18N[i]);
+    btn.addEventListener('click', ()=>{
+      // без чекбокса "добавить обращения" (и при выбранном ладе) выбирать нельзя
+      if(!l3InversionsEnabled()) return;
+      if(l3Inversions.has(i)){
+        if(l3Inversions.size === 1) return; // минимум один вариант остаётся
+        l3Inversions.delete(i);
+      } else {
+        l3Inversions.add(i);
+      }
+      saveL3Inversions();
+      renderL3InversionButtons();
+      currentL3 = null;
+      if(practiceLevel === 3) pickNewChordL3();
+    });
+    level3InversionBtnsEl.appendChild(btn);
+  }
+}
+
+if(level3InversionsCheckbox){
+  level3InversionsCheckbox.checked = l3UseInversions;
+  level3InversionsCheckbox.addEventListener('change', ()=>{
+    l3UseInversions = level3InversionsCheckbox.checked;
+    try{ localStorage.setItem(L3_USE_INVERSIONS_KEY, l3UseInversions ? '1' : '0'); }catch(e){}
+    renderL3InversionButtons();
+    currentL3 = null;
+    if(practiceLevel === 3) pickNewChordL3();
+  });
+}
+renderL3InversionButtons();
+
 // история последних выпавших нот для Практики 3 (по буквам)
 let rootHistoryL3 = [];
 
@@ -6855,10 +7280,16 @@ function pickNewChordL3(){
   // выше), чтобы не задваивать "m" с суффиксом типа аккорда.
   const displayRoot = chordType === 'triad' ? chosen.name : chosen.name.replace(/m$/, '');
 
+  // Обращение для этого вопроса (0 — основной вид). order — порядок,
+  // в котором нужно нажимать ноты; null, если проверка порядка не нужна.
+  const inversionL3 = pickL3Inversion(chordType, chosen.ring);
+
   currentL3 = {
     ring: chosen.ring,
     index: chosen.index,
     chordType: chordType,
+    inversion: inversionL3,
+    order: l3UseInversions ? l3ChordOrderLetters(chosen.ring, chosen.index, chordType, inversionL3) : null,
     // "сырое" имя тоники с кольца (напр. "Am" для минора) — нужно для
     // подсчёта нот клавиатуры-подсказки (см. computeL3PianoNotes),
     // которая через trainChordLettersFor() строит правильное написание
@@ -6925,8 +7356,15 @@ function updateL3CenterModeLabel(){
   // должна быть пустой, даже если currentL3 всё ещё хранит последний
   // выбранный лад — иначе после перехода в "Ноты" старое название
   // оставалось висеть поверх круга.
-  if(practiceLevel !== 3 || !currentL3 || !currentL3.modeType){
+  if(practiceLevel !== 3 || !currentL3){
     centerModeLabelText.textContent = '';
+    return;
+  }
+  // Аккорд: под названием пишем номер обращения (для основного вида —
+  // ничего). Строка та же самая, что и для названия лада.
+  if(!currentL3.modeType){
+    const inv = currentL3.inversion || 0;
+    centerModeLabelText.textContent = inv > 0 ? t('invLabel' + inv) : '';
     return;
   }
   const btn = document.getElementById(LEVEL3_MODE_BTN_IDS[currentL3.modeType]);
@@ -7086,6 +7524,8 @@ function setLevel3ModeType(modeId){
   updateLevel3ModeButtonsActive();
   updateLevel3ChordButtonsActive();
   saveLevel3Selection();
+  // выбран лад — блок обращений гаснет и блокируется
+  if(typeof renderL3InversionButtons === 'function') renderL3InversionButtons();
   currentL3 = null;
   if(practiceLevel === 3) pickNewChordL3();
   if(typeof updateL3Piano === 'function') updateL3Piano();
@@ -7120,6 +7560,9 @@ document.querySelectorAll('#level2TypeButtons .ringBtn[data-chordtype]').forEach
     // Выбор типа аккорда снимает выбранный лад (взаимоисключающе).
     updateLevel3ModeButtonsActive();
     saveLevel3Selection();
+    // набор типов изменился — пересчитываем, сколько обращений реально
+    // существует (у трезвучий/sus нет третьего), и перерисовываем кнопки
+    if(typeof renderL3InversionButtons === 'function') renderL3InversionButtons();
     currentL3 = null;
     if(practiceLevel === 3) pickNewChordL3();
     if(typeof updateL3Piano === 'function') updateL3Piano();
@@ -7127,6 +7570,10 @@ document.querySelectorAll('#level2TypeButtons .ringBtn[data-chordtype]').forEach
 });
 updateLevel3ChordButtonsActive();
 updateLevel3ModeButtonsActive();
+// первая отрисовка кнопок обращений выше по файлу происходит ещё до
+// объявления level3Family (там оно читается через try/catch как 'chords'),
+// поэтому повторяем её здесь — уже с реальным сохранённым семейством
+renderL3InversionButtons();
 
 /* Цвет вспышки для ответа буквой letter: неверная нота — красный;
    верная — зелёный (для лада зелёный только у тоники, остальные ноты
@@ -7135,6 +7582,10 @@ updateLevel3ModeButtonsActive();
    клавиатуре-подсказке справа (onL3PianoKeyClick). */
 function l3AnswerFlashColor(letter){
   if(!currentL3 || !currentL3.letters.has(letter)) return FLASH_RED;
+  // Включены обращения: верной считается только следующая по порядку
+  // обращения нота — всё остальное красное, даже если нота в аккорде есть.
+  const expected = l3ExpectedLetter();
+  if(expected && letter !== expected) return FLASH_RED;
   return currentL3.modeType
     ? (letter === currentL3.rootLetter ? FLASH_GREEN : FLASH_YELLOW)
     : FLASH_GREEN;
@@ -7146,6 +7597,9 @@ function l3AnswerFlashColor(letter){
 function l3RegisterAnswer(letter){
   if(!currentL3) return false;
   if(!currentL3.letters.has(letter)) return false;
+  // порядок обращения нарушен — ответ не засчитывается
+  const expected = l3ExpectedLetter();
+  if(expected && letter !== expected) return false;
   if(!currentL3.found.has(letter)){
     currentL3.found.add(letter);
     renderLevel3Hint();

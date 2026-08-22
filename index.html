@@ -1220,6 +1220,16 @@
   #trainShowInversionsRow.disabled input[type="checkbox"]{
     cursor:not-allowed;
   }
+  /* Подпункт "показывать стрелками обращения для трезвучий" — зависит уже
+     от "Показывать обращения" (#trainShowInversionsCheckbox), поэтому
+     сдвинут ещё на один уровень и гаснет вместе с ним. */
+  #trainShowInversionArrowsRow.disabled{
+    opacity:0.4;
+    cursor:not-allowed;
+  }
+  #trainShowInversionArrowsRow.disabled input[type="checkbox"]{
+    cursor:not-allowed;
+  }
   /* ===== Настройка "Название нот": ABC / до-ре-ми (переключатель), а
      также язык интерфейса и тема — единый стиль строки кнопок на всю
      ширину панели (как на макете), кнопки равной ширины. ===== */
@@ -2370,6 +2380,7 @@
         <label id="trainLockKeyRow" style="margin-left:24px;"><input type="checkbox" id="trainLockKeyCheckbox"><span data-i18n="lockKey">Привязать тональность</span></label>
         <label><input type="checkbox" id="trainShowPianoCheckbox"><span data-i18n="showKeyboard">Показывать клавиатуру</span></label>
         <label id="trainShowInversionsRow" style="margin-left:24px;"><input type="checkbox" id="trainShowInversionsCheckbox"><span data-i18n="showInversions">Показывать обращения</span></label>
+        <label id="trainShowInversionArrowsRow" style="margin-left:48px;"><input type="checkbox" id="trainShowInversionArrowsCheckbox"><span data-i18n="showInversionArrows">Показывать стрелками обращения для трезвучий</span></label>
       </div>
 
       <div id="trainAltNoteSettings">
@@ -2676,6 +2687,7 @@ const I18N = {
   showKeyboard:        { ru:'Показывать клавиатуру', en:'Show keyboard', zh:'显示键盘' },
   hideWedges:          { ru:'Скрыть ячейки круга', en:'Hide circle cells', zh:'隐藏圆环单元格' },
   showInversions:      { ru:'Показывать обращения', en:'Show inversions', zh:'显示转位' },
+  showInversionArrows: { ru:'Показывать стрелками обращения для трезвучий', en:'Show inversions with arrows for triads', zh:'用箭头显示三和弦转位' },
   addInversions:       { ru:'Добавить обращения', en:'Add inversions', zh:'加入转位' },
   invRoot:             { ru:'Основное', en:'Root', zh:'原位' },
   inv1:                { ru:'Первое', en:'1st', zh:'第一' },
@@ -4535,6 +4547,13 @@ function loadInversionSet(key){
 }
 
 let trainShowInversions = localStorage.getItem(TRAIN_SHOW_INVERSIONS_KEY) === '1';
+/* Подпункт "показывать стрелками обращения для трезвучий": когда включён
+   И выбрано именно трезвучие, стрелки на круге рисуются цепочкой по нотам
+   выбранного обращения (напр. для C, первое обращение: E -> G -> C).
+   Для любого другого типа аккорда (и когда выключен) стрелки строятся
+   как раньше. */
+const TRAIN_SHOW_INVERSION_ARROWS_KEY = 'circleTrainShowInversionArrows';
+let trainShowInversionArrows = localStorage.getItem(TRAIN_SHOW_INVERSION_ARROWS_KEY) === '1';
 // одно выбранное обращение: 0 — основной вид, 1..3 — первое/второе/третье
 let trainInversion = parseInt(localStorage.getItem(TRAIN_INVERSION_KEY), 10);
 if(!(trainInversion >= 0 && trainInversion <= 3)) trainInversion = 0;
@@ -4610,6 +4629,9 @@ function updateTrainInversionButtons(){
       trainInversion = i;
       saveTrainInversion();
       updateTrainPiano();
+      // при включённой галке "показывать стрелками обращения для трезвучий"
+      // от номера обращения зависит и набор стрелок на круге
+      refreshTrainCircleArrows();
     });
     trainInversionBtnsEl.appendChild(btn);
   }
@@ -4651,12 +4673,19 @@ function updateTrainPianoOffset(){
 const trainShowPianoCheckbox = document.getElementById('trainShowPianoCheckbox');
 const trainShowInversionsCheckbox = document.getElementById('trainShowInversionsCheckbox');
 const trainShowInversionsRow = document.getElementById('trainShowInversionsRow');
+const trainShowInversionArrowsCheckbox = document.getElementById('trainShowInversionArrowsCheckbox');
+const trainShowInversionArrowsRow = document.getElementById('trainShowInversionArrowsRow');
 
 // Подпункт "показывать обращения" доступен только вместе с
 // "Показывать клавиатуру" (кнопки обращений живут под клавиатурой).
+// Его собственный подпункт "показывать стрелками обращения для трезвучий"
+// доступен, только когда включено само "показывать обращения".
 function setTrainInversionsAvailability(enabled){
   if(trainShowInversionsCheckbox) trainShowInversionsCheckbox.disabled = !enabled;
   if(trainShowInversionsRow) trainShowInversionsRow.classList.toggle('disabled', !enabled);
+  const childEnabled = enabled && trainShowInversions;
+  if(trainShowInversionArrowsCheckbox) trainShowInversionArrowsCheckbox.disabled = !childEnabled;
+  if(trainShowInversionArrowsRow) trainShowInversionArrowsRow.classList.toggle('disabled', !childEnabled);
 }
 
 trainShowPianoCheckbox.checked = trainShowPiano;
@@ -4667,10 +4696,21 @@ trainShowPianoCheckbox.addEventListener('change', ()=>{
     trainShowInversions = false;
     localStorage.setItem(TRAIN_SHOW_INVERSIONS_KEY, '0');
     if(trainShowInversionsCheckbox) trainShowInversionsCheckbox.checked = false;
+    turnOffTrainInversionArrows();
   }
   setTrainInversionsAvailability(trainShowPiano);
   updateTrainPiano();
+  refreshTrainCircleArrows();
 });
+
+// снимает галку "показывать стрелками обращения для трезвучий" (когда
+// гаснет родительский пункт) — сама перерисовка стрелок делается снаружи
+function turnOffTrainInversionArrows(){
+  if(!trainShowInversionArrows) return;
+  trainShowInversionArrows = false;
+  localStorage.setItem(TRAIN_SHOW_INVERSION_ARROWS_KEY, '0');
+  if(trainShowInversionArrowsCheckbox) trainShowInversionArrowsCheckbox.checked = false;
+}
 
 if(trainShowInversionsCheckbox){
   trainShowInversionsCheckbox.checked = trainShowInversions;
@@ -4681,7 +4721,24 @@ if(trainShowInversionsCheckbox){
     }
     trainShowInversions = trainShowInversionsCheckbox.checked;
     localStorage.setItem(TRAIN_SHOW_INVERSIONS_KEY, trainShowInversions ? '1' : '0');
+    if(!trainShowInversions) turnOffTrainInversionArrows();
+    setTrainInversionsAvailability(trainShowPiano);
     updateTrainPiano();
+    refreshTrainCircleArrows();
+  });
+}
+
+if(trainShowInversionArrowsCheckbox){
+  trainShowInversionArrowsCheckbox.checked = trainShowInversionArrows;
+  trainShowInversionArrowsCheckbox.addEventListener('change', ()=>{
+    // родительский пункт выключен — подпункт нажать нельзя
+    if(!trainShowPiano || !trainShowInversions){
+      trainShowInversionArrowsCheckbox.checked = false;
+      return;
+    }
+    trainShowInversionArrows = trainShowInversionArrowsCheckbox.checked;
+    localStorage.setItem(TRAIN_SHOW_INVERSION_ARROWS_KEY, trainShowInversionArrows ? '1' : '0');
+    refreshTrainCircleArrows();
   });
 }
 setTrainInversionsAvailability(trainShowPiano);
@@ -5271,6 +5328,24 @@ const TRIAD_V1 = {
 // для регистрации маркеров-наконечников по ключам "fifth"/"third" — те же
 // ключи что и в TRIAD_V1.minor, поэтому одного набора достаточно)
 const TRIAD_ARROWS = TRIAD_V1.major;
+
+/* ===== Цвета стрелок обращений (галка "показывать стрелками обращения
+   для трезвучий") =====
+   Используются ровно те же два цвета, что и в обычной схеме Варианта 1,
+   и ровно с тем же смыслом:
+   - СИНЯЯ  — стрелка между тоникой и квинтой (в любую сторону);
+   - ЖЁЛТАЯ — стрелка, у которой на одном из концов терция (у sus2 —
+     секунда, у sus4 — кварта).
+   Никакого третьего цвета не появляется: в каждом обращении всегда одна
+   синяя стрелка и одна жёлтая. */
+const TRIAD_INVERSION_FIFTH_STYLE = { color: 'var(--blue)',   marker: 'trainArrowHead_fifth' };
+const TRIAD_INVERSION_THIRD_STYLE = { color: 'var(--yellow)', marker: 'trainArrowHead_third' };
+
+function triadInversionArrowStyle(from, to){
+  const pair = from.degree + '|' + to.degree;
+  if(pair === 'root|fifth' || pair === 'fifth|root') return TRIAD_INVERSION_FIFTH_STYLE;
+  return TRIAD_INVERSION_THIRD_STYLE;
+}
 
 /* ===== Стрелка "через центр" (для минорного Варианта 1) =====
    Если целевая ячейка НЕ соседняя с тоникой на круге квинт (расстояние
@@ -6705,7 +6780,134 @@ function buildExtendedLetterArrows(chordType, ring, tonicIndex){
 // SUS_CONFIGS. Для септаккордов 7/maj7/m7 Вариант 2 теперь строит
 // буквенную цепочку стрелок (buildSeventhLetterArrows); m(Maj7) в Варианте 2
 // строит свою буквенную схему через buildMMaj7LetterArrows.
+/* ===== Стрелки обращений (галка "показывать стрелками обращения для
+   трезвучий") =====
+   За основу взят ВАРИАНТ 1: ноты стоят ровно в тех же ячейках круга, что
+   и там, ничего никуда не переносится. Меняются только сами стрелки —
+   их направление и точка старта, чтобы читались в порядке обращения.
+
+   Ячейки трёх нот (те же, что рисует Вариант 1):
+   - трезвучие, мажорная тоника (C): тоника C и квинта G — на мажорном
+     кольце (+0 и +1), терция E — это ячейка Em на минорном кольце под
+     квинтой (как радиальная стрелка Варианта 1: G "вниз" даёт Em);
+   - трезвучие, минорная тоника (Am): тоника Am и квинта Em — на минорном
+     кольце (+0 и +1), терция C — родственный мажор на той же позиции;
+   - sus2 (C sus2): всё на своём кольце — C (+0), G (+1), D (+2);
+   - sus4 (C sus4): всё на своём кольце — C (+0), F (−1), G (+1). */
+const TRIAD_INVERSION_TYPES = new Set(['triad', 'sus2', 'sus4']);
+// длина дуги для единственного случая, когда две ноты не соседние
+// (sus4: F -> G, два шага) — рисуется дугой по внешнему кольцу
+const TRIAD_INVERSION_ARC_STUB = 40;
+
+function triadInversionCells(chordType, ring, tonicIndex){
+  const at = s => ((tonicIndex + s) % 12 + 12) % 12;
+  if(chordType === 'sus2'){
+    return [
+      { ring, idx: tonicIndex, degree:'root'   },
+      { ring, idx: at(2),      degree:'second' },
+      { ring, idx: at(1),      degree:'fifth'  }
+    ];
+  }
+  if(chordType === 'sus4'){
+    return [
+      { ring, idx: tonicIndex, degree:'root'   },
+      { ring, idx: at(-1),     degree:'fourth' },
+      { ring, idx: at(1),      degree:'fifth'  }
+    ];
+  }
+  if(ring === 'minor'){
+    return [
+      { ring:'minor', idx: tonicIndex, degree:'root'  },
+      { ring:'major', idx: tonicIndex, degree:'third' },
+      { ring:'minor', idx: at(1),      degree:'fifth' }
+    ];
+  }
+  return [
+    { ring:'major', idx: tonicIndex, degree:'root'  },
+    { ring:'minor', idx: at(1),      degree:'third' },
+    { ring:'major', idx: at(1),      degree:'fifth' }
+  ];
+}
+
+/* Какие стрелки рисовать для каждого обращения. Числа — номера нот в
+   массиве ячеек выше: 0 — тоника, 1 — терция/секунда/кварта, 2 — квинта.
+   Пара [откуда, куда] = одна стрелка. Схемы подобраны так, чтобы все
+   ноты стрелок были рядом и не приходилось тянуть длинные дуги:
+     C мажор:  1е  E -> G -> C        2е  G -> C  и  G -> E
+     Am:       1е  C -> Em -> Am      2е  Em -> Am -> C
+     C sus2:   1е  D -> G -> C        2е  G -> C  и  G -> D
+     C sus4:   1е  F -> G -> C        2е  G -> C -> F                     */
+const TRIAD_INVERSION_PLANS = {
+  triadMajor: { 1: [[1,2],[2,0]], 2: [[2,0],[2,1]] },
+  triadMinor: { 1: [[1,2],[2,0]], 2: [[2,0],[0,1]] },
+  sus2:       { 1: [[1,2],[2,0]], 2: [[2,0],[2,1]] },
+  sus4:       { 1: [[1,2],[2,0]], 2: [[2,0],[0,1]] }
+};
+
+/* Одна стрелка. Вид подбирается так же, как в остальных схемах приложения:
+   - соседние ячейки одного кольца — прямая стрелка "от подписи к подписи";
+   - одна и та же позиция круга, но разные кольца — радиальная стрелка;
+   - разные кольца и разные позиции — прямая стрелка между подписями;
+   - несоседние на мажорном кольце — дуга по внешнему кольцу;
+   - несоседние на минорном кольце — гладкая дуга через центр. */
+function drawTriadInversionArrow(from, to, color, markerId){
+  if(from.ring === to.ring){
+    if(fifthsCircularDistance(from.idx, to.idx) === 1){
+      drawTrainDirectLabelArrow(trainLabelAt(from.ring, from.idx), trainLabelAt(to.ring, to.idx), color, markerId);
+    } else if(from.ring === 'minor'){
+      drawMinorCenterArc(from.idx, to.idx, color, markerId);
+    } else {
+      drawTrainArrow(trA(from.idx*30), trA(to.idx*30), TRIAD_INVERSION_ARC_STUB, color, markerId);
+    }
+    return;
+  }
+  if(from.idx === to.idx){
+    drawTrainRadialArrowBetween(trA(from.idx*30), color, markerId, from.ring, from.idx, to.ring, to.idx);
+    return;
+  }
+  drawTrainDirectLabelArrow(trainLabelAt(from.ring, from.idx), trainLabelAt(to.ring, to.idx), color, markerId);
+}
+
+// возвращает true, если стрелки обращения нарисованы (иначе вызывающий
+// код строит обычную схему)
+function buildTriadInversionArrows(chordType, ring, tonicIndex){
+  const planKey = chordType === 'triad'
+    ? (ring === 'minor' ? 'triadMinor' : 'triadMajor')
+    : chordType;
+  const plans = TRIAD_INVERSION_PLANS[planKey];
+  if(!plans) return false;
+  const plan = plans[trainInversion];
+  if(!plan) return false;                     // основной вид — схема Варианта 1
+  const cells = triadInversionCells(chordType, ring, tonicIndex);
+  plan.forEach(pair=>{
+    const from = cells[pair[0]], to = cells[pair[1]];
+    const style = triadInversionArrowStyle(from, to);
+    drawTriadInversionArrow(from, to, style.color, style.marker);
+  });
+  return true;
+}
+
+// перерисовка только стрелок круга (без трогания подсветки/клавиатуры) —
+// нужна, когда меняется выбранное обращение или галки обращений
+function refreshTrainCircleArrows(){
+  if(pressedTrainTonicRing === null) return;
+  if(appMode !== 'training') return;
+  if(trainModeType) return;              // выбран лад — стрелок аккорда нет
+  if(trainDisplayMode !== 'arrows') return;
+  clearTrainArrows();
+  buildTriadArrowsForTonic(pressedTrainTonicRing, pressedTrainTonicIndex);
+}
+
 function buildTriadArrowsForTonic(ring, tonicIndex){
+  // Галка "показывать стрелками обращения для трезвучий": работает только
+  // для трёхнотных аккордов (трезвучие, sus2, sus4), только вместе с
+  // включённым "показывать обращения" и только для 1-го/2-го обращения —
+  // основной вид и все остальные типы аккордов рисуются как раньше.
+  if(!trainModeType && trainShowInversions && trainShowInversionArrows
+     && TRIAD_INVERSION_TYPES.has(trainChordType)
+     && buildTriadInversionArrows(trainChordType, ring, tonicIndex)){
+    return;
+  }
   if(SUS_CONFIGS[trainChordType]){
     // dom7 на мажорном кольце (напр. C7): по просьбе пользователя буквенная
     // и числовая схемы стрелок поменяны местами — буквенная (C -> G -> Em
